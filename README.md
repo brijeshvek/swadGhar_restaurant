@@ -107,6 +107,7 @@ swadGhar_restaurant/
 
 ---
 
+<<<<<<< HEAD
 ## 🔑 Quick Demo Credentials
 
 For testing and evaluation, one-click demo credentials are built directly into the login screen at `/login`:
@@ -166,6 +167,9 @@ CLOUDINARY_API_SECRET=abcdefghijklmnopqrstuvwxyz
 ---
 
 ## 📡 REST API Documentation
+=======
+## 🛠️ Installation & Setup
+>>>>>>> bfb8df5f85f1afa95bcbcd7b2eeae9f15e2d8bf6
 
 ### Authentication (`/api/auth`)
 - `POST /api/auth/register` – Register customer account
