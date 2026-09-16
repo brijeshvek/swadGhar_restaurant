@@ -56,26 +56,6 @@ swadGhar_restaurant/
 
 ---
 
-## ⚙️ Environment Configuration
-
-### Backend (`backend/.env`)
-
-```env
-PORT=5000
-NODE_ENV=development
-CLIENT_URL=http://localhost:5173
-MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.3q4spvt.mongodb.net/swadghar?retryWrites=true&w=majority
-JWT_SECRET=swadghar_super_secure_jwt_secret_key_2026
-JWT_EXPIRES_IN=7d
-RAZORPAY_KEY_ID=rzp_test_placeholder_key
-RAZORPAY_KEY_SECRET=rzp_test_placeholder_secret
-CLOUDINARY_CLOUD_NAME=demo
-CLOUDINARY_API_KEY=1234567890
-CLOUDINARY_API_SECRET=abcdefghijklmnopqrstuvwxyz
-```
-
----
-
 ## 🛠️ Installation & Setup
 
 1. **Install all dependencies:**
