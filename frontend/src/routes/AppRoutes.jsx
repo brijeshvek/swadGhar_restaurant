@@ -26,6 +26,7 @@ import NotFound from '../pages/NotFound';
 
 // Admin Pages
 import AdminDashboard from '../pages/admin/AdminDashboard';
+import AdminFranchises from '../pages/admin/AdminFranchises';
 import AdminFoods from '../pages/admin/AdminFoods';
 import AdminCategories from '../pages/admin/AdminCategories';
 import AdminOrders from '../pages/admin/AdminOrders';
@@ -35,6 +36,7 @@ import AdminCustomers from '../pages/admin/AdminCustomers';
 import AdminReviews from '../pages/admin/AdminReviews';
 import AdminCoupons from '../pages/admin/AdminCoupons';
 import AdminSettings from '../pages/admin/AdminSettings';
+
 
 import { useAuth } from '../context/AuthContext';
 
@@ -150,7 +152,9 @@ const AppRoutes = () => {
             </AdminRoute>
           }
         />
+        <Route path="franchises" element={<AdminFranchises />} />
         <Route path="orders" element={<AdminOrders />} />
+
         <Route path="inquiries" element={<AdminInquiries />} />
         <Route path="foods" element={<AdminFoods />} />
         <Route

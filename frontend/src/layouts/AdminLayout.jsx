@@ -15,6 +15,7 @@ import {
   X,
   ExternalLink,
   MessageSquare,
+  Store,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -30,6 +31,7 @@ const AdminLayout = () => {
 
   const navItems = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard, adminOnly: true },
+    { name: isAdmin ? '5 Franchises & Staff' : 'My Branch & Staff', path: '/admin/franchises', icon: Store, adminOnly: false },
     { name: 'Live Orders', path: '/admin/orders', icon: ShoppingBag, adminOnly: false },
     { name: 'Customer Inquiries', path: '/admin/inquiries', icon: MessageSquare, adminOnly: false },
     { name: 'Food Dishes', path: '/admin/foods', icon: UtensilsCrossed, adminOnly: false },
@@ -40,6 +42,7 @@ const AdminLayout = () => {
     { name: 'Coupons & Offers', path: '/admin/coupons', icon: Tag, adminOnly: true },
     { name: 'Store Settings', path: '/admin/settings', icon: Settings, adminOnly: true },
   ];
+
 
   const filteredNavItems = navItems.filter(
     (item) => !item.adminOnly || (item.adminOnly && isAdmin)

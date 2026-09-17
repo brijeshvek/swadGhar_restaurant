@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 const Franchise = require('../models/Franchise');
+const User = require('../models/User');
 
 const isDbConnected = () => mongoose.connection.readyState === 1;
 
-// Default 5 Franchise Branches Data with 10 Dedicated Staff Members each (Total 50 Staff)
+// Default 5 Franchise Branches Data with Branch Manager & Staff Team
 const DEFAULT_FRANCHISES = [
   {
     name: 'SwadGhar - Ahmedabad Flagship (SG Highway)',
@@ -13,14 +14,15 @@ const DEFAULT_FRANCHISES = [
     address: 'Grand Imperial Complex, Opp. Iscon Mall, SG Highway, Bodakdev, Ahmedabad - 380054',
     phone: '+91 98250 11234',
     email: 'ahmedabad@swadghar.com',
+    managerName: 'Rajesh Patel',
+    managerEmail: 'ahmedabad.manager@swadghar.com',
+    managerPhone: '+91 98251 10001',
     timings: '11:00 AM - 11:30 PM (Daily)',
     seatingCapacity: 160,
     features: ['Grand AC Banquet Hall', 'Live Kathiyawadi Chula Counter', 'Valet Parking', 'VIP Dining Cabin', 'SwadGhar Sweet & Farsan Mart'],
     image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
     googleMapsUrl: 'https://maps.google.com/?q=Bodakdev+Ahmedabad',
-    managerName: 'Rajesh Patel',
     staffTeam: [
-      { name: 'Rajesh Patel', designation: 'General Branch Manager', email: 'ahmedabad.manager@swadghar.com', phone: '+91 98251 10001', experience: '15+ Years', specialty: 'Branch Operations & VIP Dining', shift: 'Full Day', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80' },
       { name: 'Mukesh Maharaj', designation: 'Executive Head Chef (Kathiyawadi)', email: 'ahmedabad.chef@swadghar.com', phone: '+91 98251 10002', experience: '18+ Years', specialty: 'Authentic Kathiyawadi & Gujarati Thali', shift: 'Morning & Lunch', avatar: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=300&q=80' },
       { name: 'Harish Joshi', designation: 'Master Farsan & Sweets Chef', email: 'ahmedabad.farsan@swadghar.com', phone: '+91 98251 10003', experience: '12+ Years', specialty: 'Khaman, Handvo & Mohanthal', shift: 'Morning Shift', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80' },
       { name: 'Vikram Singh', designation: 'Royal Tandoor & Punjabi Master', email: 'ahmedabad.tandoor@swadghar.com', phone: '+91 98251 10004', experience: '10+ Years', specialty: 'Butter Garlic Naan & Dal Makhani', shift: 'Evening Shift', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80' },
@@ -42,14 +44,15 @@ const DEFAULT_FRANCHISES = [
     address: 'Royal Palace Arcade, Near St. Xavier School, Ghod Dod Road, Athwa Lines, Surat - 395007',
     phone: '+91 98250 22345',
     email: 'surat@swadghar.com',
+    managerName: 'Ketan Vaghani',
+    managerEmail: 'surat.manager@swadghar.com',
+    managerPhone: '+91 98252 20001',
     timings: '11:00 AM - 11:00 PM (Daily)',
     seatingCapacity: 130,
     features: ['Surti Farsan & Locho Live Counter', 'Royal Punjabi Tandoor Section', 'Family Private Lounges', 'Covered Parking'],
     image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80',
     googleMapsUrl: 'https://maps.google.com/?q=Ghod+Dod+Road+Surat',
-    managerName: 'Ketan Vaghani',
     staffTeam: [
-      { name: 'Ketan Vaghani', designation: 'General Branch Manager', email: 'surat.manager@swadghar.com', phone: '+91 98252 20001', experience: '14+ Years', specialty: 'Diamond City Hospitality Leadership', shift: 'Full Day', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=300&q=80' },
       { name: 'Pravin Maharaj', designation: 'Executive Head Chef (Surti Specials)', email: 'surat.chef@swadghar.com', phone: '+91 98252 20002', experience: '16+ Years', specialty: 'Surti Undhiyu & Kathiyawadi Shaak', shift: 'Morning & Lunch', avatar: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=300&q=80' },
       { name: 'Bhupat Solanki', designation: 'Surti Locho & Farsan Craftsman', email: 'surat.farsan@swadghar.com', phone: '+91 98252 20003', experience: '11+ Years', specialty: 'Live Surti Locho, Sev Khamani & Patra', shift: 'Morning Shift', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80' },
       { name: 'Gurpreet Singh', designation: 'Royal Punjabi Master Chef', email: 'surat.tandoor@swadghar.com', phone: '+91 98252 20004', experience: '13+ Years', specialty: 'Paneer Tikka, Shahi Gravy & Biryani', shift: 'Evening Shift', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80' },
@@ -71,14 +74,15 @@ const DEFAULT_FRANCHISES = [
     address: 'Heritage Landmark, RC Dutt Road, Opp. Welcome Hotel, Alkapuri, Vadodara - 390007',
     phone: '+91 98250 33456',
     email: 'vadodara@swadghar.com',
+    managerName: 'Hardik Shah',
+    managerEmail: 'vadodara.manager@swadghar.com',
+    managerPhone: '+91 98253 30001',
     timings: '11:30 AM - 11:00 PM (Daily)',
     seatingCapacity: 110,
     features: ['Gaekwad Heritage Decor', 'Authentic Kathiyawadi Thali Bar', 'Open Courtyard Seating', 'Gourmet Dessert Corner'],
     image: 'https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?auto=format&fit=crop&w=1200&q=80',
     googleMapsUrl: 'https://maps.google.com/?q=Alkapuri+Vadodara',
-    managerName: 'Hardik Shah',
     staffTeam: [
-      { name: 'Hardik Shah', designation: 'General Branch Manager', email: 'vadodara.manager@swadghar.com', phone: '+91 98253 30001', experience: '12+ Years', specialty: 'Heritage Dining & Event Planning', shift: 'Full Day', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=300&q=80' },
       { name: 'Shambhu Maharaj', designation: 'Executive Royal Thali Chef', email: 'vadodara.chef@swadghar.com', phone: '+91 98253 30002', experience: '17+ Years', specialty: 'Royal Gujarati Wedding & Festival Thali', shift: 'Morning & Lunch', avatar: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=300&q=80' },
       { name: 'Gopalbhai Barot', designation: 'Kadhi & Khichdi Specialist', email: 'vadodara.kadhi@swadghar.com', phone: '+91 98253 30003', experience: '10+ Years', specialty: 'Vaghareli Khichdi & Sweet Sour Kadhi', shift: 'Morning Shift', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80' },
       { name: 'Manpreet Singh', designation: 'North Indian Gravy Master', email: 'vadodara.curry@swadghar.com', phone: '+91 98253 30004', experience: '11+ Years', specialty: 'Dum Biryani & Rich Cashew Gravies', shift: 'Evening Shift', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80' },
@@ -100,14 +104,15 @@ const DEFAULT_FRANCHISES = [
     address: 'Swad Circle, Near Kotecha Chowk, Kalawad Road, Rajkot - 360005',
     phone: '+91 98250 44567',
     email: 'rajkot@swadghar.com',
+    managerName: 'Bhavesh Jadeja',
+    managerEmail: 'rajkot.manager@swadghar.com',
+    managerPhone: '+91 98254 40001',
     timings: '11:00 AM - 11:30 PM (Daily)',
     seatingCapacity: 150,
     features: ['Traditional Rotla & Ringan Olo Station', 'Live Shehanai & Folk Music', 'Spacious Party Hall', 'Fast Takeaway Counter'],
     image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80',
     googleMapsUrl: 'https://maps.google.com/?q=Kalawad+Road+Rajkot',
-    managerName: 'Bhavesh Jadeja',
     staffTeam: [
-      { name: 'Bhavesh Jadeja', designation: 'General Branch Manager', email: 'rajkot.manager@swadghar.com', phone: '+91 98254 40001', experience: '15+ Years', specialty: 'Kathiyawad Hospitality Operations', shift: 'Full Day', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80' },
       { name: 'Govind Maharaj', designation: 'Desi Chula Head Maharaj', email: 'rajkot.chef@swadghar.com', phone: '+91 98254 40002', experience: '20+ Years', specialty: 'Desi Ringan Olo, Sev Tameta & Undhiyu', shift: 'Morning & Lunch', avatar: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=300&q=80' },
       { name: 'Ramsangbhai Darbar', designation: 'Bajra Rotla & Bhakri Master', email: 'rajkot.rotla@swadghar.com', phone: '+91 98254 40003', experience: '14+ Years', specialty: 'Handcrafted Bajra Rotlo with White Butter', shift: 'Morning & Evening', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80' },
       { name: 'Jaswant Singh', designation: 'Tandoori & Punjabi Specialist', email: 'rajkot.tandoor@swadghar.com', phone: '+91 98254 40004', experience: '10+ Years', specialty: 'Charcoal Clay Oven Tandoor Delicacies', shift: 'Evening Shift', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80' },
@@ -129,14 +134,15 @@ const DEFAULT_FRANCHISES = [
     address: 'Silver Arch Building, SV Road, Near Shimpoli Signal, Borivali West, Mumbai - 400092',
     phone: '+91 98250 55678',
     email: 'mumbai@swadghar.com',
+    managerName: 'Nitin Mehta',
+    managerEmail: 'mumbai.manager@swadghar.com',
+    managerPhone: '+91 98255 50001',
     timings: '11:30 AM - 12:00 AM (Daily)',
     seatingCapacity: 90,
     features: ['Express Thali Meals', 'Authentic Gujarati & Punjabi Catering', 'Corporate Delivery Fleet', 'Late Night Dining'],
     image: 'https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1200&q=80',
     googleMapsUrl: 'https://maps.google.com/?q=Borivali+West+Mumbai',
-    managerName: 'Nitin Mehta',
     staffTeam: [
-      { name: 'Nitin Mehta', designation: 'General Branch Manager', email: 'mumbai.manager@swadghar.com', phone: '+91 98255 50001', experience: '13+ Years', specialty: 'Metro City Restaurant Management', shift: 'Full Day', avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=300&q=80' },
       { name: 'Kishorebhai Maharaj', designation: 'Head Gujarati Chef', email: 'mumbai.chef@swadghar.com', phone: '+91 98255 50002', experience: '15+ Years', specialty: 'Express Gujarati & Kathiyawadi Meals', shift: 'Morning & Lunch', avatar: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=300&q=80' },
       { name: 'Balwinder Singh', designation: 'Master Punjabi Chef', email: 'mumbai.punjabi@swadghar.com', phone: '+91 98255 50003', experience: '12+ Years', specialty: 'Authentic Dal Makhani, Paneer & Kulcha', shift: 'Evening Shift', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80' },
       { name: 'Mahesh Doshi', designation: 'Farsan & Snacks Craftsman', email: 'mumbai.farsan@swadghar.com', phone: '+91 98255 50004', experience: '10+ Years', specialty: 'Dhokla, Khandvi, Fafda & Kachori', shift: 'Morning Shift', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80' },
@@ -152,7 +158,7 @@ const DEFAULT_FRANCHISES = [
   },
 ];
 
-// @desc    Get all active franchise locations
+// @desc    Get all active franchise locations (Public & Admin)
 // @route   GET /api/franchises
 // @access  Public
 const getAllFranchises = async (req, res) => {
@@ -167,7 +173,6 @@ const getAllFranchises = async (req, res) => {
 
     let franchises = await Franchise.find({ isActive: true }).sort({ sortOrder: 1, createdAt: 1 });
 
-    // If database has 0 franchises, auto-populate the 5 defaults
     if (!franchises || franchises.length === 0) {
       franchises = await Franchise.insertMany(DEFAULT_FRANCHISES);
     }
@@ -183,6 +188,51 @@ const getAllFranchises = async (req, res) => {
       count: DEFAULT_FRANCHISES.length,
       data: DEFAULT_FRANCHISES,
     });
+  }
+};
+
+// @desc    Get logged in manager's specific branch and staff
+// @route   GET /api/franchises/my-branch
+// @access  Private (Staff / Admin)
+const getMyBranch = async (req, res) => {
+  try {
+    const userEmail = req.user.email?.toLowerCase();
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isDbConnected()) {
+      let branch = DEFAULT_FRANCHISES.find(
+        (f) => f.managerEmail?.toLowerCase() === userEmail || f.email?.toLowerCase() === userEmail
+      );
+      if (!branch) branch = DEFAULT_FRANCHISES[0];
+      return res.status(200).json({ success: true, data: branch, isAdmin });
+    }
+
+    let branch = await Franchise.findOne({
+      $or: [
+        { managerEmail: userEmail },
+        { email: userEmail },
+      ],
+    });
+
+    if (!branch && isAdmin) {
+      // Admin sees the first/flagship branch or all
+      branch = await Franchise.findOne({ isActive: true }).sort({ sortOrder: 1 });
+    }
+
+    if (!branch) {
+      return res.status(404).json({
+        success: false,
+        message: 'No franchise branch associated with this manager account.',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: branch,
+      isAdmin,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -203,6 +253,353 @@ const getFranchiseById = async (req, res) => {
     }
 
     res.status(200).json({ success: true, data: franchise });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Create a new franchise with Manager login account (Admin Only)
+// @route   POST /api/franchises
+// @access  Private (Admin Only)
+const createFranchise = async (req, res) => {
+  try {
+    const {
+      name,
+      city,
+      state = 'Gujarat',
+      branchType = 'Premium Family Dining',
+      address,
+      phone,
+      email,
+      managerName,
+      managerEmail,
+      managerPassword = 'Staff@123',
+      managerPhone,
+      seatingCapacity = 120,
+      features = [],
+      image,
+      googleMapsUrl,
+      staffTeam = [],
+    } = req.body;
+
+    if (!name || !city || !address || !phone) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide branch name, city, address, and phone.',
+      });
+    }
+
+    if (!isDbConnected()) {
+      const newBranch = {
+        _id: `fran_${Date.now()}`,
+        name,
+        city,
+        state,
+        branchType,
+        address,
+        phone,
+        email: email || `${city.toLowerCase()}@swadghar.com`,
+        managerName: managerName || 'Branch Manager',
+        managerEmail: managerEmail || `${city.toLowerCase()}.manager@swadghar.com`,
+        managerPhone: managerPhone || phone,
+        seatingCapacity,
+        features,
+        image: image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
+        googleMapsUrl,
+        staffTeam,
+        isActive: true,
+        sortOrder: DEFAULT_FRANCHISES.length + 1,
+      };
+      DEFAULT_FRANCHISES.push(newBranch);
+      return res.status(201).json({
+        success: true,
+        message: 'Franchise created successfully!',
+        data: newBranch,
+      });
+    }
+
+    // Create Franchise Document
+    const franchise = await Franchise.create({
+      name,
+      city,
+      state,
+      branchType,
+      address,
+      phone,
+      email: email || `${city.toLowerCase()}@swadghar.com`,
+      managerName: managerName || 'Branch Manager',
+      managerEmail: managerEmail ? managerEmail.toLowerCase() : `${city.toLowerCase()}.manager@swadghar.com`,
+      managerPhone: managerPhone || phone,
+      seatingCapacity,
+      features: features.length ? features : ['Pure Veg & Kathiyawadi', 'AC Dining', 'Live Kitchen'],
+      image: image || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
+      googleMapsUrl: googleMapsUrl || 'https://maps.google.com',
+      staffTeam,
+    });
+
+    // Create or Update the Manager's User login account
+    if (franchise.managerEmail) {
+      let managerUser = await User.findOne({ email: franchise.managerEmail });
+      if (!managerUser) {
+        await User.create({
+          name: franchise.managerName,
+          email: franchise.managerEmail,
+          password: managerPassword,
+          phone: franchise.managerPhone || franchise.phone,
+          role: 'staff',
+        });
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Franchise branch and manager login created successfully!',
+      data: franchise,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Update Franchise Manager Credentials (Admin Only)
+// @route   PUT /api/franchises/:id/manager-credentials
+// @access  Private (Admin Only)
+const updateManagerCredentials = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { managerName, managerEmail, managerPassword, managerPhone } = req.body;
+
+    if (!isDbConnected()) {
+      const branch = DEFAULT_FRANCHISES.find((f) => f._id === id);
+      if (branch) {
+        if (managerName) branch.managerName = managerName;
+        if (managerEmail) branch.managerEmail = managerEmail;
+        if (managerPhone) branch.managerPhone = managerPhone;
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Manager credentials updated successfully!',
+        data: branch,
+      });
+    }
+
+    const franchise = await Franchise.findById(id);
+    if (!franchise) {
+      return res.status(404).json({ success: false, message: 'Franchise branch not found' });
+    }
+
+    const oldEmail = franchise.managerEmail?.toLowerCase();
+    const newEmail = (managerEmail || oldEmail)?.toLowerCase();
+
+    // Update Franchise record
+    if (managerName) franchise.managerName = managerName;
+    if (managerEmail) franchise.managerEmail = newEmail;
+    if (managerPhone) franchise.managerPhone = managerPhone;
+    await franchise.save();
+
+    // Update or Create Manager User account
+    let managerUser = await User.findOne({ email: oldEmail });
+    if (!managerUser && newEmail) {
+      managerUser = await User.findOne({ email: newEmail });
+    }
+
+    if (managerUser) {
+      if (managerName) managerUser.name = managerName;
+      if (newEmail) managerUser.email = newEmail;
+      if (managerPhone) managerUser.phone = managerPhone;
+      if (managerPassword) managerUser.password = managerPassword; // pre-save hook will hash it
+      await managerUser.save();
+    } else if (newEmail) {
+      await User.create({
+        name: managerName || franchise.managerName,
+        email: newEmail,
+        password: managerPassword || 'Staff@123',
+        phone: managerPhone || franchise.phone,
+        role: 'staff',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Branch manager credentials updated and synced successfully!',
+      data: franchise,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Add Staff member to a franchise branch (Admin or Branch Manager)
+// @route   POST /api/franchises/:id/staff
+// @access  Private
+const addStaffToFranchise = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, designation, phone, experience, specialty, shift, avatar, email } = req.body;
+
+    if (!name || !designation || !phone) {
+      return res.status(400).json({
+        success: false,
+        message: 'Staff name, designation, and phone are required.',
+      });
+    }
+
+    if (!isDbConnected()) {
+      const branch = DEFAULT_FRANCHISES.find((f) => f._id === id) || DEFAULT_FRANCHISES[0];
+      const newStaff = {
+        _id: `staff_${Date.now()}`,
+        name,
+        designation,
+        phone,
+        email: email || '',
+        experience: experience || '5+ Years',
+        specialty: specialty || 'Hospitality',
+        shift: shift || 'Full Day',
+        avatar: avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+      };
+      branch.staffTeam.push(newStaff);
+      return res.status(201).json({
+        success: true,
+        message: 'Staff member added to branch team.',
+        data: branch.staffTeam,
+      });
+    }
+
+    const franchise = await Franchise.findById(id);
+    if (!franchise) {
+      return res.status(404).json({ success: false, message: 'Franchise branch not found' });
+    }
+
+    // Check manager authorization if not admin
+    if (
+      req.user.role !== 'admin' &&
+      franchise.managerEmail?.toLowerCase() !== req.user.email?.toLowerCase()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are only authorized to manage staff for your own branch.',
+      });
+    }
+
+    const newStaff = {
+      name,
+      designation,
+      phone,
+      email: email || '',
+      experience: experience || '5+ Years',
+      specialty: specialty || 'Hospitality & Service',
+      shift: shift || 'Full Day',
+      avatar: avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+    };
+
+    franchise.staffTeam.push(newStaff);
+    await franchise.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Staff member added to branch team successfully!',
+      data: franchise.staffTeam,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Remove Staff member from a franchise branch (Admin or Branch Manager)
+// @route   DELETE /api/franchises/:id/staff/:staffId
+// @access  Private
+const removeStaffFromFranchise = async (req, res) => {
+  try {
+    const { id, staffId } = req.params;
+
+    if (!isDbConnected()) {
+      const branch = DEFAULT_FRANCHISES.find((f) => f._id === id) || DEFAULT_FRANCHISES[0];
+      branch.staffTeam = branch.staffTeam.filter((s) => s._id !== staffId && s.email !== staffId);
+      return res.status(200).json({
+        success: true,
+        message: 'Staff member removed from branch team.',
+        data: branch.staffTeam,
+      });
+    }
+
+    const franchise = await Franchise.findById(id);
+    if (!franchise) {
+      return res.status(404).json({ success: false, message: 'Franchise branch not found' });
+    }
+
+    // Check manager authorization if not admin
+    if (
+      req.user.role !== 'admin' &&
+      franchise.managerEmail?.toLowerCase() !== req.user.email?.toLowerCase()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are only authorized to manage staff for your own branch.',
+      });
+    }
+
+    franchise.staffTeam = franchise.staffTeam.filter(
+      (s) => s._id.toString() !== staffId && s.email !== staffId
+    );
+    await franchise.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Staff member removed from branch team successfully.',
+      data: franchise.staffTeam,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Update franchise branch general details
+// @route   PUT /api/franchises/:id
+// @access  Private (Admin Only)
+const updateFranchise = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!isDbConnected()) {
+      const branch = DEFAULT_FRANCHISES.find((f) => f._id === id);
+      if (branch) Object.assign(branch, req.body);
+      return res.status(200).json({ success: true, message: 'Franchise updated', data: branch });
+    }
+
+    const franchise = await Franchise.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!franchise) {
+      return res.status(404).json({ success: false, message: 'Franchise branch not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Franchise details updated successfully!',
+      data: franchise,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Delete franchise branch
+// @route   DELETE /api/franchises/:id
+// @access  Private (Admin Only)
+const deleteFranchise = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!isDbConnected()) {
+      return res.status(200).json({ success: true, message: 'Franchise deactivated' });
+    }
+
+    await Franchise.findByIdAndDelete(id);
+    res.status(200).json({
+      success: true,
+      message: 'Franchise branch removed successfully.',
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -242,7 +639,15 @@ const submitFranchiseInquiry = async (req, res) => {
 
 module.exports = {
   getAllFranchises,
+  getMyBranch,
   getFranchiseById,
+  createFranchise,
+  updateFranchise,
+  updateManagerCredentials,
+  addStaffToFranchise,
+  removeStaffFromFranchise,
+  deleteFranchise,
   submitFranchiseInquiry,
   DEFAULT_FRANCHISES,
 };
+

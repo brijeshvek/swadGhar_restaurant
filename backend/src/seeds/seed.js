@@ -61,24 +61,22 @@ const seedData = async () => {
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
     });
 
-    // Create 50 Dedicated Franchise Branch Staff Users (10 per branch)
+    // Create 5 Dedicated Franchise Branch Manager Users (ONLY Managers can log in)
     const { DEFAULT_FRANCHISES } = require('../controllers/franchise.controller');
-    console.log('[Seed] Creating 50 Franchise Staff User Accounts (10 per branch)...');
+    console.log('[Seed] Creating 5 Franchise Branch Manager Accounts (Only Managers can log in)...');
     
     for (const franchise of DEFAULT_FRANCHISES) {
-      for (const staff of franchise.staffTeam) {
-        // Password format: e.g. AhdStaff@01, SuratStaff@02, etc. Or standard SwadStaff@123
-        const branchPrefix = franchise.city.substring(0, 3).toUpperCase();
-        await User.create({
-          name: staff.name,
-          email: staff.email,
-          password: `${branchPrefix}Staff@123`,
-          phone: staff.phone,
-          role: 'staff',
-          avatar: staff.avatar,
-        });
-      }
+      const branchPrefix = franchise.city.substring(0, 3).toUpperCase();
+      await User.create({
+        name: franchise.managerName,
+        email: franchise.managerEmail,
+        password: `${branchPrefix}Staff@123`,
+        phone: franchise.managerPhone || franchise.phone,
+        role: 'staff',
+        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=300&q=80',
+      });
     }
+
 
     // 3. Create 5 Distinct Customer Accounts
     console.log('[Seed] Creating 5 Customer Accounts...');

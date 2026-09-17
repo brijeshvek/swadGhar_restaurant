@@ -34,6 +34,18 @@ const franchiseSchema = new mongoose.Schema(
       type: String,
       default: 'franchise@swadghar.com',
     },
+    managerName: {
+      type: String,
+      default: 'Branch Manager',
+    },
+    managerEmail: {
+      type: String,
+      default: '',
+    },
+    managerPhone: {
+      type: String,
+      default: '',
+    },
     timings: {
       type: String,
       default: '11:00 AM - 11:30 PM (All 7 Days)',
@@ -54,15 +66,11 @@ const franchiseSchema = new mongoose.Schema(
       type: String,
       default: 'https://maps.google.com',
     },
-    managerName: {
-      type: String,
-      default: 'Branch Manager',
-    },
     staffTeam: [
       {
         name: { type: String, required: true },
         designation: { type: String, required: true },
-        email: { type: String, required: true },
+        email: { type: String, default: '' },
         phone: { type: String, required: true },
         experience: { type: String, default: '5+ Years' },
         specialty: { type: String, default: 'Hospitality & Culinary Excellence' },
@@ -85,3 +93,4 @@ const franchiseSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model('Franchise', franchiseSchema);
+
