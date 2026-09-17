@@ -623,11 +623,21 @@ const seedData = async () => {
     console.log(`  Coupons       : ${couponsData.length}`);
     console.log('===========================================================');
 
-    process.exit(0);
+    if (require.main === module) {
+      process.exit(0);
+    }
+    return true;
   } catch (error) {
     console.error('[Seed Error] Seeding failed:', error);
-    process.exit(1);
+    if (require.main === module) {
+      process.exit(1);
+    }
+    throw error;
   }
 };
 
-seedData();
+if (require.main === module) {
+  seedData();
+}
+
+module.exports = seedData;
