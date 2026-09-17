@@ -28,6 +28,7 @@ import api from '../../services/api';
 import { useNotification } from '../../context/NotificationContext';
 import { useAuth } from '../../context/AuthContext';
 import { AnimatedContent, SpotlightCard } from '../../components/animations';
+import { convertFileToBase64 } from '../../utils/imageUtils';
 
 const FOOD_PRESET_IMAGES = [
   { name: 'Paneer Butter Masala', url: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=800&q=80' },
@@ -161,37 +162,23 @@ const AdminFoods = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 10 * 1024 * 1024) {
-      showError('File size is too large. Please select an image under 10MB.');
+    if (file.size > 15 * 1024 * 1024) {
+      showError('File size is too large. Please select an image under 15MB.');
       return;
     }
 
     setUploadingImage(true);
-    const data = new FormData();
-    data.append('image', file);
 
     try {
-      const res = await api.post('/upload', data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      if (res?.url) {
-        setFormData((prev) => ({ ...prev, image: res.url }));
-        showSuccess('Image uploaded successfully!');
-      } else {
-        throw new Error('No URL returned from upload server');
-      }
+      // Convert file into optimized Base64 Data URI
+      const base64Data = await convertFileToBase64(file, 1200, 0.85);
+      setFormData((prev) => ({ ...prev, image: base64Data }));
+      showSuccess('Image converted to Base64 and preview updated!');
     } catch (err) {
-      console.warn('Backend multipart upload failed, using local Base64 fallback:', err);
-      // Client-side fallback to base64 Data URI so it always works immediately
-      const reader = new FileReader();
-      reader.onload = () => {
-        setFormData((prev) => ({ ...prev, image: reader.result }));
-        showSuccess('Image selected & preview updated!');
-      };
-      reader.readAsDataURL(file);
+      console.error('Base64 conversion failed:', err);
+      showError('Failed to process image. Please try another image file.');
     } finally {
       setUploadingImage(false);
-      // Reset file input target so same file can be chosen again if needed
       e.target.value = '';
     }
   };

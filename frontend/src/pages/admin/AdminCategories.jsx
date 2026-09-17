@@ -16,6 +16,7 @@ import {
 import api from '../../services/api';
 import { useNotification } from '../../context/NotificationContext';
 import { AnimatedContent, SpotlightCard } from '../../components/animations';
+import { convertFileToBase64 } from '../../utils/imageUtils';
 
 const PRESET_IMAGES = [
   {
@@ -118,33 +119,21 @@ const AdminCategories = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 10 * 1024 * 1024) {
-      showError('File size is too large. Please select an image under 10MB.');
+    if (file.size > 15 * 1024 * 1024) {
+      showError('File size is too large. Please select an image under 15MB.');
       return;
     }
 
     setUploadingImage(true);
-    const data = new FormData();
-    data.append('image', file);
 
     try {
-      const res = await api.post('/upload', data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      if (res?.url) {
-        setFormData((prev) => ({ ...prev, image: res.url }));
-        showSuccess('Category banner uploaded successfully!');
-      } else {
-        throw new Error('No URL returned from upload server');
-      }
+      // Convert file into optimized Base64 Data URI
+      const base64Data = await convertFileToBase64(file, 1200, 0.85);
+      setFormData((prev) => ({ ...prev, image: base64Data }));
+      showSuccess('Category banner converted to Base64 & ready to save!');
     } catch (err) {
-      console.warn('Backend upload failed, using local Base64 fallback:', err);
-      const reader = new FileReader();
-      reader.onload = () => {
-        setFormData((prev) => ({ ...prev, image: reader.result }));
-        showSuccess('Image selected & preview updated!');
-      };
-      reader.readAsDataURL(file);
+      console.error('Base64 conversion failed:', err);
+      showError('Failed to process image. Please try another image file.');
     } finally {
       setUploadingImage(false);
       e.target.value = '';
