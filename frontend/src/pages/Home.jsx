@@ -55,96 +55,85 @@ const Home = () => {
   return (
     <div className="space-y-16 sm:space-y-24">
       {/* 1. HERO SECTION */}
-      <section className="relative min-h-[85vh] flex items-center justify-center -mt-20 pt-28 pb-16 bg-stone-950 overflow-hidden text-stone-100">
-        {/* Background Image with Dark Vignette */}
+      <section className="relative min-h-[88vh] flex items-center justify-center -mt-20 pt-28 pb-20 bg-stone-950 overflow-hidden text-stone-100">
+        {/* Background Image with Dark Royal Vignette */}
         <div className="absolute inset-0 z-0">
           <img
             src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1920&q=80"
-            alt="SwadGhar Fine Dining"
-            className="w-full h-full object-cover opacity-25 scale-105"
+            alt="SwadGhar Fine Dining Ambience"
+            className="w-full h-full object-cover opacity-20 scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/80 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/85 to-stone-950/60"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(234,88,12,0.15)_0%,transparent_70%)]"></div>
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
-          {/* Badge */}
-          <AnimatedContent delay={0.1}>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-500/15 border border-brand-500/30 text-amber-300 text-xs sm:text-sm font-semibold shadow-glow">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <ShinyText text="Welcome to SwadGhar Fine Dining & Delicacies" />
-            </div>
-          </AnimatedContent>
-
-          {/* Heading */}
-          <div className="space-y-4 max-w-4xl mx-auto">
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif font-bold text-gradient leading-[1.1] tracking-tight">
-              <BlurText
-                text="A Symphony of Authentic Flavors & Royal Indian Heritage"
-                delay={0.04}
-                animateBy="words"
-              />
-            </h1>
-            <AnimatedContent delay={0.3}>
-              <p className="text-stone-300 text-base sm:text-xl font-normal max-w-2xl mx-auto leading-relaxed">
-                Indulge in artisanal Gujarati thalis, succulent Punjabi curries, charcoal-fired tandoor specials, and handcrafted royal desserts.
-              </p>
-            </AnimatedContent>
+          {/* Brand Welcome Pill */}
+          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-stone-900/90 border border-amber-500/40 text-amber-300 text-xs sm:text-sm font-semibold shadow-glow backdrop-blur-md">
+            <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>Welcome to SwadGhar Fine Dining & Delicacies</span>
           </div>
 
-          {/* CTAs */}
-          <AnimatedContent delay={0.4}>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-              <Magnetic strength={0.2}>
-                <Link
-                  to="/menu"
-                  className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 text-white font-bold text-base shadow-xl shadow-brand-500/20 hover:shadow-glow transition-all flex items-center justify-center gap-2.5 active:scale-95"
-                >
-                  <span>Explore Our Menu</span>
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
-              </Magnetic>
+          {/* Hero Heading */}
+          <div className="space-y-5 max-w-4xl mx-auto">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif font-bold text-white leading-[1.15] tracking-tight">
+              A Symphony of{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-brand-500 to-amber-300">
+                Authentic Flavors
+              </span>{' '}
+              & Royal Indian Heritage
+            </h1>
+            <p className="text-stone-300 text-base sm:text-xl font-normal max-w-2xl mx-auto leading-relaxed">
+              Indulge in artisanal Gujarati thalis, succulent Punjabi curries, charcoal-fired tandoor specials, and handcrafted royal desserts.
+            </p>
+          </div>
 
-              <Magnetic strength={0.2}>
-                <Link
-                  to="/reservations"
-                  className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-stone-900/80 hover:bg-stone-800 border border-stone-700 text-stone-200 hover:text-white font-semibold text-base backdrop-blur-md transition-all flex items-center justify-center gap-2 active:scale-95"
-                >
-                  <Calendar className="w-5 h-5 text-amber-400" />
-                  <span>Book a Table</span>
-                </Link>
-              </Magnetic>
-            </div>
-          </AnimatedContent>
+          {/* Call To Actions */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+            <Link
+              to="/menu"
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-600 via-amber-600 to-brand-600 hover:from-brand-500 hover:to-amber-500 text-white font-bold text-base shadow-xl shadow-brand-500/25 hover:shadow-glow transition-all flex items-center justify-center gap-2.5 active:scale-95"
+            >
+              <span>Explore Our Menu</span>
+              <ArrowRight className="w-5 h-5" />
+            </Link>
 
-          {/* Highlights Metrics */}
-          <AnimatedContent delay={0.5}>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 pt-10 max-w-4xl mx-auto border-t border-stone-800/80">
-              <div className="p-4 rounded-2xl bg-stone-900/50 border border-stone-800/60 backdrop-blur-sm">
-                <span className="block text-2xl sm:text-3xl font-bold text-brand-400 font-serif">
-                  <CountUp to={100} suffix="%" duration={1.5} />
-                </span>
-                <span className="text-xs text-stone-400">Pure Ghee & Spices</span>
-              </div>
-              <div className="p-4 rounded-2xl bg-stone-900/50 border border-stone-800/60 backdrop-blur-sm">
-                <span className="block text-2xl sm:text-3xl font-bold text-amber-400 font-serif">
-                  <CountUp to={4.9} duration={1.5} suffix=" ★" />
-                </span>
-                <span className="text-xs text-stone-400">Customer Rating</span>
-              </div>
-              <div className="p-4 rounded-2xl bg-stone-900/50 border border-stone-800/60 backdrop-blur-sm">
-                <span className="block text-2xl sm:text-3xl font-bold text-brand-400 font-serif">
-                  <CountUp to={30} suffix="+ Mins" duration={1.5} />
-                </span>
-                <span className="text-xs text-stone-400">Fast Hot Delivery</span>
-              </div>
-              <div className="p-4 rounded-2xl bg-stone-900/50 border border-stone-800/60 backdrop-blur-sm">
-                <span className="block text-2xl sm:text-3xl font-bold text-amber-400 font-serif">
-                  <CountUp to={25} suffix="+ Yrs" duration={1.5} />
-                </span>
-                <span className="text-xs text-stone-400">Culinary Legacy</span>
-              </div>
+            <Link
+              to="/reservations"
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-stone-900/90 hover:bg-stone-800 border border-stone-700 text-stone-200 hover:text-white font-semibold text-base backdrop-blur-md shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95"
+            >
+              <Calendar className="w-5 h-5 text-amber-400" />
+              <span>Book a Table</span>
+            </Link>
+          </div>
+
+          {/* Key Metrics Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 pt-10 max-w-4xl mx-auto border-t border-stone-800/80">
+            <div className="p-4 rounded-2xl bg-stone-900/60 border border-stone-800/80 backdrop-blur-sm shadow-md">
+              <span className="block text-2xl sm:text-3xl font-bold text-amber-400 font-serif">
+                <CountUp to={100} suffix="%" duration={1.5} />
+              </span>
+              <span className="text-xs text-stone-400 font-medium">Pure Desi Ghee & Spices</span>
             </div>
-          </AnimatedContent>
+            <div className="p-4 rounded-2xl bg-stone-900/60 border border-stone-800/80 backdrop-blur-sm shadow-md">
+              <span className="block text-2xl sm:text-3xl font-bold text-amber-400 font-serif">
+                <CountUp to={4.9} duration={1.5} suffix=" ★" />
+              </span>
+              <span className="text-xs text-stone-400 font-medium">Customer Rating</span>
+            </div>
+            <div className="p-4 rounded-2xl bg-stone-900/60 border border-stone-800/80 backdrop-blur-sm shadow-md">
+              <span className="block text-2xl sm:text-3xl font-bold text-brand-400 font-serif">
+                <CountUp to={30} suffix="+ Mins" duration={1.5} />
+              </span>
+              <span className="text-xs text-stone-400 font-medium">Fast Hot Delivery</span>
+            </div>
+            <div className="p-4 rounded-2xl bg-stone-900/60 border border-stone-800/80 backdrop-blur-sm shadow-md">
+              <span className="block text-2xl sm:text-3xl font-bold text-amber-400 font-serif">
+                <CountUp to={25} suffix="+ Yrs" duration={1.5} />
+              </span>
+              <span className="text-xs text-stone-400 font-medium">Culinary Heritage</span>
+            </div>
+          </div>
         </div>
       </section>
 
