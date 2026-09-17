@@ -12,6 +12,7 @@ const Coupon = require('../models/Coupon');
 const RestaurantSettings = require('../models/RestaurantSettings');
 const Review = require('../models/Review');
 const Franchise = require('../models/Franchise');
+const Order = require('../models/Order');
 
 const seedData = async () => {
   try {
@@ -30,6 +31,7 @@ const seedData = async () => {
     await RestaurantSettings.deleteMany({});
     await Review.deleteMany({});
     await Franchise.deleteMany({});
+    await Order.deleteMany({});
 
     // 2. Create Users (Admin, Staff, Customer)
     console.log('[Seed] Creating Default Users...');
@@ -2705,6 +2707,374 @@ const seedData = async () => {
     console.log('[Seed] Creating 5 Official Restaurant Franchises with 50 Staff Members...');
     const createdFranchises = await Franchise.insertMany(DEFAULT_FRANCHISES);
 
+    // 8. Create 5 Distinct Orders for 5 Customers across 5 Franchises
+    console.log('[Seed] Creating 5 Distinct Orders for 5 Customers across 5 Franchises...');
+    const allFoods = await Food.find({});
+    const findFood = (query) => allFoods.find(f => f.name.toLowerCase().includes(query.toLowerCase())) || allFoods[0];
+
+    const sampleOrders = [
+      // 1. Ahmedabad Branch Order - Aarav Sharma
+      {
+        orderNumber: 'SWAD-AHM-10101',
+        invoiceNumber: 'INV-AHM-2026-001',
+        customer: customerUser._id,
+        orderType: 'delivery',
+        deliveryAddress: {
+          fullName: 'Aarav Sharma',
+          phone: '+91 98220 55443',
+          email: 'customer@gmail.com',
+          houseNo: 'Flat 402',
+          street: 'Shivalik High Street, Opp. Iscon Mall',
+          area: 'Bodakdev',
+          city: 'Ahmedabad',
+          state: 'Gujarat',
+          pincode: '380054',
+          landmark: 'Opposite Central Park',
+          deliveryInstructions: 'Ring doorbell twice. Deliver to 4th floor.',
+        },
+        items: [
+          {
+            food: findFood('Gujarati Full Thali')._id,
+            name: findFood('Gujarati Full Thali').name,
+            price: findFood('Gujarati Full Thali').discountPrice || findFood('Gujarati Full Thali').price,
+            quantity: 2,
+            image: findFood('Gujarati Full Thali').image,
+            foodType: 'veg',
+          },
+          {
+            food: findFood('Methi Thepla')._id,
+            name: findFood('Methi Thepla').name,
+            price: findFood('Methi Thepla').discountPrice || findFood('Methi Thepla').price,
+            quantity: 4,
+            image: findFood('Methi Thepla').image,
+            foodType: 'veg',
+          },
+          {
+            food: findFood('Khaman Dhokla')._id,
+            name: findFood('Khaman Dhokla').name,
+            price: findFood('Khaman Dhokla').discountPrice || findFood('Khaman Dhokla').price,
+            quantity: 1,
+            image: findFood('Khaman Dhokla').image,
+            foodType: 'veg',
+          },
+        ],
+        pricing: {
+          subtotal: 1180,
+          discount: 100,
+          tax: 54,
+          cgst: 27,
+          sgst: 27,
+          deliveryFee: 40,
+          total: 1174,
+        },
+        paymentInfo: {
+          method: 'razorpay',
+          status: 'paid',
+          paidAt: new Date(Date.now() - 3600000 * 3),
+        },
+        orderStatus: 'delivered',
+        statusHistory: [
+          { status: 'pending', timestamp: new Date(Date.now() - 3600000 * 3), note: 'Order placed online via Website' },
+          { status: 'confirmed', timestamp: new Date(Date.now() - 3600000 * 2.8), note: 'Accepted by Ahmedabad Flagship Kitchen Desk' },
+          { status: 'preparing', timestamp: new Date(Date.now() - 3600000 * 2.5), note: 'Executive Chef Mukesh Maharaj preparing fresh Thali' },
+          { status: 'out_for_delivery', timestamp: new Date(Date.now() - 3600000 * 1.5), note: 'Dispatched with delivery rider Mehul Chauhan' },
+          { status: 'delivered', timestamp: new Date(Date.now() - 3600000 * 1), note: 'Delivered hot & fresh to Bodakdev address' },
+        ],
+        specialInstructions: 'Please include extra sweet chutney and fresh green chillies.',
+      },
+
+      // 2. Surat Branch Order - Priya Patel
+      {
+        orderNumber: 'SWAD-SUR-20202',
+        invoiceNumber: 'INV-SUR-2026-002',
+        customer: otherCustomers[0]._id,
+        orderType: 'delivery',
+        deliveryAddress: {
+          fullName: 'Priya Patel',
+          phone: '+91 98220 66554',
+          email: 'priya.patel@gmail.com',
+          houseNo: 'A-12',
+          street: 'Rajhans Diamond Park, Near VR Mall',
+          area: 'Dumas Road',
+          city: 'Surat',
+          state: 'Gujarat',
+          pincode: '395007',
+          landmark: 'Behind Lakeview Garden',
+          deliveryInstructions: 'Leave with society security if unavailable.',
+        },
+        items: [
+          {
+            food: findFood('Surti Undhiyu')._id,
+            name: findFood('Surti Undhiyu').name,
+            price: findFood('Surti Undhiyu').discountPrice || findFood('Surti Undhiyu').price,
+            quantity: 2,
+            image: findFood('Surti Undhiyu').image,
+            foodType: 'veg',
+          },
+          {
+            food: findFood('Sev Khamani')._id,
+            name: findFood('Sev Khamani').name,
+            price: findFood('Sev Khamani').discountPrice || findFood('Sev Khamani').price,
+            quantity: 2,
+            image: findFood('Sev Khamani').image,
+            foodType: 'veg',
+          },
+          {
+            food: findFood('Jalebi')._id,
+            name: findFood('Jalebi').name,
+            price: findFood('Jalebi').discountPrice || findFood('Jalebi').price,
+            quantity: 1,
+            image: findFood('Jalebi').image,
+            foodType: 'veg',
+          },
+        ],
+        pricing: {
+          subtotal: 940,
+          discount: 50,
+          tax: 44.5,
+          cgst: 22.25,
+          sgst: 22.25,
+          deliveryFee: 30,
+          total: 964.5,
+        },
+        paymentInfo: {
+          method: 'cod',
+          status: 'pending',
+        },
+        orderStatus: 'preparing',
+        statusHistory: [
+          { status: 'pending', timestamp: new Date(Date.now() - 1800000), note: 'Order placed by customer' },
+          { status: 'confirmed', timestamp: new Date(Date.now() - 1500000), note: 'Confirmed by Surat Branch Manager Ketan Vaghani' },
+          { status: 'preparing', timestamp: new Date(Date.now() - 900000), note: 'Surti Farsan craftsman Bhupat Solanki preparing fresh Sev Khamani' },
+        ],
+        specialInstructions: 'Authentic Surti sweet and spicy taste please.',
+      },
+
+      // 3. Vadodara Branch Order - Rohan Desai
+      {
+        orderNumber: 'SWAD-VAD-30303',
+        invoiceNumber: 'INV-VAD-2026-003',
+        customer: otherCustomers[1]._id,
+        orderType: 'delivery',
+        deliveryAddress: {
+          fullName: 'Rohan Desai',
+          phone: '+91 98220 77665',
+          email: 'rohan.desai@gmail.com',
+          houseNo: '104',
+          street: 'Surya Palace Residency',
+          area: 'Sayajigunj',
+          city: 'Vadodara',
+          state: 'Gujarat',
+          pincode: '390005',
+          landmark: 'Near Railway Station',
+          deliveryInstructions: 'Call on mobile before arrival.',
+        },
+        items: [
+          {
+            food: findFood('Dal Bhat Rotli Shaak')._id,
+            name: findFood('Dal Bhat Rotli Shaak').name,
+            price: findFood('Dal Bhat Rotli Shaak').discountPrice || findFood('Dal Bhat Rotli Shaak').price,
+            quantity: 2,
+            image: findFood('Dal Bhat Rotli Shaak').image,
+            foodType: 'veg',
+          },
+          {
+            food: findFood('Khandvi')._id,
+            name: findFood('Khandvi').name,
+            price: findFood('Khandvi').discountPrice || findFood('Khandvi').price,
+            quantity: 2,
+            image: findFood('Khandvi').image,
+            foodType: 'veg',
+          },
+          {
+            food: findFood('Handvo')._id,
+            name: findFood('Handvo').name,
+            price: findFood('Handvo').discountPrice || findFood('Handvo').price,
+            quantity: 1,
+            image: findFood('Handvo').image,
+            foodType: 'veg',
+          },
+        ],
+        pricing: {
+          subtotal: 880,
+          discount: 40,
+          tax: 42,
+          cgst: 21,
+          sgst: 21,
+          deliveryFee: 30,
+          total: 912,
+        },
+        paymentInfo: {
+          method: 'razorpay',
+          status: 'paid',
+          paidAt: new Date(Date.now() - 2700000),
+        },
+        orderStatus: 'out_for_delivery',
+        statusHistory: [
+          { status: 'pending', timestamp: new Date(Date.now() - 2700000), note: 'Order placed by customer' },
+          { status: 'confirmed', timestamp: new Date(Date.now() - 2400000), note: 'Accepted by Vadodara Royal Heritage desk' },
+          { status: 'preparing', timestamp: new Date(Date.now() - 1800000), note: 'Chef Shambhu Maharaj packaged royal meal' },
+          { status: 'out_for_delivery', timestamp: new Date(Date.now() - 600000), note: 'Rider Tushar Panchal out for delivery' },
+        ],
+        specialInstructions: 'Warm Handvo and fresh coconut garnish on Khandvi.',
+      },
+
+      // 4. Rajkot Branch Order - Anjali Jadeja
+      {
+        orderNumber: 'SWAD-RAJ-40404',
+        invoiceNumber: 'INV-RAJ-2026-004',
+        customer: otherCustomers[2]._id,
+        orderType: 'delivery',
+        deliveryAddress: {
+          fullName: 'Anjali Jadeja',
+          phone: '+91 98220 88776',
+          email: 'anjali.jadeja@gmail.com',
+          houseNo: '301',
+          street: 'Royal Heritage Apartments',
+          area: 'University Road',
+          city: 'Rajkot',
+          state: 'Gujarat',
+          pincode: '360005',
+          landmark: 'Opposite Saurashtra University',
+          deliveryInstructions: '3rd floor, flat on left side.',
+        },
+        items: [
+          {
+            food: findFood('Kathiyawadi Thali')._id,
+            name: findFood('Kathiyawadi Thali').name,
+            price: findFood('Kathiyawadi Thali').discountPrice || findFood('Kathiyawadi Thali').price,
+            quantity: 2,
+            image: findFood('Kathiyawadi Thali').image,
+            foodType: 'veg',
+          },
+          {
+            food: findFood('Ringan No Olo')._id,
+            name: findFood('Ringan No Olo').name,
+            price: findFood('Ringan No Olo').discountPrice || findFood('Ringan No Olo').price,
+            quantity: 1,
+            image: findFood('Ringan No Olo').image,
+            foodType: 'veg',
+          },
+          {
+            food: findFood('Lasaniya Batata')._id,
+            name: findFood('Lasaniya Batata').name,
+            price: findFood('Lasaniya Batata').discountPrice || findFood('Lasaniya Batata').price,
+            quantity: 1,
+            image: findFood('Lasaniya Batata').image,
+            foodType: 'veg',
+          },
+          {
+            food: findFood('Bajra Rotla with Sev Tameta')._id,
+            name: findFood('Bajra Rotla with Sev Tameta').name,
+            price: findFood('Bajra Rotla with Sev Tameta').discountPrice || findFood('Bajra Rotla with Sev Tameta').price,
+            quantity: 2,
+            image: findFood('Bajra Rotla with Sev Tameta').image,
+            foodType: 'veg',
+          },
+        ],
+        pricing: {
+          subtotal: 1560,
+          discount: 150,
+          tax: 70.5,
+          cgst: 35.25,
+          sgst: 35.25,
+          deliveryFee: 40,
+          total: 1520.5,
+        },
+        paymentInfo: {
+          method: 'razorpay',
+          status: 'paid',
+          paidAt: new Date(Date.now() - 1200000),
+        },
+        orderStatus: 'confirmed',
+        statusHistory: [
+          { status: 'pending', timestamp: new Date(Date.now() - 1200000), note: 'Order placed by customer' },
+          { status: 'confirmed', timestamp: new Date(Date.now() - 900000), note: 'Confirmed by Rajkot Darbar Manager Bhavesh Jadeja' },
+        ],
+        specialInstructions: 'Extra spicy Lasaniya Batata and soft hot Bajra Rotlas with desi makhan.',
+      },
+
+      // 5. Mumbai Branch Order - Vikram Mehta
+      {
+        orderNumber: 'SWAD-MUM-50505',
+        invoiceNumber: 'INV-MUM-2026-005',
+        customer: otherCustomers[3]._id,
+        orderType: 'delivery',
+        deliveryAddress: {
+          fullName: 'Vikram Mehta',
+          phone: '+91 98220 99887',
+          email: 'vikram.mehta@gmail.com',
+          houseNo: 'B-502',
+          street: 'Sea Green Towers, Near Link Road',
+          area: 'Borivali West',
+          city: 'Mumbai',
+          state: 'Maharashtra',
+          pincode: '400092',
+          landmark: 'Near Don Bosco High School',
+          deliveryInstructions: 'Intercom 502 for security gate entry.',
+        },
+        items: [
+          {
+            food: findFood('Punjabi Thali')._id,
+            name: findFood('Punjabi Thali').name,
+            price: findFood('Punjabi Thali').discountPrice || findFood('Punjabi Thali').price,
+            quantity: 2,
+            image: findFood('Punjabi Thali').image,
+            foodType: 'veg',
+          },
+          {
+            food: findFood('Paneer Specials') || findFood('Paneer') ? (findFood('Paneer Specials') || findFood('Paneer'))._id : allFoods[0]._id,
+            name: (findFood('Paneer Specials') || findFood('Paneer') || allFoods[0]).name,
+            price: 280,
+            quantity: 1,
+            image: (findFood('Paneer Specials') || findFood('Paneer') || allFoods[0]).image,
+            foodType: 'veg',
+          },
+          {
+            food: findFood('Punjabi Breads') || findFood('Butter Naan') ? (findFood('Punjabi Breads') || findFood('Butter Naan'))._id : allFoods[0]._id,
+            name: 'Butter Garlic Naan',
+            price: 70,
+            quantity: 4,
+            image: 'https://images.unsplash.com/photo-1626074353765-517a681e40be?auto=format&fit=crop&w=800&q=80',
+            foodType: 'veg',
+          },
+          {
+            food: findFood('Punjabi Lassi')._id,
+            name: findFood('Punjabi Lassi').name,
+            price: findFood('Punjabi Lassi').discountPrice || findFood('Punjabi Lassi').price,
+            quantity: 2,
+            image: findFood('Punjabi Lassi').image,
+            foodType: 'veg',
+          },
+        ],
+        pricing: {
+          subtotal: 1320,
+          discount: 120,
+          tax: 60,
+          cgst: 30,
+          sgst: 30,
+          deliveryFee: 50,
+          total: 1310,
+        },
+        paymentInfo: {
+          method: 'razorpay',
+          status: 'paid',
+          paidAt: new Date(Date.now() - 3600000 * 4),
+        },
+        orderStatus: 'delivered',
+        statusHistory: [
+          { status: 'pending', timestamp: new Date(Date.now() - 3600000 * 4), note: 'Order placed by customer' },
+          { status: 'confirmed', timestamp: new Date(Date.now() - 3600000 * 3.8), note: 'Confirmed by Mumbai Express Manager Nitin Mehta' },
+          { status: 'preparing', timestamp: new Date(Date.now() - 3600000 * 3.5), note: 'Chef Balwinder Singh prepared Tandoori Naan & Dal Makhani' },
+          { status: 'out_for_delivery', timestamp: new Date(Date.now() - 3600000 * 2.5), note: 'Dispatched with rider Pradeep Shinde' },
+          { status: 'delivered', timestamp: new Date(Date.now() - 3600000 * 1.8), note: 'Delivered to Borivali West customer' },
+        ],
+        specialInstructions: 'Crispy tandoori garlic naan and thick chilled lassi.',
+      },
+    ];
+
+    const createdOrders = await Order.insertMany(sampleOrders);
+
     console.log('===========================================================');
     console.log('  [Seed Success] SwadGhar Database Populated Successfully! ');
     console.log('  Admin User    : admin@swadghar.com    / Password: Admin@123');
@@ -2713,6 +3083,7 @@ const seedData = async () => {
     console.log(`  Categories    : ${createdCategories.length}`);
     console.log(`  Food Items    : ${createdFoods.length}`);
     console.log(`  Franchises    : ${createdFranchises.length} Restaurant Branches`);
+    console.log(`  Sample Orders : ${createdOrders.length} Franchise Orders`);
     console.log(`  Coupons       : ${couponsData.length}`);
     console.log('===========================================================');
 
