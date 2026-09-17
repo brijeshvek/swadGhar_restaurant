@@ -1,11 +1,21 @@
 import axios from 'axios';
 
+// Dynamically determine Base URL (falls back to local proxy in dev or uses VITE_API_URL in production Netlify deploy)
+const getBaseURL = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && envUrl.trim() !== '') {
+    const trimmed = envUrl.trim().replace(/\/+$/, '');
+    return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+  }
+  return '/api';
+};
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: getBaseURL(),
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000,
+  timeout: 25000,
 });
 
 // Request interceptor for injecting Bearer token

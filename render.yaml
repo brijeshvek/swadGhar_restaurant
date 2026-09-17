@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: swadghar-backend
+    env: node
+    plan: free
+    region: oregon
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: CLIENT_URL
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        value: demo
+      - key: CLOUDINARY_API_KEY
+        value: 1234567890
+      - key: CLOUDINARY_API_SECRET
+        value: abcdefghijklmnopqrstuvwxyz
