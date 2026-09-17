@@ -162,7 +162,7 @@ const Contact = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10 animate-fade-in">
-      
+
       {/* Header Banner */}
       <div className="text-center space-y-3 max-w-3xl mx-auto">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs font-bold uppercase tracking-wider text-amber-900">
@@ -182,11 +182,10 @@ const Contact = () => {
         <button
           type="button"
           onClick={() => { setActiveTab('restaurant'); setSubmitted(false); }}
-          className={`py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${
-            activeTab === 'restaurant'
+          className={`py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${activeTab === 'restaurant'
               ? 'bg-white text-stone-900 shadow-md ring-2 ring-brand-500/20'
               : 'text-stone-600 hover:text-stone-900 hover:bg-white/50'
-          }`}
+            }`}
         >
           <UtensilsCrossed className="w-4 h-4 text-brand-600" />
           <span>1. Restaurant Inquiries</span>
@@ -195,11 +194,10 @@ const Contact = () => {
         <button
           type="button"
           onClick={() => { setActiveTab('franchise'); setSubmitted(false); }}
-          className={`py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${
-            activeTab === 'franchise'
+          className={`py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${activeTab === 'franchise'
               ? 'bg-white text-stone-900 shadow-md ring-2 ring-amber-500/20'
               : 'text-stone-600 hover:text-stone-900 hover:bg-white/50'
-          }`}
+            }`}
         >
           <Store className="w-4 h-4 text-amber-600" />
           <span>2. Franchise Inquiries</span>
@@ -208,7 +206,7 @@ const Contact = () => {
 
       {/* Main Grid Area */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
+
         {/* Left Column: Quick Info & Branch Contacts */}
         <div className="lg:col-span-4 space-y-6">
 
@@ -255,7 +253,7 @@ const Contact = () => {
 
         {/* Right Column: Form Container */}
         <div className="lg:col-span-8 bg-white p-6 sm:p-8 rounded-3xl border border-stone-200 shadow-xl space-y-6">
-          
+
           {submitted ? (
             /* SUCCESS CONFIRMATION BOX */
             <div className="text-center py-8 space-y-5 animate-scale-up">
@@ -315,9 +313,6 @@ const Contact = () => {
                 <div className="space-y-6">
                   <div className="border-b border-stone-100 pb-4">
                     <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-brand-50 text-brand-700 border border-brand-200">
-                        Section 1
-                      </span>
                       <h3 className="text-xl font-serif font-bold text-stone-900">
                         Restaurant Dining & Event Inquiry
                       </h3>
@@ -437,9 +432,7 @@ const Contact = () => {
                 <div className="space-y-6">
                   <div className="border-b border-stone-100 pb-4">
                     <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-200">
-                        Section 2
-                      </span>
+
                       <h3 className="text-xl font-serif font-bold text-stone-900">
                         Franchise & Business Partnership Application
                       </h3>
