@@ -23,15 +23,13 @@ const seedData = async () => {
 
     // 1. Clear existing collections
     console.log('[Seed] Clearing old collections...');
-    await Promise.all([
-      User.deleteMany({}),
-      Category.deleteMany({}),
-      Food.deleteMany({}),
-      Coupon.deleteMany({}),
-      RestaurantSettings.deleteMany({}),
-      Review.deleteMany({}),
-      Franchise.deleteMany({}),
-    ]);
+    await User.deleteMany({});
+    await Category.deleteMany({});
+    await Food.deleteMany({});
+    await Coupon.deleteMany({});
+    await RestaurantSettings.deleteMany({});
+    await Review.deleteMany({});
+    await Franchise.deleteMany({});
 
     // 2. Create Users (Admin, Staff, Customer)
     console.log('[Seed] Creating Default Users...');
@@ -63,49 +61,24 @@ const seedData = async () => {
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
     });
 
-    // 5 Dedicated Franchise Branch Managers
-    const franchiseUsers = await Promise.all([
-      User.create({
-        name: 'Rajesh Patel (Ahmedabad Manager)',
-        email: 'ahmedabad@swadghar.com',
-        password: 'Ahmedabad@123',
-        phone: '+91 98250 11234',
-        role: 'staff',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
-      }),
-      User.create({
-        name: 'Ketan Vaghani (Surat Manager)',
-        email: 'surat@swadghar.com',
-        password: 'Surat@123',
-        phone: '+91 98250 22345',
-        role: 'staff',
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80',
-      }),
-      User.create({
-        name: 'Hardik Shah (Vadodara Manager)',
-        email: 'vadodara@swadghar.com',
-        password: 'Vadodara@123',
-        phone: '+91 98250 33456',
-        role: 'staff',
-        avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80',
-      }),
-      User.create({
-        name: 'Bhavesh Jadeja (Rajkot Manager)',
-        email: 'rajkot@swadghar.com',
-        password: 'Rajkot@123',
-        phone: '+91 98250 44567',
-        role: 'staff',
-        avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80',
-      }),
-      User.create({
-        name: 'Nitin Mehta (Mumbai Manager)',
-        email: 'mumbai@swadghar.com',
-        password: 'Mumbai@123',
-        phone: '+91 98250 55678',
-        role: 'staff',
-        avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=400&q=80',
-      }),
-    ]);
+    // Create 50 Dedicated Franchise Branch Staff Users (10 per branch)
+    const { DEFAULT_FRANCHISES } = require('../controllers/franchise.controller');
+    console.log('[Seed] Creating 50 Franchise Staff User Accounts (10 per branch)...');
+    
+    for (const franchise of DEFAULT_FRANCHISES) {
+      for (const staff of franchise.staffTeam) {
+        // Password format: e.g. AhdStaff@01, SuratStaff@02, etc. Or standard SwadStaff@123
+        const branchPrefix = franchise.city.substring(0, 3).toUpperCase();
+        await User.create({
+          name: staff.name,
+          email: staff.email,
+          password: `${branchPrefix}Staff@123`,
+          phone: staff.phone,
+          role: 'staff',
+          avatar: staff.avatar,
+        });
+      }
+    }
 
     const customerUser = await User.create({
       name: 'Aarav Sharma',
@@ -2641,97 +2614,9 @@ const seedData = async () => {
       });
     }
 
-    // 7. Create 5 Franchise Branches
-    console.log('[Seed] Creating 5 Official Restaurant Franchises...');
-    const franchisesData = [
-      {
-        name: 'SwadGhar - Ahmedabad Flagship (SG Highway)',
-        city: 'Ahmedabad',
-        state: 'Gujarat',
-        branchType: 'Flagship Dine-In',
-        address: 'Grand Imperial Complex, Opp. Iscon Mall, SG Highway, Bodakdev, Ahmedabad - 380054',
-        phone: '+91 98250 11234',
-        email: 'ahmedabad@swadghar.com',
-        timings: '11:00 AM - 11:30 PM (Daily)',
-        seatingCapacity: 160,
-        features: ['Grand AC Banquet Hall', 'Live Kathiyawadi Chula Counter', 'Valet Parking', 'VIP Dining Cabin', 'SwadGhar Sweet & Farsan Mart'],
-        image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
-        googleMapsUrl: 'https://maps.google.com/?q=Bodakdev+Ahmedabad',
-        managerName: 'Rajesh Patel',
-        isActive: true,
-        sortOrder: 1,
-      },
-      {
-        name: 'SwadGhar - Surat Diamond City (Ghod Dod Road)',
-        city: 'Surat',
-        state: 'Gujarat',
-        branchType: 'Premium Family Dining',
-        address: 'Royal Palace Arcade, Near St. Xavier School, Ghod Dod Road, Athwa Lines, Surat - 395007',
-        phone: '+91 98250 22345',
-        email: 'surat@swadghar.com',
-        timings: '11:00 AM - 11:00 PM (Daily)',
-        seatingCapacity: 130,
-        features: ['Surti Farsan & Locho Live Counter', 'Royal Punjabi Tandoor Section', 'Family Private Lounges', 'Covered Parking'],
-        image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80',
-        googleMapsUrl: 'https://maps.google.com/?q=Ghod+Dod+Road+Surat',
-        managerName: 'Ketan Vaghani',
-        isActive: true,
-        sortOrder: 2,
-      },
-      {
-        name: 'SwadGhar - Vadodara Royal Heritage (Alkapuri)',
-        city: 'Vadodara',
-        state: 'Gujarat',
-        branchType: 'Royal Heritage Dining',
-        address: 'Heritage Landmark, RC Dutt Road, Opp. Welcome Hotel, Alkapuri, Vadodara - 390007',
-        phone: '+91 98250 33456',
-        email: 'vadodara@swadghar.com',
-        timings: '11:30 AM - 11:00 PM (Daily)',
-        seatingCapacity: 110,
-        features: ['Gaekwad Heritage Decor', 'Authentic Kathiyawadi Thali Bar', 'Open Courtyard Seating', 'Gourmet Dessert Corner'],
-        image: 'https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?auto=format&fit=crop&w=1200&q=80',
-        googleMapsUrl: 'https://maps.google.com/?q=Alkapuri+Vadodara',
-        managerName: 'Hardik Shah',
-        isActive: true,
-        sortOrder: 3,
-      },
-      {
-        name: 'SwadGhar - Rajkot Kathiyawad Darbar (Kalawad Road)',
-        city: 'Rajkot',
-        state: 'Gujarat',
-        branchType: 'Premium Family Dining',
-        address: 'Swad Circle, Near Kotecha Chowk, Kalawad Road, Rajkot - 360005',
-        phone: '+91 98250 44567',
-        email: 'rajkot@swadghar.com',
-        timings: '11:00 AM - 11:30 PM (Daily)',
-        seatingCapacity: 150,
-        features: ['Traditional Rotla & Ringan Olo Station', 'Live Shehanai & Folk Music', 'Spacious Party Hall', 'Fast Takeaway Counter'],
-        image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80',
-        googleMapsUrl: 'https://maps.google.com/?q=Kalawad+Road+Rajkot',
-        managerName: 'Bhavesh Jadeja',
-        isActive: true,
-        sortOrder: 4,
-      },
-      {
-        name: 'SwadGhar - Mumbai Express (Borivali West)',
-        city: 'Mumbai',
-        state: 'Maharashtra',
-        branchType: 'Express & Takeaway',
-        address: 'Silver Arch Building, SV Road, Near Shimpoli Signal, Borivali West, Mumbai - 400092',
-        phone: '+91 98250 55678',
-        email: 'mumbai@swadghar.com',
-        timings: '11:30 AM - 12:00 AM (Daily)',
-        seatingCapacity: 90,
-        features: ['Express Thali Meals', 'Authentic Gujarati & Punjabi Catering', 'Corporate Delivery Fleet', 'Late Night Dining'],
-        image: 'https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1200&q=80',
-        googleMapsUrl: 'https://maps.google.com/?q=Borivali+West+Mumbai',
-        managerName: 'Nitin Mehta',
-        isActive: true,
-        sortOrder: 5,
-      },
-    ];
-
-    const createdFranchises = await Franchise.insertMany(franchisesData);
+    // 7. Create 5 Franchise Branches with Staff Teams
+    console.log('[Seed] Creating 5 Official Restaurant Franchises with 50 Staff Members...');
+    const createdFranchises = await Franchise.insertMany(DEFAULT_FRANCHISES);
 
     console.log('===========================================================');
     console.log('  [Seed Success] SwadGhar Database Populated Successfully! ');

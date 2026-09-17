@@ -58,6 +58,18 @@ const franchiseSchema = new mongoose.Schema(
       type: String,
       default: 'Branch Manager',
     },
+    staffTeam: [
+      {
+        name: { type: String, required: true },
+        designation: { type: String, required: true },
+        email: { type: String, required: true },
+        phone: { type: String, required: true },
+        experience: { type: String, default: '5+ Years' },
+        specialty: { type: String, default: 'Hospitality & Culinary Excellence' },
+        shift: { type: String, default: 'Full Day' },
+        avatar: { type: String, default: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80' },
+      },
+    ],
     isActive: {
       type: Boolean,
       default: true,
