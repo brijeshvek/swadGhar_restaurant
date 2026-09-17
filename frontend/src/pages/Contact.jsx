@@ -10,7 +10,6 @@ import {
   UtensilsCrossed,
   Store,
   Sparkles,
-  ShieldCheck,
   Award,
   Users,
   Briefcase,
@@ -212,18 +211,6 @@ const Contact = () => {
         
         {/* Left Column: Quick Info & Branch Contacts */}
         <div className="lg:col-span-4 space-y-6">
-          {/* Notification Routing Badge */}
-          <div className="p-5 rounded-3xl bg-gradient-to-br from-stone-900 via-stone-800 to-amber-950 text-white space-y-3 shadow-xl border border-stone-800">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-amber-400 shrink-0" />
-              <h3 className="font-bold text-sm">Automated Email Routing</h3>
-            </div>
-            <p className="text-xs text-stone-300 leading-relaxed">
-              {activeTab === 'restaurant'
-                ? 'Your message is sent to the selected Branch Manager (e.g. ahmedabad.manager@swadghar.com) and Central Admin (admin@swadghar.com).'
-                : 'Your franchise proposal is sent directly to Central Administration (admin@swadghar.com) for prompt evaluation.'}
-            </p>
-          </div>
 
           {/* 5 Operating Branches Quick Directory */}
           <div className="p-5 rounded-3xl bg-white border border-stone-200 shadow-md space-y-3">
