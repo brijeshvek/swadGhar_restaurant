@@ -24,10 +24,10 @@ const autoSeedIfEmpty = async () => {
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      maxPoolSize: 50,              // Keep up to 50 active socket connections
-      minPoolSize: 10,              // Keep 10 warm connections ready for 0ms handshake
+      maxPoolSize: 10,              // Lightweight connection pool suitable for 512MB RAM instances
+      minPoolSize: 1,
       serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
+      socketTimeoutMS: 30000,
       connectTimeoutMS: 10000,
       family: 4,                    // Force IPv4 for faster DNS lookup
     });

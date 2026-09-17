@@ -1,17 +1,28 @@
 /**
- * In-Memory High-Performance TTL Cache
- * Drastically reduces MongoDB Atlas queries, latency and network round-trips.
+ * Bounded In-Memory High-Performance TTL Cache
+ * Ultra-lightweight with max item limits to prevent memory leaks on free cloud hosting (Render 512MB RAM).
  */
 
 class MemoryCache {
-  constructor() {
+  constructor(maxEntries = 100) {
     this.cache = new Map();
+    this.maxEntries = maxEntries;
+
+    // Periodically prune expired entries every 60 seconds (unref'd to prevent keeping process alive)
+    const timer = setInterval(() => this.pruneExpired(), 60000);
+    if (timer.unref) timer.unref();
   }
 
   /**
-   * Set a cached value with TTL in seconds
+   * Set a cached value with TTL in seconds and auto-eviction if capacity reached
    */
   set(key, data, ttlSeconds = 60) {
+    // If cache is at max capacity, evict the oldest entry
+    if (this.cache.size >= this.maxEntries) {
+      const oldestKey = this.cache.keys().next().value;
+      if (oldestKey) this.cache.delete(oldestKey);
+    }
+
     const expireAt = Date.now() + ttlSeconds * 1000;
     this.cache.set(key, { data, expireAt });
   }
@@ -50,6 +61,18 @@ class MemoryCache {
   }
 
   /**
+   * Prune all expired entries to immediately free memory
+   */
+  pruneExpired() {
+    const now = Date.now();
+    for (const [key, item] of this.cache.entries()) {
+      if (now > item.expireAt) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
+  /**
    * Clear all cache
    */
   flush() {
@@ -58,17 +81,13 @@ class MemoryCache {
 
   /**
    * Express Middleware to cache GET endpoints
-   * @param {number} ttlSeconds - Duration to cache response in seconds
-   * @param {string} prefix - Optional namespace for targeted invalidation
    */
   middleware(ttlSeconds = 60, prefix = '') {
     return (req, res, next) => {
-      // Only cache GET requests
       if (req.method !== 'GET') {
         return next();
       }
 
-      // If user is authenticated admin asking for fresh data or query has nocache, skip
       if (req.headers['x-no-cache'] || req.query.nocache === 'true') {
         return next();
       }
@@ -82,7 +101,6 @@ class MemoryCache {
         return res.status(200).json(cachedResponse);
       }
 
-      // Intercept res.json to store into cache
       const originalJson = res.json.bind(res);
       res.json = (body) => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
@@ -98,6 +116,6 @@ class MemoryCache {
   }
 }
 
-const memoryCache = new MemoryCache();
+const memoryCache = new MemoryCache(100);
 
 module.exports = memoryCache;
