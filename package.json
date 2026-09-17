@@ -9,7 +9,7 @@
     "dev:frontend": "npm --prefix frontend run dev",
     "seed": "npm --prefix backend run seed",
     "build:frontend": "npm --prefix frontend run build",
-    "start": "npm --prefix backend start"
+    "start": "node --max-old-space-size=256 backend/src/server.js"
   },
   "keywords": ["restaurant", "food-delivery", "mern-stack", "react", "nodejs", "mongodb"],
   "author": "SwadGhar Team",
