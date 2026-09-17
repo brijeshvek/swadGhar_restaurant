@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  UtensilsCrossed,
   MapPin,
   Phone,
   Mail,
@@ -20,13 +19,20 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-stone-800/80">
           {/* Brand Info */}
           <div className="space-y-4">
-            <Link to="/" className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-amber-500 flex items-center justify-center text-white shadow-glow">
-                <UtensilsCrossed className="w-5 h-5" />
+            <Link to="/" className="flex items-center gap-3">
+              <img
+                src="/logo.png"
+                alt="SwadGhar Logo"
+                className="w-12 h-12 rounded-full object-contain bg-white p-0.5 shadow-glow border border-amber-500/40"
+              />
+              <div>
+                <span className="text-2xl font-serif font-bold text-gradient tracking-tight block leading-none">
+                  SwadGhar
+                </span>
+                <span className="text-[10px] tracking-widest text-amber-400 font-semibold uppercase block mt-0.5">
+                  Good Food ❤️ Happy People
+                </span>
               </div>
-              <span className="text-2xl font-serif font-bold text-gradient tracking-tight">
-                SwadGhar
-              </span>
             </Link>
             <p className="text-sm text-stone-400 leading-relaxed">
               Preserving culinary traditions with hand-ground spices, clay tandoors, and heirloom Indian recipes cooked with pure passion and authentic hygiene.
@@ -155,8 +161,8 @@ const Footer = () => {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500">
           <p>© {new Date().getFullYear()} SwadGhar Restaurant. All rights reserved.</p>
           <div className="flex items-center gap-1 text-stone-400">
-            <span>Crafted with pure flavor & passion</span>
-            <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
+            <span>Good Food ❤️ Happy People</span>
+            <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 ml-1" />
           </div>
         </div>
       </div>

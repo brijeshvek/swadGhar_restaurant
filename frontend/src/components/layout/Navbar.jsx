@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import {
-  UtensilsCrossed,
   ShoppingBag,
   User,
   Menu as MenuIcon,
@@ -52,26 +51,30 @@ const Navbar = () => {
     <header
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         scrolled
-          ? 'bg-stone-900/90 backdrop-blur-md border-b border-stone-800/80 shadow-lg py-3.5'
-          : 'bg-stone-900/70 backdrop-blur-sm py-5'
+          ? 'bg-stone-900/95 backdrop-blur-md border-b border-stone-800/80 shadow-lg py-3'
+          : 'bg-stone-900/80 backdrop-blur-sm py-4'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-        {/* Brand Logo */}
+        {/* Official Brand Logo */}
         <Link
           to="/"
-          className="flex items-center gap-2.5 group"
+          className="flex items-center gap-3 group"
           onClick={() => setMobileMenuOpen(false)}
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-amber-500 flex items-center justify-center text-white shadow-glow group-hover:scale-105 transition-transform">
-            <UtensilsCrossed className="w-5 h-5" />
+          <div className="relative">
+            <img
+              src="/logo.png"
+              alt="SwadGhar Restaurant Logo"
+              className="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-contain bg-white p-0.5 shadow-glow border border-amber-500/40 group-hover:scale-105 transition-transform duration-300"
+            />
           </div>
           <div>
             <span className="text-xl sm:text-2xl font-serif font-bold text-gradient tracking-tight block leading-none">
               SwadGhar
             </span>
-            <span className="text-[10px] tracking-widest text-amber-400 font-semibold uppercase block">
-              Pure Taste & Heritage
+            <span className="text-[9px] sm:text-[10px] tracking-widest text-amber-400 font-semibold uppercase block mt-0.5">
+              Good Food ❤️ Happy People
             </span>
           </div>
         </Link>

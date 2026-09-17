@@ -1,13 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { UtensilsCrossed, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 const NotFound = () => {
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-4 py-16 space-y-6">
-      <div className="w-20 h-20 rounded-3xl bg-brand-50 text-brand-600 flex items-center justify-center mx-auto shadow-inner">
-        <UtensilsCrossed className="w-10 h-10" />
-      </div>
+      <Link to="/" className="inline-block hover:scale-105 transition-transform">
+        <img
+          src="/logo.png"
+          alt="SwadGhar Logo"
+          className="w-24 h-24 rounded-full object-contain bg-white p-1.5 mx-auto shadow-glow border border-amber-500/30"
+        />
+      </Link>
       <div className="space-y-2 max-w-md">
         <h1 className="text-5xl sm:text-6xl font-serif font-bold text-stone-900">
           404

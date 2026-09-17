@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { UtensilsCrossed, Mail, KeyRound, Lock, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Mail, KeyRound, Lock, ArrowRight, CheckCircle2 } from 'lucide-react';
 import api from '../services/api';
 import { useNotification } from '../context/NotificationContext';
 

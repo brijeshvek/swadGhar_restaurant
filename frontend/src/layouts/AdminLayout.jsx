@@ -48,10 +48,12 @@ const AdminLayout = () => {
     <div className="min-h-screen bg-stone-900 text-stone-100 flex flex-col md:flex-row">
       {/* Mobile Top Header */}
       <div className="md:hidden bg-stone-950 border-b border-stone-800 p-4 flex items-center justify-between">
-        <Link to="/admin/dashboard" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white">
-            <UtensilsCrossed className="w-4 h-4" />
-          </div>
+        <Link to="/admin/dashboard" className="flex items-center gap-2.5">
+          <img
+            src="/logo.png"
+            alt="SwadGhar"
+            className="w-9 h-9 rounded-full object-contain bg-white p-0.5 border border-amber-500/40 shadow-sm"
+          />
           <span className="font-serif font-bold text-lg text-white">
             SwadGhar {isAdmin ? 'Admin' : 'Staff'}
           </span>
@@ -75,11 +77,13 @@ const AdminLayout = () => {
           {/* Brand */}
           <Link
             to="/"
-            className="flex items-center gap-2.5 pb-4 border-b border-stone-800/80 group"
+            className="flex items-center gap-3 pb-4 border-b border-stone-800/80 group"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-amber-500 flex items-center justify-center text-white shadow-glow">
-              <UtensilsCrossed className="w-5 h-5" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="SwadGhar"
+              className="w-11 h-11 rounded-full object-contain bg-white p-0.5 border border-amber-500/40 shadow-glow group-hover:scale-105 transition-transform"
+            />
             <div>
               <span className="text-xl font-serif font-bold text-gradient block leading-none">
                 SwadGhar
