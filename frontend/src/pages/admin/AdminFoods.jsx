@@ -282,6 +282,7 @@ const AdminFoods = () => {
           <table className="w-full text-left text-xs text-stone-300">
             <thead className="bg-stone-900 border-b border-stone-800 text-[11px] font-bold uppercase tracking-wider text-stone-400">
               <tr>
+                <th className="py-3.5 px-4 text-center w-12">#</th>
                 <th className="py-3.5 px-4">Dish</th>
                 <th className="py-3.5 px-4">Category</th>
                 <th className="py-3.5 px-4">Price / Disc.</th>
@@ -292,8 +293,15 @@ const AdminFoods = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-800/60">
-              {filteredFoods.map((food) => (
+              {filteredFoods.map((food, index) => (
                 <tr key={food._id} className="hover:bg-stone-900/50 transition-colors">
+                  {/* Dish Number Count */}
+                  <td className="py-3 px-4 text-center">
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-stone-900 border border-stone-800 text-amber-400 font-mono font-bold text-xs shadow-xs">
+                      #{index + 1}
+                    </span>
+                  </td>
+
                   {/* Dish */}
                   <td className="py-3 px-4 flex items-center gap-3">
                     <img

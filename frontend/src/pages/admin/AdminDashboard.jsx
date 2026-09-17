@@ -328,12 +328,15 @@ const AdminDashboard = () => {
               </div>
 
               <div className="space-y-2.5 pt-3">
-                {stats?.popularFoods?.map((f) => (
+                {stats?.popularFoods?.map((f, idx) => (
                   <div
                     key={f._id}
                     className="p-3 rounded-2xl bg-stone-900/80 border border-stone-800/80 flex items-center justify-between text-xs hover:border-brand-500/30 transition-colors"
                   >
                     <div className="flex items-center gap-3">
+                      <span className="w-6 h-6 rounded-lg bg-stone-950 border border-stone-800 flex items-center justify-center text-amber-400 font-mono font-bold text-[10px]">
+                        #{idx + 1}
+                      </span>
                       <img
                         src={f.image}
                         alt={f.name}
