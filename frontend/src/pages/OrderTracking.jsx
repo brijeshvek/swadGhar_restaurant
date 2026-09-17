@@ -127,14 +127,22 @@ const OrderTracking = () => {
           </div>
         </div>
 
-        <button
-          onClick={() => fetchOrder(true)}
-          disabled={refreshing}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-stone-200 text-xs font-semibold text-stone-700 hover:bg-stone-50 shadow-sm transition-all"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-          <span>{refreshing ? 'Refreshing...' : 'Live Status Refresh'}</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            to={`/orders/${order._id || order.orderNumber}/invoice`}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition-all shadow-xs"
+          >
+            <span>View Tax Invoice</span>
+          </Link>
+          <button
+            onClick={() => fetchOrder(true)}
+            disabled={refreshing}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-stone-200 text-xs font-semibold text-stone-700 hover:bg-stone-50 shadow-sm transition-all"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+            <span>{refreshing ? 'Refreshing...' : 'Live Status Refresh'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Live Stepper Tracker */}

@@ -14,6 +14,7 @@ const reservationRoutes = require('./routes/reservation.routes');
 const paymentRoutes = require('./routes/payment.routes');
 const reviewRoutes = require('./routes/review.routes');
 const adminRoutes = require('./routes/admin.routes');
+const inquiryRoutes = require('./routes/inquiry.routes');
 
 const { notFoundHandler, errorHandler } = require('./middleware/error.middleware');
 
@@ -73,6 +74,7 @@ app.use('/api/reservations', reservationRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/inquiries', inquiryRoutes);
 
 // Root API Welcome
 app.get('/', (req, res) => {

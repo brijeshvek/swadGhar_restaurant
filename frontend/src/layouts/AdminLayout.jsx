@@ -14,7 +14,7 @@ import {
   Menu as MenuIcon,
   X,
   ExternalLink,
-  ChefHat,
+  MessageSquare,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -31,6 +31,7 @@ const AdminLayout = () => {
   const navItems = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard, adminOnly: true },
     { name: 'Live Orders', path: '/admin/orders', icon: ShoppingBag, adminOnly: false },
+    { name: 'Customer Inquiries', path: '/admin/inquiries', icon: MessageSquare, adminOnly: false },
     { name: 'Food Dishes', path: '/admin/foods', icon: UtensilsCrossed, adminOnly: false },
     { name: 'Categories', path: '/admin/categories', icon: FolderTree, adminOnly: true },
     { name: 'Table Reservations', path: '/admin/reservations', icon: Calendar, adminOnly: false },

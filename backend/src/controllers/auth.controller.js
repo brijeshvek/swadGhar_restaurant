@@ -262,40 +262,247 @@ const changePassword = async (req, res, next) => {
   }
 };
 
-// @desc    Add new delivery address
-// @route   POST /api/auth/address
+// @desc    Update user avatar image
+// @route   PUT /api/auth/avatar
 // @access  Private
-const addAddress = async (req, res, next) => {
+const updateAvatar = async (req, res, next) => {
   try {
-    const { street, city, state, pincode, landmark, isDefault } = req.body;
+    const { avatar } = req.body;
+
+    if (!avatar) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide an image URL or data.',
+      });
+    }
 
     if (!isDbConnected()) {
       const user = mockStore.users.find(u => u._id === req.user.id) || req.user;
-      const addr = { _id: `addr_${Date.now()}`, street, city, state: state || 'Gujarat', pincode, landmark, isDefault: !!isDefault };
-      user.addresses = user.addresses || [];
-      user.addresses.push(addr);
-      return res.status(201).json({ success: true, message: 'Address added', data: user.addresses });
+      user.avatar = avatar;
+      const token = generateToken(user);
+      return res.status(200).json({
+        success: true,
+        message: 'Profile avatar updated successfully!',
+        data: formatUserResponse(user, token),
+      });
     }
 
     const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    user.avatar = avatar;
+    const updatedUser = await user.save();
+    const token = updatedUser.generateAuthToken();
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile picture updated successfully!',
+      data: formatUserResponse(updatedUser, token),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get user saved addresses
+// @route   GET /api/auth/addresses
+// @access  Private
+const getAddresses = async (req, res, next) => {
+  try {
+    if (!isDbConnected()) {
+      const user = mockStore.users.find(u => u._id === req.user.id) || req.user;
+      return res.status(200).json({
+        success: true,
+        count: (user.addresses || []).length,
+        data: user.addresses || [],
+      });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+
+    res.status(200).json({
+      success: true,
+      count: user.addresses.length,
+      data: user.addresses,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Add new delivery address
+// @route   POST /api/auth/addresses
+// @access  Private
+const addAddress = async (req, res, next) => {
+  try {
+    const {
+      label = 'Home',
+      fullName,
+      phone,
+      houseNo,
+      street,
+      area,
+      city = 'Ahmedabad',
+      state = 'Gujarat',
+      pincode,
+      landmark,
+      deliveryInstructions,
+      isDefault,
+    } = req.body;
+
+    if (!street || !city || !pincode) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide street, city, and postal code.',
+      });
+    }
+
+    if (!isDbConnected()) {
+      const user = mockStore.users.find(u => u._id === req.user.id) || req.user;
+      user.addresses = user.addresses || [];
+      if (isDefault) {
+        user.addresses.forEach(a => { a.isDefault = false; });
+      }
+      const newAddr = {
+        _id: `addr_${Date.now()}`,
+        label: label || 'Home',
+        fullName: fullName || user.name,
+        phone: phone || user.phone,
+        houseNo,
+        street,
+        area,
+        city,
+        state,
+        pincode,
+        landmark,
+        deliveryInstructions,
+        isDefault: isDefault || user.addresses.length === 0,
+        createdAt: new Date(),
+      };
+      user.addresses.push(newAddr);
+      return res.status(201).json({
+        success: true,
+        message: 'Delivery address saved successfully.',
+        data: user.addresses,
+      });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+
     if (isDefault) {
       user.addresses.forEach(addr => { addr.isDefault = false; });
     }
 
-    user.addresses.push({
+    const newAddress = {
+      label: label || 'Home',
+      fullName: fullName || user.name,
+      phone: phone || user.phone,
+      houseNo,
       street,
+      area,
       city,
-      state: state || 'Gujarat',
+      state,
       pincode,
       landmark,
+      deliveryInstructions,
       isDefault: isDefault || user.addresses.length === 0,
-    });
+    };
 
+    user.addresses.push(newAddress);
     await user.save();
 
     res.status(201).json({
       success: true,
-      message: 'Address added successfully.',
+      message: 'Delivery address saved successfully.',
+      data: user.addresses,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update delivery address
+// @route   PUT /api/auth/addresses/:addressId
+// @access  Private
+const updateAddress = async (req, res, next) => {
+  try {
+    const {
+      label,
+      fullName,
+      phone,
+      houseNo,
+      street,
+      area,
+      city,
+      state,
+      pincode,
+      landmark,
+      deliveryInstructions,
+      isDefault,
+    } = req.body;
+
+    if (!isDbConnected()) {
+      const user = mockStore.users.find(u => u._id === req.user.id) || req.user;
+      user.addresses = user.addresses || [];
+      const addrIndex = user.addresses.findIndex(a => a._id === req.params.addressId);
+      if (addrIndex > -1) {
+        if (isDefault) {
+          user.addresses.forEach(a => { a.isDefault = false; });
+        }
+        user.addresses[addrIndex] = {
+          ...user.addresses[addrIndex],
+          label: label || user.addresses[addrIndex].label,
+          fullName: fullName !== undefined ? fullName : user.addresses[addrIndex].fullName,
+          phone: phone !== undefined ? phone : user.addresses[addrIndex].phone,
+          houseNo: houseNo !== undefined ? houseNo : user.addresses[addrIndex].houseNo,
+          street: street !== undefined ? street : user.addresses[addrIndex].street,
+          area: area !== undefined ? area : user.addresses[addrIndex].area,
+          city: city !== undefined ? city : user.addresses[addrIndex].city,
+          state: state !== undefined ? state : user.addresses[addrIndex].state,
+          pincode: pincode !== undefined ? pincode : user.addresses[addrIndex].pincode,
+          landmark: landmark !== undefined ? landmark : user.addresses[addrIndex].landmark,
+          deliveryInstructions: deliveryInstructions !== undefined ? deliveryInstructions : user.addresses[addrIndex].deliveryInstructions,
+          isDefault: isDefault !== undefined ? isDefault : user.addresses[addrIndex].isDefault,
+        };
+        return res.status(200).json({ success: true, message: 'Address updated.', data: user.addresses });
+      }
+      return res.status(404).json({ success: false, message: 'Address not found.' });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+
+    const address = user.addresses.id(req.params.addressId);
+    if (!address) {
+      return res.status(404).json({ success: false, message: 'Address not found.' });
+    }
+
+    if (isDefault) {
+      user.addresses.forEach(a => { a.isDefault = false; });
+    }
+
+    if (label) address.label = label;
+    if (fullName !== undefined) address.fullName = fullName;
+    if (phone !== undefined) address.phone = phone;
+    if (houseNo !== undefined) address.houseNo = houseNo;
+    if (street !== undefined) address.street = street;
+    if (area !== undefined) address.area = area;
+    if (city !== undefined) address.city = city;
+    if (state !== undefined) address.state = state;
+    if (pincode !== undefined) address.pincode = pincode;
+    if (landmark !== undefined) address.landmark = landmark;
+    if (deliveryInstructions !== undefined) address.deliveryInstructions = deliveryInstructions;
+    if (isDefault !== undefined) address.isDefault = isDefault;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Address updated successfully.',
       data: user.addresses,
     });
   } catch (error) {
@@ -304,17 +511,19 @@ const addAddress = async (req, res, next) => {
 };
 
 // @desc    Delete delivery address
-// @route   DELETE /api/auth/address/:addressId
+// @route   DELETE /api/auth/addresses/:addressId
 // @access  Private
 const deleteAddress = async (req, res, next) => {
   try {
     if (!isDbConnected()) {
       const user = mockStore.users.find(u => u._id === req.user.id) || req.user;
       user.addresses = (user.addresses || []).filter(a => a._id !== req.params.addressId);
-      return res.status(200).json({ success: true, message: 'Address deleted', data: user.addresses });
+      return res.status(200).json({ success: true, message: 'Address deleted successfully.', data: user.addresses });
     }
 
     const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+
     user.addresses = user.addresses.filter(
       (addr) => addr._id.toString() !== req.params.addressId
     );
@@ -367,8 +576,11 @@ module.exports = {
   login,
   getMe,
   updateProfile,
+  updateAvatar,
   changePassword,
+  getAddresses,
   addAddress,
+  updateAddress,
   deleteAddress,
   forgotPassword,
   resetPassword,

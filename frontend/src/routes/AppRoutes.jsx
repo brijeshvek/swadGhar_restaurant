@@ -20,6 +20,7 @@ import Login from '../pages/Login';
 import Register from '../pages/Register';
 import ForgotPassword from '../pages/ForgotPassword';
 import Profile from '../pages/Profile';
+import OrderInvoice from '../pages/OrderInvoice';
 import NotFound from '../pages/NotFound';
 
 // Admin Pages
@@ -27,6 +28,7 @@ import AdminDashboard from '../pages/admin/AdminDashboard';
 import AdminFoods from '../pages/admin/AdminFoods';
 import AdminCategories from '../pages/admin/AdminCategories';
 import AdminOrders from '../pages/admin/AdminOrders';
+import AdminInquiries from '../pages/admin/AdminInquiries';
 import AdminReservations from '../pages/admin/AdminReservations';
 import AdminCustomers from '../pages/admin/AdminCustomers';
 import AdminReviews from '../pages/admin/AdminReviews';
@@ -107,6 +109,14 @@ const AppRoutes = () => {
           }
         />
         <Route
+          path="orders/:id/invoice"
+          element={
+            <ProtectedRoute>
+              <OrderInvoice />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="profile"
           element={
             <ProtectedRoute>
@@ -138,6 +148,7 @@ const AppRoutes = () => {
           }
         />
         <Route path="orders" element={<AdminOrders />} />
+        <Route path="inquiries" element={<AdminInquiries />} />
         <Route path="foods" element={<AdminFoods />} />
         <Route
           path="categories"

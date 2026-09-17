@@ -3,13 +3,19 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const addressSchema = new mongoose.Schema({
+  label: { type: String, enum: ['Home', 'Work', 'Other'], default: 'Home' },
+  fullName: { type: String, trim: true },
+  phone: { type: String, trim: true },
+  houseNo: { type: String, trim: true },
   street: { type: String, trim: true },
-  city: { type: String, trim: true },
-  state: { type: String, trim: true },
+  area: { type: String, trim: true },
+  city: { type: String, trim: true, default: 'Ahmedabad' },
+  state: { type: String, trim: true, default: 'Gujarat' },
   pincode: { type: String, trim: true },
   landmark: { type: String, trim: true },
+  deliveryInstructions: { type: String, trim: true },
   isDefault: { type: Boolean, default: false },
-}, { _id: true });
+}, { _id: true, timestamps: true });
 
 const userSchema = new mongoose.Schema({
   name: {

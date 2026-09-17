@@ -6,6 +6,7 @@ const Category = require('../models/Category');
 const Reservation = require('../models/Reservation');
 const Coupon = require('../models/Coupon');
 const Review = require('../models/Review');
+const Inquiry = require('../models/Inquiry');
 const mockStore = require('../utils/mockStore');
 
 const isDbConnected = () => mongoose.connection.readyState === 1;
@@ -19,6 +20,8 @@ const getDashboardStats = async (req, res, next) => {
       const totalRev = mockStore.orders.reduce((sum, o) => sum + (o.pricing?.total || 0), 0);
       const pendingOrds = mockStore.orders.filter(o => ['pending', 'confirmed', 'preparing'].includes(o.orderStatus)).length;
       const pendingRes = mockStore.reservations.filter(r => r.status === 'pending').length;
+      const inqs = mockStore.inquiries || [];
+      const newInqs = inqs.filter(i => i.status === 'new').length;
 
       const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       const todayIndex = new Date().getDay();
@@ -45,6 +48,8 @@ const getDashboardStats = async (req, res, next) => {
           totalCategories: mockStore.categories.length,
           totalReservations: mockStore.reservations.length,
           totalCoupons: mockStore.coupons.length,
+          totalInquiries: inqs.length,
+          newInquiries: newInqs,
           pendingOrders: pendingOrds,
           pendingReservations: pendingRes,
           weeklyTrends: last7Days,
@@ -72,6 +77,8 @@ const getDashboardStats = async (req, res, next) => {
       totalReservationsCount,
       totalCouponsCount,
       totalReviewsCount,
+      totalInquiriesCount,
+      newInquiriesCount,
       pendingOrdersCount,
       pendingReservationsCount,
       popularFoods,
@@ -88,6 +95,8 @@ const getDashboardStats = async (req, res, next) => {
       Reservation.countDocuments(),
       Coupon.countDocuments(),
       Review.countDocuments(),
+      Inquiry.countDocuments(),
+      Inquiry.countDocuments({ status: 'new' }),
       Order.countDocuments({ orderStatus: { $in: ['pending', 'confirmed', 'preparing'] } }),
       Reservation.countDocuments({ status: 'pending' }),
       Food.find().sort({ numReviews: -1, rating: -1 }).limit(5).populate('category', 'name'),
@@ -138,6 +147,8 @@ const getDashboardStats = async (req, res, next) => {
         totalReservations: totalReservationsCount,
         totalCoupons: totalCouponsCount,
         totalReviews: totalReviewsCount,
+        totalInquiries: totalInquiriesCount,
+        newInquiries: newInquiriesCount,
         pendingOrders: pendingOrdersCount,
         pendingReservations: pendingReservationsCount,
         weeklyTrends,

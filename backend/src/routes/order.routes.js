@@ -4,6 +4,7 @@ const {
   createOrder,
   getMyOrders,
   getOrderById,
+  getOrderInvoice,
   getAllOrders,
   updateOrderStatus,
   cancelOrder,
@@ -13,6 +14,7 @@ const { protect, authorize } = require('../middleware/auth.middleware');
 // Customer routes
 router.post('/', protect, createOrder);
 router.get('/my-orders', protect, getMyOrders);
+router.get('/:id/invoice', protect, getOrderInvoice);
 router.get('/:id', protect, getOrderById);
 router.put('/:id/cancel', protect, cancelOrder);
 

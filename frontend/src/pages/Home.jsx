@@ -70,7 +70,6 @@ const Home = () => {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
           {/* Brand Welcome Pill */}
           <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-stone-900/90 border border-amber-500/40 text-amber-300 text-xs sm:text-sm font-semibold shadow-glow backdrop-blur-md">
-            <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
             <span>Welcome to SwadGhar Fine Dining & Delicacies</span>
           </div>
 

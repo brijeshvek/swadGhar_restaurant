@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Truck,
@@ -6,13 +6,16 @@ import {
   CreditCard,
   Banknote,
   MapPin,
-  Clock,
-  ShieldCheck,
+  Plus,
   CheckCircle2,
   AlertCircle,
   ArrowLeft,
   Lock,
   UtensilsCrossed,
+  Home,
+  Briefcase,
+  Bookmark,
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -20,7 +23,7 @@ import { useNotification } from '../context/NotificationContext';
 import api from '../services/api';
 
 const Checkout = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, refreshUser } = useAuth();
   const {
     cartItems,
     subtotal,
@@ -38,27 +41,89 @@ const Checkout = () => {
   const [orderType, setOrderType] = useState('delivery'); // 'delivery' | 'pickup' | 'dine-in'
   const [paymentMethod, setPaymentMethod] = useState('cod'); // 'cod' | 'razorpay'
 
-  const [fullName, setFullName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || '');
-  const [phone, setPhone] = useState(user?.phone || '');
-  const [address, setAddress] = useState(
-    user?.addresses?.[0]?.street || ''
-  );
-  const [city, setCity] = useState(user?.addresses?.[0]?.city || 'Ahmedabad');
-  const [state, setState] = useState(user?.addresses?.[0]?.state || 'Gujarat');
-  const [pincode, setPincode] = useState(user?.addresses?.[0]?.pincode || '380015');
-  const [landmark, setLandmark] = useState(user?.addresses?.[0]?.landmark || '');
+  // Saved Addresses State
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState('new'); // 'new' or address ID
+  const [saveThisAddress, setSaveThisAddress] = useState(true);
+  const [addressLabel, setAddressLabel] = useState('Home');
+
+  // Customer & Address Fields
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [houseNo, setHouseNo] = useState('');
+  const [street, setStreet] = useState('');
+  const [area, setArea] = useState('');
+  const [city, setCity] = useState('Ahmedabad');
+  const [state, setState] = useState('Gujarat');
+  const [pincode, setPincode] = useState('380015');
+  const [landmark, setLandmark] = useState('');
+  const [deliveryInstructions, setDeliveryInstructions] = useState('');
   const [specialInstructions, setSpecialInstructions] = useState('');
   const [processing, setProcessing] = useState(false);
 
-  // Address Quick Select
-  const handleSelectSavedAddress = (addr) => {
-    setAddress(addr.street);
-    setCity(addr.city);
+  // Initialize or fetch user addresses
+  useEffect(() => {
+    if (user) {
+      setFullName(user.name || '');
+      setEmail(user.email || '');
+      setPhone(user.phone || '');
+
+      fetchAddresses();
+    }
+  }, [user]);
+
+  const fetchAddresses = async () => {
+    try {
+      const res = await api.get('/auth/addresses');
+      const addrs = res.data || [];
+      setAddresses(addrs);
+
+      if (addrs.length > 0) {
+        // Find default or use first
+        const defaultAddr = addrs.find(a => a.isDefault) || addrs[0];
+        setSelectedAddressId(defaultAddr._id);
+        populateFieldsFromAddress(defaultAddr);
+      } else {
+        setSelectedAddressId('new');
+      }
+    } catch (err) {
+      console.warn('Could not fetch saved addresses:', err);
+      if (user?.addresses && user.addresses.length > 0) {
+        setAddresses(user.addresses);
+        const def = user.addresses.find(a => a.isDefault) || user.addresses[0];
+        setSelectedAddressId(def._id);
+        populateFieldsFromAddress(def);
+      }
+    }
+  };
+
+  const populateFieldsFromAddress = (addr) => {
+    setFullName(addr.fullName || user?.name || '');
+    setPhone(addr.phone || user?.phone || '');
+    setHouseNo(addr.houseNo || '');
+    setStreet(addr.street || '');
+    setArea(addr.area || '');
+    setCity(addr.city || 'Ahmedabad');
     setState(addr.state || 'Gujarat');
-    setPincode(addr.pincode);
+    setPincode(addr.pincode || '380015');
     setLandmark(addr.landmark || '');
-    showInfo('Selected saved address.');
+    setDeliveryInstructions(addr.deliveryInstructions || '');
+  };
+
+  const handleAddressSelect = (addr) => {
+    setSelectedAddressId(addr._id);
+    populateFieldsFromAddress(addr);
+    showInfo(`Selected ${addr.label || 'Saved'} Address`);
+  };
+
+  const handleSelectNewAddress = () => {
+    setSelectedAddressId('new');
+    setHouseNo('');
+    setStreet('');
+    setArea('');
+    setLandmark('');
+    setDeliveryInstructions('');
   };
 
   const handlePlaceOrder = async (e) => {
@@ -77,8 +142,8 @@ const Checkout = () => {
     }
 
     if (orderType === 'delivery') {
-      if (!fullName || !phone || !address || !city || !pincode) {
-        showError('Please complete all delivery address fields.');
+      if (!fullName || !phone || !street || !city || !pincode) {
+        showError('Please complete all required delivery address fields.');
         return;
       }
     }
@@ -99,13 +164,17 @@ const Checkout = () => {
                 fullName,
                 phone,
                 email,
-                address,
+                houseNo,
+                street,
+                area,
                 city,
                 state,
                 pincode,
                 landmark,
+                deliveryInstructions,
               }
             : undefined,
+        saveAddress: selectedAddressId === 'new' ? saveThisAddress : false,
         couponCode: appliedCoupon ? appliedCoupon.code : undefined,
         paymentMethod,
         specialInstructions,
@@ -149,9 +218,9 @@ const Checkout = () => {
                 }
               },
               prefill: {
-                name: fullName || user.name,
-                email: email || user.email,
-                contact: phone || user.phone,
+                name: fullName || user?.name,
+                email: email || user?.email,
+                contact: phone || user?.phone,
               },
               theme: {
                 color: '#ea580c',
@@ -160,13 +229,13 @@ const Checkout = () => {
 
             const rzp = new window.Razorpay(options);
             rzp.on('payment.failed', function (resp) {
-              showError(`Payment failed: ${resp.error.description}`);
+              showError(`Payment failed: ${resp.error?.description || 'Gateway error'}`);
             });
             rzp.open();
             setProcessing(false);
             return;
           } else {
-            // Simulated Test Payment Mode (Fallback when in Sandbox test without active gateway credentials)
+            // Simulated Test Payment Mode
             await api.post('/payments/razorpay/verify', {
               orderId: createdOrder._id,
               razorpay_order_id: rzpData.orderId,
@@ -175,16 +244,19 @@ const Checkout = () => {
             });
           }
         } catch (paymentErr) {
-          console.warn('Razorpay initiation error, order placed in pending status:', paymentErr);
+          console.warn('Razorpay initiation fallback, proceeding:', paymentErr);
         }
       }
 
+      // Refresh user to sync any new saved addresses
+      if (refreshUser) refreshUser();
+
       // 3. Clear Cart & Navigate
       clearCart();
-      showSuccess('Order Placed Successfully!');
+      showSuccess('Order Placed Successfully! SMS notification sent to your phone.');
       navigate(`/order-success/${createdOrder.orderNumber}`);
     } catch (err) {
-      showError(err.message || 'Failed to place order. Please try again.');
+      showError(err.response?.data?.message || err.message || 'Failed to place order. Please try again.');
     } finally {
       setProcessing(false);
     }
@@ -208,7 +280,7 @@ const Checkout = () => {
       <form onSubmit={handlePlaceOrder} className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* Left 2 Cols: Order Details Form */}
         <div className="lg:col-span-2 space-y-6">
-          {/* 1. Order Type Selection */}
+          {/* 1. Dining Method Selection */}
           <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
             <h3 className="text-base font-serif font-bold text-stone-900">
               1. Choose Dining Method
@@ -245,86 +317,163 @@ const Checkout = () => {
             </div>
           </div>
 
-          {/* 2. Customer & Address Details */}
-          <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
-            <h3 className="text-base font-serif font-bold text-stone-900">
-              2. {orderType === 'delivery' ? 'Delivery Information' : 'Customer Details'}
-            </h3>
+          {/* 2. Delivery Address Book & Details */}
+          {orderType === 'delivery' && (
+            <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-5">
+              <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+                <h3 className="text-base font-serif font-bold text-stone-900 flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-brand-600" />
+                  <span>2. Delivery Address</span>
+                </h3>
+                <Link
+                  to="/profile"
+                  className="text-xs font-bold text-brand-600 hover:underline"
+                >
+                  Manage Address Book →
+                </Link>
+              </div>
 
-            {/* Saved Addresses Chips (If authenticated) */}
-            {user?.addresses && user.addresses.length > 0 && orderType === 'delivery' && (
-              <div className="space-y-2 pb-2">
-                <span className="text-xs font-bold text-stone-500 block">
-                  Select from Saved Addresses:
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {user.addresses.map((addr) => (
-                    <button
-                      key={addr._id}
-                      type="button"
-                      onClick={() => handleSelectSavedAddress(addr)}
-                      className="px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-xs font-medium text-stone-800 border border-stone-200 flex items-center gap-1.5 transition-colors"
+              {/* Saved Address Cards */}
+              {addresses.length > 0 && (
+                <div className="space-y-3">
+                  <span className="text-xs font-bold text-stone-500 block uppercase tracking-wider">
+                    Select Saved Delivery Address
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {addresses.map((addr) => {
+                      const isSelected = selectedAddressId === addr._id;
+                      return (
+                        <div
+                          key={addr._id}
+                          onClick={() => handleAddressSelect(addr)}
+                          className={`p-4 rounded-2xl border cursor-pointer transition-all relative ${
+                            isSelected
+                              ? 'border-brand-500 bg-brand-50/40 ring-2 ring-brand-500/20 shadow-sm'
+                              : 'border-stone-200 bg-stone-50/60 hover:border-stone-300 hover:bg-stone-100/70'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-stone-200 text-stone-700">
+                                {addr.label || 'Home'}
+                              </span>
+                              {addr.isDefault && (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                                  Default
+                                </span>
+                              )}
+                            </div>
+                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                              isSelected ? 'border-brand-600 bg-brand-600' : 'border-stone-300 bg-white'
+                            }`}>
+                              {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                            </div>
+                          </div>
+                          <p className="font-bold text-xs text-stone-900 mt-2 line-clamp-1">
+                            {addr.fullName} <span className="text-stone-400 font-normal">({addr.phone})</span>
+                          </p>
+                          <p className="text-xs text-stone-600 mt-1 leading-relaxed line-clamp-2">
+                            {addr.houseNo ? `${addr.houseNo}, ` : ''}{addr.street}, {addr.area ? `${addr.area}, ` : ''}{addr.city} - {addr.pincode}
+                          </p>
+                        </div>
+                      );
+                    })}
+
+                    {/* New Address Option Button */}
+                    <div
+                      onClick={handleSelectNewAddress}
+                      className={`p-4 rounded-2xl border cursor-pointer transition-all flex flex-col justify-center items-center text-center ${
+                        selectedAddressId === 'new'
+                          ? 'border-brand-500 bg-brand-50/40 ring-2 ring-brand-500/20 shadow-sm'
+                          : 'border-dashed border-stone-300 bg-stone-50/50 hover:bg-stone-100'
+                      }`}
                     >
-                      <MapPin className="w-3.5 h-3.5 text-brand-600" />
-                      <span>{addr.street.slice(0, 20)}...</span>
-                    </button>
-                  ))}
+                      <Plus className="w-5 h-5 text-brand-600 mb-1" />
+                      <span className="font-bold text-xs text-stone-900">Enter New Address</span>
+                      <span className="text-[10px] text-stone-400">Fill in the fields below</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-stone-700">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Aarav Sharma"
-                  className="w-full px-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500"
-                />
-              </div>
+              {/* Form Fields for Address / Delivery */}
+              <div className="pt-2 space-y-4">
+                <span className="text-xs font-bold text-stone-500 block uppercase tracking-wider">
+                  {selectedAddressId === 'new' ? 'New Address Details' : 'Verify Delivery Information'}
+                </span>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-stone-700">Phone Number</label>
-                <input
-                  type="tel"
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+91 98765 00000"
-                  className="w-full px-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500"
-                />
-              </div>
-
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-stone-700">Email Address (For Invoices)</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@domain.com"
-                  className="w-full px-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500"
-                />
-              </div>
-
-              {orderType === 'delivery' && (
-                <>
-                  <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-xs font-bold text-stone-700">Street Address</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-stone-700">Recipient Name *</label>
                     <input
                       type="text"
                       required
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      placeholder="Flat 402, Shivalik High Street, Near Judges Bungalow"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="e.g. Aarav Sharma"
                       className="w-full px-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-stone-700">City</label>
+                    <label className="text-xs font-bold text-stone-700">Recipient Phone (For SMS updates) *</label>
+                    <input
+                      type="tel"
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+91 98765 43210"
+                      className="w-full px-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-stone-700">Flat / House / Building No.</label>
+                    <input
+                      type="text"
+                      value={houseNo}
+                      onChange={(e) => setHouseNo(e.target.value)}
+                      placeholder="e.g. Flat 402, Block B"
+                      className="w-full px-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-stone-700">Street / Society Address *</label>
+                    <input
+                      type="text"
+                      required
+                      value={street}
+                      onChange={(e) => setStreet(e.target.value)}
+                      placeholder="e.g. Shivalik Residency, CG Road"
+                      className="w-full px-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-stone-700">Area / Sector</label>
+                    <input
+                      type="text"
+                      value={area}
+                      onChange={(e) => setArea(e.target.value)}
+                      placeholder="e.g. Navrangpura / Bodakdev"
+                      className="w-full px-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-stone-700">Landmark (Optional)</label>
+                    <input
+                      type="text"
+                      value={landmark}
+                      onChange={(e) => setLandmark(e.target.value)}
+                      placeholder="Opposite City Mall / Near Metro Station"
+                      className="w-full px-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-stone-700">City *</label>
                     <input
                       type="text"
                       required
@@ -335,7 +484,7 @@ const Checkout = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-stone-700">Pincode</label>
+                    <label className="text-xs font-bold text-stone-700">Pincode *</label>
                     <input
                       type="text"
                       required
@@ -347,35 +496,104 @@ const Checkout = () => {
                   </div>
 
                   <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-xs font-bold text-stone-700">Landmark (Optional)</label>
+                    <label className="text-xs font-bold text-stone-700">Delivery Instructions (Optional)</label>
                     <input
                       type="text"
-                      value={landmark}
-                      onChange={(e) => setLandmark(e.target.value)}
-                      placeholder="Opposite Central Garden / Next to SBI Bank"
+                      value={deliveryInstructions}
+                      onChange={(e) => setDeliveryInstructions(e.target.value)}
+                      placeholder="e.g. Leave package at security, call before arrival, ring bell twice"
                       className="w-full px-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500"
                     />
                   </div>
-                </>
-              )}
 
-              <div className="space-y-1.5 sm:col-span-2">
-                <label className="text-xs font-bold text-stone-700">Special Cooking / Delivery Request</label>
-                <textarea
-                  rows={2}
-                  value={specialInstructions}
-                  onChange={(e) => setSpecialInstructions(e.target.value)}
-                  placeholder="e.g. Less spicy, pack extra mint chutney, ring bell twice..."
-                  className="w-full px-4 py-2 rounded-xl bg-stone-50 border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500 resize-none"
-                ></textarea>
+                  {/* Save address checkbox when entering a new address */}
+                  {selectedAddressId === 'new' && (
+                    <div className="sm:col-span-2 p-3.5 rounded-xl bg-amber-50/60 border border-amber-200/60 flex items-center justify-between">
+                      <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-stone-800">
+                        <input
+                          type="checkbox"
+                          checked={saveThisAddress}
+                          onChange={(e) => setSaveThisAddress(e.target.checked)}
+                          className="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 accent-brand-600"
+                        />
+                        <span>Save this address in my address book for future orders</span>
+                      </label>
+                      {saveThisAddress && (
+                        <div className="flex items-center gap-1.5">
+                          {['Home', 'Work', 'Other'].map((lbl) => (
+                            <button
+                              key={lbl}
+                              type="button"
+                              onClick={() => setAddressLabel(lbl)}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                                addressLabel === lbl
+                                  ? 'bg-brand-600 text-white shadow-xs'
+                                  : 'bg-white text-stone-600 border border-stone-200'
+                              }`}
+                            >
+                              {lbl}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
+          )}
+
+          {/* Dine-In or Pickup contact info */}
+          {orderType !== 'delivery' && (
+            <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
+              <h3 className="text-base font-serif font-bold text-stone-900">
+                2. Contact Information
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-stone-700">Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="e.g. Aarav Sharma"
+                    className="w-full px-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-stone-700">Phone Number (For SMS)</label>
+                  <input
+                    type="tel"
+                    required
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+91 98765 00000"
+                    className="w-full px-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Cooking Instructions */}
+          <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-3">
+            <h3 className="text-base font-serif font-bold text-stone-900">
+              3. Special Cooking Requests
+            </h3>
+            <textarea
+              rows={2}
+              value={specialInstructions}
+              onChange={(e) => setSpecialInstructions(e.target.value)}
+              placeholder="e.g. Less spicy, Jain preparation, extra napkins, cutlery required..."
+              className="w-full px-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500 resize-none"
+            ></textarea>
           </div>
 
-          {/* 3. Payment Method */}
+          {/* 4. Payment Method */}
           <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
             <h3 className="text-base font-serif font-bold text-stone-900">
-              3. Select Payment Mode
+              4. Select Payment Mode
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -424,9 +642,12 @@ const Checkout = () => {
 
         {/* Right 1 Col: Summary & Place Order */}
         <div className="space-y-6">
-          <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-md space-y-4">
-            <h4 className="text-base font-serif font-bold text-stone-900 border-b border-stone-100 pb-3">
-              Order Review
+          <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-md space-y-4 sticky top-24">
+            <h4 className="text-base font-serif font-bold text-stone-900 border-b border-stone-100 pb-3 flex items-center justify-between">
+              <span>Order Summary</span>
+              <span className="text-xs font-normal text-stone-500">
+                {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
+              </span>
             </h4>
 
             {/* Item list brief */}
@@ -461,7 +682,7 @@ const Checkout = () => {
               )}
 
               <div className="flex justify-between">
-                <span>GST (5%)</span>
+                <span>GST (5% SGST + CGST)</span>
                 <span className="font-bold text-stone-900 font-sans">₹{tax}</span>
               </div>
 
@@ -477,11 +698,19 @@ const Checkout = () => {
               </div>
 
               <div className="pt-3 border-t border-stone-200 flex justify-between items-baseline">
-                <span className="text-sm font-bold text-stone-900">Grand Total</span>
+                <span className="text-sm font-bold text-stone-900">Final Payable</span>
                 <span className="text-2xl font-bold text-brand-600 font-sans">
                   ₹{orderType !== 'delivery' ? subtotal - discountAmount + tax : grandTotal}
                 </span>
               </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-stone-50 border border-stone-100 text-[11px] text-stone-500 space-y-1">
+              <div className="flex items-center gap-1.5 font-semibold text-stone-700">
+                <Sparkles className="w-3.5 h-3.5 text-brand-600" />
+                <span>Invoice & SMS Confirmation</span>
+              </div>
+              <p>You will receive real-time SMS updates and an itemized digital GST invoice upon order placement.</p>
             </div>
 
             <button

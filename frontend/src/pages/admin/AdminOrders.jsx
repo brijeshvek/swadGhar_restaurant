@@ -301,12 +301,22 @@ const AdminOrders = () => {
               </div>
             </div>
 
-            <button
-              onClick={() => setSelectedOrder(null)}
-              className="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold transition-colors"
-            >
-              Close Receipt
-            </button>
+            <div className="flex gap-2 pt-2">
+              <a
+                href={`/orders/${selectedOrder._id || selectedOrder.orderNumber}/invoice`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs text-center transition-colors shadow-sm"
+              >
+                Print / View GST Invoice
+              </a>
+              <button
+                onClick={() => setSelectedOrder(null)}
+                className="px-5 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-white font-semibold text-xs transition-colors"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

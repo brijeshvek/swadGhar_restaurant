@@ -55,21 +55,28 @@ const OrderSuccess = () => {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
         <Link
           to={`/orders/track/${orderNumber}`}
-          className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 text-white font-bold text-sm shadow-md hover:shadow-glow transition-all flex items-center justify-center gap-2"
+          className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 text-white font-bold text-xs sm:text-sm shadow-md hover:shadow-glow transition-all flex items-center justify-center gap-2"
         >
           <Truck className="w-4 h-4" />
           <span>Track Live Order</span>
         </Link>
 
         <Link
-          to="/my-orders"
-          className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold text-sm transition-all flex items-center justify-center gap-2"
+          to={`/orders/${orderNumber}/invoice`}
+          className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-sm"
         >
           <Receipt className="w-4 h-4" />
-          <span>View All Orders</span>
+          <span>View Tax Invoice</span>
+        </Link>
+
+        <Link
+          to="/my-orders"
+          className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2"
+        >
+          <span>Order History</span>
         </Link>
       </div>
     </div>

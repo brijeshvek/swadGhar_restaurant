@@ -17,17 +17,23 @@ const orderAddressSchema = new mongoose.Schema({
   fullName: { type: String, required: true },
   phone: { type: String, required: true },
   email: { type: String },
-  address: { type: String, required: true },
-  city: { type: String, required: true },
-  state: { type: String, required: true },
+  houseNo: { type: String },
+  street: { type: String },
+  area: { type: String },
+  address: { type: String }, // Combined address line for backward compatibility
+  city: { type: String, required: true, default: 'Ahmedabad' },
+  state: { type: String, required: true, default: 'Gujarat' },
   pincode: { type: String, required: true },
   landmark: { type: String },
+  deliveryInstructions: { type: String },
 }, { _id: false });
 
 const pricingSchema = new mongoose.Schema({
   subtotal: { type: Number, required: true },
   discount: { type: Number, default: 0 },
   tax: { type: Number, required: true },
+  cgst: { type: Number, default: 0 },
+  sgst: { type: Number, default: 0 },
   deliveryFee: { type: Number, default: 0 },
   total: { type: Number, required: true },
 }, { _id: false });
@@ -54,6 +60,12 @@ const orderSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    index: true,
+  },
+  invoiceNumber: {
+    type: String,
+    unique: true,
+    sparse: true,
     index: true,
   },
   customer: {
@@ -96,6 +108,14 @@ const orderSchema = new mongoose.Schema({
     status: { type: String, required: true },
     timestamp: { type: Date, default: Date.now },
     note: { type: String },
+  }],
+  notificationLogs: [{
+    type: { type: String, default: 'sms' },
+    status: { type: String },
+    message: { type: String },
+    recipientPhone: { type: String },
+    sentAt: { type: Date, default: Date.now },
+    success: { type: Boolean, default: true },
   }],
   estimatedDeliveryTime: {
     type: Date,
