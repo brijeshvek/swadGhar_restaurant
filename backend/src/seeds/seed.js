@@ -80,6 +80,8 @@ const seedData = async () => {
       }
     }
 
+    // 3. Create 5 Distinct Customer Accounts
+    console.log('[Seed] Creating 5 Customer Accounts...');
     const customerUser = await User.create({
       name: 'Aarav Sharma',
       email: 'customer@gmail.com',
@@ -101,6 +103,93 @@ const seedData = async () => {
         isDefault: true,
       }],
     });
+
+    const otherCustomers = await Promise.all([
+      User.create({
+        name: 'Priya Patel',
+        email: 'priya.patel@gmail.com',
+        password: 'Priya@123',
+        phone: '+91 98220 66554',
+        role: 'customer',
+        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80',
+        addresses: [{
+          label: 'Home',
+          fullName: 'Priya Patel',
+          phone: '+91 98220 66554',
+          houseNo: 'A-12',
+          street: 'Rajhans Diamond Park, Near VR Mall',
+          area: 'Dumas Road',
+          city: 'Surat',
+          state: 'Gujarat',
+          pincode: '395007',
+          landmark: 'Behind Lakeview Garden',
+          isDefault: true,
+        }],
+      }),
+      User.create({
+        name: 'Rohan Desai',
+        email: 'rohan.desai@gmail.com',
+        password: 'Rohan@123',
+        phone: '+91 98220 77665',
+        role: 'customer',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+        addresses: [{
+          label: 'Home',
+          fullName: 'Rohan Desai',
+          phone: '+91 98220 77665',
+          houseNo: '104',
+          street: 'Surya Palace Residency',
+          area: 'Sayajigunj',
+          city: 'Vadodara',
+          state: 'Gujarat',
+          pincode: '390005',
+          landmark: 'Near Railway Station',
+          isDefault: true,
+        }],
+      }),
+      User.create({
+        name: 'Anjali Jadeja',
+        email: 'anjali.jadeja@gmail.com',
+        password: 'Anjali@123',
+        phone: '+91 98220 88776',
+        role: 'customer',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+        addresses: [{
+          label: 'Home',
+          fullName: 'Anjali Jadeja',
+          phone: '+91 98220 88776',
+          houseNo: '301',
+          street: 'Royal Heritage Apartments',
+          area: 'University Road',
+          city: 'Rajkot',
+          state: 'Gujarat',
+          pincode: '360005',
+          landmark: 'Opposite Saurashtra University',
+          isDefault: true,
+        }],
+      }),
+      User.create({
+        name: 'Vikram Mehta',
+        email: 'vikram.mehta@gmail.com',
+        password: 'Vikram@123',
+        phone: '+91 98220 99887',
+        role: 'customer',
+        avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80',
+        addresses: [{
+          label: 'Home',
+          fullName: 'Vikram Mehta',
+          phone: '+91 98220 99887',
+          houseNo: 'B-502',
+          street: 'Sea Green Towers, Near Link Road',
+          area: 'Borivali West',
+          city: 'Mumbai',
+          state: 'Maharashtra',
+          pincode: '400092',
+          landmark: 'Near Don Bosco High School',
+          isDefault: true,
+        }],
+      }),
+    ]);
 
     // 3. Create all 31 Categories (15 Gujarati + 16 Punjabi)
     console.log('[Seed] Creating 31 Food Categories...');

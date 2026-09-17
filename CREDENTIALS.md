@@ -123,14 +123,17 @@ Full access to all 5 franchises, entire menu catalog (31 categories, 171 dishes)
 
 ---
 
-## 👤 Sample Customer Account
+## 👤 5 Customer Accounts (Gujarat & Mumbai Diners)
 
-| Parameter | Value |
-|---|---|
-| **Customer Name** | Aarav Sharma |
-| **User ID / Email** | `customer@gmail.com` |
-| **Password** | `Customer@123` |
-| **Role** | `customer` |
+Use these accounts to test food ordering, cart checkout, online table reservations, address management, and customer reviews:
+
+| # | Customer Name | City | User ID (Email) | Password | Contact Phone | Default Delivery Address |
+|---|---|---|---|---|---|---|
+| 1 | **Aarav Sharma** | Ahmedabad | `customer@gmail.com` | `Customer@123` | +91 98220 55443 | Flat 402, Shivalik High Street, Bodakdev, Ahmedabad - 380054 |
+| 2 | **Priya Patel** | Surat | `priya.patel@gmail.com` | `Priya@123` | +91 98220 66554 | A-12, Rajhans Diamond Park, Dumas Road, Surat - 395007 |
+| 3 | **Rohan Desai** | Vadodara | `rohan.desai@gmail.com` | `Rohan@123` | +91 98220 77665 | 104, Surya Palace Residency, Sayajigunj, Vadodara - 390005 |
+| 4 | **Anjali Jadeja** | Rajkot | `anjali.jadeja@gmail.com` | `Anjali@123` | +91 98220 88776 | 301, Royal Heritage Apts, University Road, Rajkot - 360005 |
+| 5 | **Vikram Mehta** | Mumbai | `vikram.mehta@gmail.com` | `Vikram@123` | +91 98220 99887 | B-502, Sea Green Towers, Borivali West, Mumbai - 400092 |
 
 ---
 
