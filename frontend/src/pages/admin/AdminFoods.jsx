@@ -17,6 +17,10 @@ import {
   Sparkles,
   Eye,
   Activity,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
 } from 'lucide-react';
 import api from '../../services/api';
 import { useNotification } from '../../context/NotificationContext';
@@ -42,6 +46,10 @@ const AdminFoods = () => {
   const [submitting, setSubmitting] = useState(false);
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
+
+  // Pagination state (20 dishes per page)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   // Modal State for Add / Edit
   const [modalOpen, setModalOpen] = useState(false);
@@ -75,7 +83,7 @@ const AdminFoods = () => {
   const fetchData = async () => {
     try {
       const [foodsRes, catsRes] = await Promise.all([
-        api.get('/foods?limit=100'),
+        api.get('/foods?limit=1000'),
         api.get('/categories?includeInactive=true'),
       ]);
       if (foodsRes?.data) setFoods(foodsRes.data);
@@ -90,6 +98,11 @@ const AdminFoods = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Reset page to 1 when filter or search or itemsPerPage changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filterCategory, itemsPerPage]);
 
   const handleOpenAddModal = () => {
     setEditingFood(null);
@@ -214,10 +227,33 @@ const AdminFoods = () => {
     const matchSearch =
       f.name.toLowerCase().includes(search.toLowerCase()) ||
       f.category?.name?.toLowerCase().includes(search.toLowerCase()) ||
-      f.description?.toLowerCase().includes(search.toLowerCase());
+      f.description?.toLowerCase().includes(search.toLowerCase()) ||
+      (Array.isArray(f.tags) && f.tags.some(t => t.toLowerCase().includes(search.toLowerCase())));
     const matchCat = filterCategory === 'all' || f.category?._id === filterCategory || f.category?.slug === filterCategory;
     return matchSearch && matchCat;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filteredFoods.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, filteredFoods.length);
+  const paginatedFoods = filteredFoods.slice(startIndex, endIndex);
+
+  // Generate page numbers to display with smart ellipsis
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 4) {
+        pages.push(1, 2, 3, 4, 5, '...', totalPages);
+      } else if (currentPage >= totalPages - 3) {
+        pages.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+      }
+    }
+    return pages;
+  };
 
   return (
     <div className="space-y-6 text-stone-100">
@@ -227,7 +263,7 @@ const AdminFoods = () => {
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white flex items-center gap-3">
             <span>Food Menu Catalog</span>
             <span className="px-3 py-0.5 rounded-full bg-brand-500/20 text-brand-400 text-xs font-sans font-bold border border-brand-500/30">
-              {foods.length} Dishes
+              {foods.length} Total Dishes
             </span>
           </h1>
           <p className="text-xs sm:text-sm text-stone-400">
@@ -259,20 +295,36 @@ const AdminFoods = () => {
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="text-xs text-stone-400 font-semibold shrink-0">Category:</span>
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            className="w-full sm:w-auto py-2 px-3 rounded-xl bg-stone-900 border border-stone-800 text-xs text-white focus:outline-none focus:border-brand-500"
-          >
-            <option value="all">All Categories</option>
-            {categories.map((c) => (
-              <option key={c._id} value={c._id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+        <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-stone-400 font-semibold shrink-0">Category:</span>
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="py-2 px-3 rounded-xl bg-stone-900 border border-stone-800 text-xs text-white focus:outline-none focus:border-brand-500 max-w-[200px]"
+            >
+              <option value="all">All Categories ({categories.length})</option>
+              {categories.map((c) => (
+                <option key={c._id} value={c._id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-stone-400 font-semibold shrink-0">Per page:</span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => setItemsPerPage(Number(e.target.value))}
+              className="py-2 px-2.5 rounded-xl bg-stone-900 border border-stone-800 text-xs text-white focus:outline-none focus:border-brand-500"
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -293,133 +345,237 @@ const AdminFoods = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-800/60">
-              {filteredFoods.map((food, index) => (
-                <tr key={food._id} className="hover:bg-stone-900/50 transition-colors">
-                  {/* Dish Number Count */}
-                  <td className="py-3 px-4 text-center">
-                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-stone-900 border border-stone-800 text-amber-400 font-mono font-bold text-xs shadow-xs">
-                      #{index + 1}
-                    </span>
-                  </td>
-
-                  {/* Dish */}
-                  <td className="py-3 px-4 flex items-center gap-3">
-                    <img
-                      src={food.image}
-                      alt={food.name}
-                      className="w-12 h-12 rounded-xl object-cover bg-stone-900 shrink-0"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = FOOD_PRESET_IMAGES[0].url;
-                      }}
-                    />
-                    <div className="space-y-0.5">
-                      <div className="flex items-center gap-1.5">
-                        <h4 className="font-bold text-white text-sm">{food.name}</h4>
-                        {food.isPopular && (
-                          <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[9px] font-bold border border-amber-500/30">
-                            ★ Bestseller
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-[10px] text-stone-400 flex items-center gap-1">
-                        <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                        {food.rating ? food.rating.toFixed(1) : '4.8'} ({food.numReviews || 0} reviews)
-                      </span>
-                    </div>
-                  </td>
-
-                  {/* Category */}
-                  <td className="py-3 px-4 font-semibold text-brand-400">
-                    {food.category?.name || 'Unassigned'}
-                  </td>
-
-                  {/* Price */}
-                  <td className="py-3 px-4">
-                    <span className="font-bold text-white text-sm font-sans block">₹{food.price}</span>
-                    {food.discountPrice > 0 && (
-                      <span className="text-[10px] text-emerald-400 font-semibold">
-                        Sale: ₹{food.discountPrice}
-                      </span>
-                    )}
-                  </td>
-
-                  {/* Dietary & Spice */}
-                  <td className="py-3 px-4 space-y-1">
-                    <span
-                      className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                        food.foodType === 'veg'
-                          ? 'bg-emerald-900/60 text-emerald-300 border border-emerald-700/40'
-                          : food.foodType === 'vegan'
-                          ? 'bg-teal-900/60 text-teal-300 border border-teal-700/40'
-                          : 'bg-rose-900/60 text-rose-300 border border-rose-700/40'
-                      }`}
-                    >
-                      {food.foodType}
-                    </span>
-                    <span className="text-[10px] text-amber-400 block capitalize font-medium flex items-center gap-1">
-                      <Flame className="w-3 h-3 text-amber-500" />
-                      {food.spiceLevel}
-                    </span>
-                  </td>
-
-                  {/* Preparation Time */}
-                  <td className="py-3 px-4">
-                    <span className="inline-flex items-center gap-1 text-stone-300">
-                      <Clock className="w-3.5 h-3.5 text-stone-500" />
-                      <span>{food.preparationTime || 20}m</span>
-                    </span>
-                  </td>
-
-                  {/* Availability Toggle */}
-                  <td className="py-3 px-4">
-                    <button
-                      onClick={() => handleToggleAvailability(food._id)}
-                      className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase transition-colors flex items-center gap-1 ${
-                        food.isAvailable
-                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                      }`}
-                    >
-                      {food.isAvailable ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                      <span>{food.isAvailable ? 'In Stock' : 'Sold Out'}</span>
-                    </button>
-                  </td>
-
-                  {/* Actions */}
-                  <td className="py-3 px-4 text-right space-x-1.5">
-                    <button
-                      onClick={() => setViewingFood(food)}
-                      className="p-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-white transition-colors"
-                      title="View Complete Details"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                    </button>
-
-                    {isAdmin && (
-                      <>
-                        <button
-                          onClick={() => handleOpenEditModal(food)}
-                          className="p-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-brand-400 transition-colors"
-                          title="Edit Dish"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteFood(food._id, food.name)}
-                          className="p-1.5 rounded-lg bg-stone-900 hover:bg-rose-900/40 text-stone-300 hover:text-rose-400 transition-colors"
-                          title="Delete Dish"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </>
-                    )}
+              {loading ? (
+                <tr>
+                  <td colSpan="8" className="py-12 text-center text-stone-500">
+                    <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-brand-500" />
+                    <span>Loading authentic dishes...</span>
                   </td>
                 </tr>
-              ))}
+              ) : paginatedFoods.length === 0 ? (
+                <tr>
+                  <td colSpan="8" className="py-12 text-center text-stone-400 space-y-2">
+                    <UtensilsCrossed className="w-8 h-8 text-stone-600 mx-auto" />
+                    <p className="font-semibold text-sm text-stone-300">No dishes found</p>
+                    <p className="text-xs text-stone-500">Try changing your search keywords or category filters</p>
+                  </td>
+                </tr>
+              ) : (
+                paginatedFoods.map((food, index) => {
+                  const dishNumber = startIndex + index + 1;
+                  return (
+                    <tr key={food._id} className="hover:bg-stone-900/50 transition-colors">
+                      {/* Sequential Dish Number Count */}
+                      <td className="py-3 px-4 text-center">
+                        <span className="inline-flex items-center justify-center min-w-[32px] h-8 px-1.5 rounded-xl bg-stone-900 border border-stone-800 text-amber-400 font-mono font-bold text-xs shadow-xs">
+                          #{dishNumber}
+                        </span>
+                      </td>
+
+                      {/* Dish */}
+                      <td className="py-3 px-4 flex items-center gap-3">
+                        <img
+                          src={food.image}
+                          alt={food.name}
+                          className="w-12 h-12 rounded-xl object-cover bg-stone-900 shrink-0"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = FOOD_PRESET_IMAGES[0].url;
+                          }}
+                        />
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h4 className="font-bold text-white text-sm">{food.name}</h4>
+                            {food.isPopular && (
+                              <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[9px] font-bold border border-amber-500/30">
+                                ★ Bestseller
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-stone-400 flex items-center gap-1">
+                            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                            {food.rating ? food.rating.toFixed(1) : '4.8'} ({food.numReviews || 0} reviews)
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Category */}
+                      <td className="py-3 px-4 font-semibold text-brand-400">
+                        {food.category?.name || 'Unassigned'}
+                      </td>
+
+                      {/* Price */}
+                      <td className="py-3 px-4">
+                        <span className="font-bold text-white text-sm font-sans block">₹{food.price}</span>
+                        {food.discountPrice > 0 && (
+                          <span className="text-[10px] text-emerald-400 font-semibold">
+                            Sale: ₹{food.discountPrice}
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Dietary & Spice */}
+                      <td className="py-3 px-4 space-y-1">
+                        <span
+                          className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                            food.foodType === 'veg'
+                              ? 'bg-emerald-900/60 text-emerald-300 border border-emerald-700/40'
+                              : food.foodType === 'vegan'
+                              ? 'bg-teal-900/60 text-teal-300 border border-teal-700/40'
+                              : 'bg-rose-900/60 text-rose-300 border border-rose-700/40'
+                          }`}
+                        >
+                          {food.foodType}
+                        </span>
+                        <span className="text-[10px] text-amber-400 block capitalize font-medium flex items-center gap-1">
+                          <Flame className="w-3 h-3 text-amber-500" />
+                          {food.spiceLevel}
+                        </span>
+                      </td>
+
+                      {/* Preparation Time */}
+                      <td className="py-3 px-4">
+                        <span className="inline-flex items-center gap-1 text-stone-300">
+                          <Clock className="w-3.5 h-3.5 text-stone-500" />
+                          <span>{food.preparationTime || 20}m</span>
+                        </span>
+                      </td>
+
+                      {/* Availability Toggle */}
+                      <td className="py-3 px-4">
+                        <button
+                          onClick={() => handleToggleAvailability(food._id)}
+                          className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase transition-colors flex items-center gap-1 ${
+                            food.isAvailable
+                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                              : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                          }`}
+                        >
+                          {food.isAvailable ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                          <span>{food.isAvailable ? 'In Stock' : 'Sold Out'}</span>
+                        </button>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-3 px-4 text-right space-x-1.5">
+                        <button
+                          onClick={() => setViewingFood(food)}
+                          className="p-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-white transition-colors"
+                          title="View Complete Details"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
+
+                        {isAdmin && (
+                          <>
+                            <button
+                              onClick={() => handleOpenEditModal(food)}
+                              className="p-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-brand-400 transition-colors"
+                              title="Edit Dish"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteFood(food._id, food.name)}
+                              className="p-1.5 rounded-lg bg-stone-900 hover:bg-rose-900/40 text-stone-300 hover:text-rose-400 transition-colors"
+                              title="Delete Dish"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Footer Controls */}
+        {filteredFoods.length > 0 && (
+          <div className="p-4 bg-stone-900/80 border-t border-stone-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Info Range */}
+            <div className="text-xs text-stone-400">
+              Showing <span className="font-bold text-white">{filteredFoods.length === 0 ? 0 : startIndex + 1}</span> to{' '}
+              <span className="font-bold text-white">{endIndex}</span> of{' '}
+              <span className="font-bold text-amber-400">{filteredFoods.length}</span> dishes
+              {filteredFoods.length !== foods.length && (
+                <span className="text-stone-500"> (filtered from {foods.length} total)</span>
+              )}
+            </div>
+
+            {/* Page Buttons */}
+            <div className="flex items-center gap-1.5">
+              {/* First Page */}
+              <button
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                className="p-2 rounded-xl bg-stone-900 border border-stone-800 text-stone-400 hover:text-white disabled:opacity-40 disabled:hover:text-stone-400 transition-colors"
+                title="First Page"
+              >
+                <ChevronsLeft className="w-4 h-4" />
+              </button>
+
+              {/* Prev Page */}
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="p-2 rounded-xl bg-stone-900 border border-stone-800 text-stone-400 hover:text-white disabled:opacity-40 disabled:hover:text-stone-400 transition-colors"
+                title="Previous Page"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              {/* Number Buttons */}
+              <div className="flex items-center gap-1">
+                {getPageNumbers().map((num, idx) => {
+                  if (num === '...') {
+                    return (
+                      <span key={`dots-${idx}`} className="px-2 text-stone-500 text-xs">
+                        ...
+                      </span>
+                    );
+                  }
+                  return (
+                    <button
+                      key={`page-${num}`}
+                      onClick={() => setCurrentPage(num)}
+                      className={`min-w-[32px] h-8 px-2 rounded-xl text-xs font-bold transition-all ${
+                        currentPage === num
+                          ? 'bg-gradient-to-r from-brand-600 to-amber-600 text-white shadow-md shadow-brand-500/20 scale-105 border border-amber-500/40'
+                          : 'bg-stone-900 border border-stone-800 text-stone-400 hover:text-white hover:bg-stone-800'
+                      }`}
+                    >
+                      {num}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Next Page */}
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-xl bg-stone-900 border border-stone-800 text-stone-400 hover:text-white disabled:opacity-40 disabled:hover:text-stone-400 transition-colors"
+                title="Next Page"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+
+              {/* Last Page */}
+              <button
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-xl bg-stone-900 border border-stone-800 text-stone-400 hover:text-white disabled:opacity-40 disabled:hover:text-stone-400 transition-colors"
+                title="Last Page"
+              >
+                <ChevronsRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Add / Edit Dish Full Modal */}

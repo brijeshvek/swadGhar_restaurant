@@ -58,7 +58,7 @@ const Menu = () => {
       setLoading(true);
       try {
         const params = {
-          limit: 50,
+          limit: 300,
           category: selectedCategory !== 'all' ? selectedCategory : undefined,
           search: searchQuery.trim() !== '' ? searchQuery.trim() : undefined,
           foodType: foodType !== 'all' ? foodType : undefined,
