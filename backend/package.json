@@ -20,6 +20,7 @@
     "mongoose": "^8.5.1",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
+    "nodemailer": "^10.0.10",
     "razorpay": "^2.9.4"
   },
   "devDependencies": {
@@ -28,7 +29,13 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "keywords": ["express", "mongodb", "restaurant-api", "jwt", "razorpay"],
+  "keywords": [
+    "express",
+    "mongodb",
+    "restaurant-api",
+    "jwt",
+    "razorpay"
+  ],
   "author": "SwadGhar Team",
   "license": "ISC"
 }

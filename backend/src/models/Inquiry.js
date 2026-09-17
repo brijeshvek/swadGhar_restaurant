@@ -20,6 +20,32 @@ const inquirySchema = new mongoose.Schema({
     required: [true, 'Please provide contact phone number'],
     trim: true,
   },
+  inquiryCategory: {
+    type: String,
+    enum: ['restaurant', 'franchise'],
+    default: 'restaurant',
+    index: true,
+  },
+  branchCity: {
+    type: String,
+    default: 'Ahmedabad',
+    trim: true,
+  },
+  branchName: {
+    type: String,
+    default: '',
+    trim: true,
+  },
+  investmentBudget: {
+    type: String,
+    default: '',
+    trim: true,
+  },
+  experience: {
+    type: String,
+    default: '',
+    trim: true,
+  },
   subject: {
     type: String,
     required: [true, 'Please provide inquiry subject'],
@@ -34,9 +60,13 @@ const inquirySchema = new mongoose.Schema({
   },
   eventType: {
     type: String,
-    enum: ['general', 'catering', 'party_booking', 'corporate', 'feedback', 'franchise'],
+    enum: ['general', 'dining', 'table_booking', 'catering', 'party_booking', 'corporate', 'feedback', 'franchise'],
     default: 'general',
     index: true,
+  },
+  notifiedEmails: {
+    type: [String],
+    default: [],
   },
   status: {
     type: String,
@@ -60,3 +90,4 @@ const inquirySchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Inquiry', inquirySchema);
+

@@ -1,63 +1,137 @@
 const mongoose = require('mongoose');
 const Inquiry = require('../models/Inquiry');
+const Franchise = require('../models/Franchise');
 const mockStore = require('../utils/mockStore');
+const {
+  sendRestaurantInquiryNotification,
+  sendFranchiseInquiryNotification,
+} = require('../services/emailService');
 
 const isDbConnected = () => mongoose.connection.readyState === 1;
 
-// @desc    Submit a restaurant inquiry / contact message
+// @desc    Submit a restaurant dining inquiry or franchise application
 // @route   POST /api/inquiries
 // @access  Public
 const submitInquiry = async (req, res, next) => {
   try {
-    const { name, email, phone, subject, message, eventType } = req.body;
+    const {
+      name,
+      email,
+      phone,
+      subject,
+      message,
+      eventType = 'general',
+      inquiryCategory = 'restaurant',
+      branchCity = 'Ahmedabad',
+      branchName,
+      investmentBudget,
+      experience,
+    } = req.body;
 
-    if (!name || !email || !phone || !subject || !message) {
+    if (!name || !email || !phone || !message) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide name, email, phone, subject, and message.',
+        message: 'Please provide your name, email, phone, and message.',
       });
     }
 
-    if (!isDbConnected()) {
-      const newInquiry = {
+    const cleanCategory = inquiryCategory === 'franchise' ? 'franchise' : 'restaurant';
+    const finalSubject =
+      subject ||
+      (cleanCategory === 'franchise'
+        ? `Franchise Application for ${branchCity || 'Gujarat'}`
+        : `Dining Inquiry - ${branchCity} Branch`);
+
+    let branchManagerEmail = `${branchCity.toLowerCase()}.manager@swadghar.com`;
+    let targetBranchName = branchName || `SwadGhar - ${branchCity} Branch`;
+
+    if (isDbConnected()) {
+      const franchise = await Franchise.findOne({
+        city: new RegExp(`^${branchCity}$`, 'i'),
+      });
+      if (franchise) {
+        branchManagerEmail = franchise.managerEmail || branchManagerEmail;
+        targetBranchName = franchise.name || targetBranchName;
+      }
+    }
+
+    const notifiedEmails =
+      cleanCategory === 'franchise'
+        ? [process.env.ADMIN_EMAIL || 'admin@swadghar.com']
+        : [branchManagerEmail, process.env.ADMIN_EMAIL || 'admin@swadghar.com'];
+
+    let inquiry;
+    if (isDbConnected()) {
+      inquiry = await Inquiry.create({
+        name,
+        email: email.toLowerCase(),
+        phone,
+        subject: finalSubject,
+        message,
+        eventType: cleanCategory === 'franchise' ? 'franchise' : eventType,
+        inquiryCategory: cleanCategory,
+        branchCity,
+        branchName: targetBranchName,
+        investmentBudget: investmentBudget || '',
+        experience: experience || '',
+        notifiedEmails,
+        status: 'new',
+      });
+    } else {
+      inquiry = {
         _id: `inq_${Date.now()}`,
         name,
         email: email.toLowerCase(),
         phone,
-        subject,
+        subject: finalSubject,
         message,
-        eventType: eventType || 'general',
+        eventType: cleanCategory === 'franchise' ? 'franchise' : eventType,
+        inquiryCategory: cleanCategory,
+        branchCity,
+        branchName: targetBranchName,
+        investmentBudget: investmentBudget || '',
+        experience: experience || '',
+        notifiedEmails,
         status: 'new',
         createdAt: new Date(),
       };
       mockStore.inquiries = mockStore.inquiries || [];
-      mockStore.inquiries.unshift(newInquiry);
-      return res.status(201).json({
-        success: true,
-        message: 'Your inquiry has been submitted! Our restaurant concierge will get back to you shortly.',
-        data: newInquiry,
+      mockStore.inquiries.unshift(inquiry);
+    }
+
+    // Trigger Email Notification Dispatches
+    if (cleanCategory === 'franchise') {
+      await sendFranchiseInquiryNotification({
+        inquiry,
+        proposedCity: branchCity,
+        investmentBudget,
+        experience,
+      });
+    } else {
+      await sendRestaurantInquiryNotification({
+        inquiry,
+        branchName: targetBranchName,
+        branchCity,
+        branchManagerEmail,
       });
     }
 
-    const inquiry = await Inquiry.create({
-      name,
-      email: email.toLowerCase(),
-      phone,
-      subject,
-      message,
-      eventType: eventType || 'general',
-      status: 'new',
-    });
+    const responseMsg =
+      cleanCategory === 'franchise'
+        ? 'Franchise application submitted successfully! Notification sent to Central Administration.'
+        : `Your inquiry for the ${branchCity} branch has been submitted! Notifications dispatched to ${branchCity} Branch Manager & Central Admin.`;
 
     res.status(201).json({
       success: true,
-      message: 'Your inquiry has been submitted! Our restaurant concierge will get back to you shortly.',
+      message: responseMsg,
       data: inquiry,
+      notified: notifiedEmails,
     });
   } catch (error) {
     next(error);
   }
 };
+
 
 // @desc    Get all restaurant inquiries (Admin / Staff)
 // @route   GET /api/admin/inquiries
