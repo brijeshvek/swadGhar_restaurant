@@ -55,13 +55,57 @@ const seedData = async () => {
     });
 
     const staffUser = await User.create({
-      name: 'Ramesh Patel (Staff)',
+      name: 'Ramesh Patel (Central Staff)',
       email: 'staff@swadghar.com',
       password: 'Staff@123',
       phone: '+91 98765 11223',
       role: 'staff',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
     });
+
+    // 5 Dedicated Franchise Branch Managers
+    const franchiseUsers = await Promise.all([
+      User.create({
+        name: 'Rajesh Patel (Ahmedabad Manager)',
+        email: 'ahmedabad@swadghar.com',
+        password: 'Ahmedabad@123',
+        phone: '+91 98250 11234',
+        role: 'staff',
+        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+      }),
+      User.create({
+        name: 'Ketan Vaghani (Surat Manager)',
+        email: 'surat@swadghar.com',
+        password: 'Surat@123',
+        phone: '+91 98250 22345',
+        role: 'staff',
+        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80',
+      }),
+      User.create({
+        name: 'Hardik Shah (Vadodara Manager)',
+        email: 'vadodara@swadghar.com',
+        password: 'Vadodara@123',
+        phone: '+91 98250 33456',
+        role: 'staff',
+        avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80',
+      }),
+      User.create({
+        name: 'Bhavesh Jadeja (Rajkot Manager)',
+        email: 'rajkot@swadghar.com',
+        password: 'Rajkot@123',
+        phone: '+91 98250 44567',
+        role: 'staff',
+        avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80',
+      }),
+      User.create({
+        name: 'Nitin Mehta (Mumbai Manager)',
+        email: 'mumbai@swadghar.com',
+        password: 'Mumbai@123',
+        phone: '+91 98250 55678',
+        role: 'staff',
+        avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=400&q=80',
+      }),
+    ]);
 
     const customerUser = await User.create({
       name: 'Aarav Sharma',
