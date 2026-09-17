@@ -17,6 +17,8 @@ import {
   Sparkles,
   Eye,
   Activity,
+  Upload,
+  Camera,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
@@ -44,6 +46,7 @@ const AdminFoods = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [search, setSearch] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
 
@@ -152,6 +155,45 @@ const AdminFoods = () => {
       tags: Array.isArray(food.tags) ? food.tags.join(', ') : (food.tags || ''),
     });
     setModalOpen(true);
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      showError('File size is too large. Please select an image under 10MB.');
+      return;
+    }
+
+    setUploadingImage(true);
+    const data = new FormData();
+    data.append('image', file);
+
+    try {
+      const res = await api.post('/upload', data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      if (res?.url) {
+        setFormData((prev) => ({ ...prev, image: res.url }));
+        showSuccess('Image uploaded successfully!');
+      } else {
+        throw new Error('No URL returned from upload server');
+      }
+    } catch (err) {
+      console.warn('Backend multipart upload failed, using local Base64 fallback:', err);
+      // Client-side fallback to base64 Data URI so it always works immediately
+      const reader = new FileReader();
+      reader.onload = () => {
+        setFormData((prev) => ({ ...prev, image: reader.result }));
+        showSuccess('Image selected & preview updated!');
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setUploadingImage(false);
+      // Reset file input target so same file can be chosen again if needed
+      e.target.value = '';
+    }
   };
 
   const handleSaveFood = async (e) => {
@@ -715,43 +757,76 @@ const AdminFoods = () => {
                 </div>
               </div>
 
-              {/* Image URL & Presets */}
-              <div className="space-y-2 pt-1">
-                <label className="font-bold text-stone-300 flex items-center justify-between">
-                  <span>Dish High-Res Image URL *</span>
-                  <span className="text-[11px] text-stone-500 font-normal">HD WebP/JPG</span>
-                </label>
-                <div className="flex gap-3 items-center">
-                  <div className="w-16 h-12 rounded-xl bg-stone-950 border border-stone-800 overflow-hidden shrink-0 flex items-center justify-center">
+              {/* Image Upload, URL & Presets */}
+              <div className="space-y-3 pt-1 p-3.5 rounded-2xl bg-stone-950/60 border border-stone-800/80">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-stone-200 flex items-center gap-1.5">
+                    <Camera className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Dish Food Photography *</span>
+                  </label>
+                  <span className="text-[10px] text-amber-400/80 font-medium">Upload File or Paste Link</span>
+                </div>
+
+                {/* Upload Button + File Input + Image Preview */}
+                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                  <div className="w-20 h-16 rounded-xl bg-stone-900 border border-stone-800 overflow-hidden shrink-0 flex items-center justify-center relative shadow-inner">
                     {formData.image ? (
                       <img
                         src={formData.image}
                         alt="Dish Preview"
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          e.target.style.display = 'none';
+                          e.target.onerror = null;
+                          e.target.src = FOOD_PRESET_IMAGES[0].url;
                         }}
                       />
                     ) : (
-                      <ImageIcon className="w-5 h-5 text-stone-600" />
+                      <ImageIcon className="w-6 h-6 text-stone-600" />
+                    )}
+                    {uploadingImage && (
+                      <div className="absolute inset-0 bg-stone-950/80 backdrop-blur-xs flex items-center justify-center">
+                        <Loader2 className="w-5 h-5 text-amber-400 animate-spin" />
+                      </div>
                     )}
                   </div>
-                  <input
-                    type="url"
-                    required
-                    value={formData.image}
-                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                    placeholder="https://images.unsplash.com/..."
-                    className="flex-1 px-3.5 py-2.5 rounded-xl bg-stone-950 border border-stone-800 text-white focus:outline-none focus:border-brand-500 text-xs"
-                  />
+
+                  <div className="flex-1 space-y-2 w-full">
+                    <div className="flex items-center gap-2">
+                      <label className="cursor-pointer inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-brand-600 hover:from-amber-500 hover:to-brand-500 text-white font-bold text-xs shadow-md transition-all shrink-0 active:scale-95">
+                        {uploadingImage ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Upload className="w-3.5 h-3.5" />
+                        )}
+                        <span>{uploadingImage ? 'Uploading Image...' : 'Choose File / Upload Image'}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          disabled={uploadingImage}
+                          className="hidden"
+                        />
+                      </label>
+                      <span className="text-[11px] text-stone-500 hidden sm:inline">or paste direct image URL below:</span>
+                    </div>
+
+                    <input
+                      type="url"
+                      required
+                      value={formData.image}
+                      onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                      placeholder="https://images.unsplash.com/... or /uploads/..."
+                      className="w-full px-3.5 py-2 rounded-xl bg-stone-900 border border-stone-800 text-white focus:outline-none focus:border-brand-500 text-xs font-mono placeholder:text-stone-600"
+                    />
+                  </div>
                 </div>
 
                 {/* Presets */}
-                <div className="pt-1">
+                <div className="pt-1 border-t border-stone-900">
                   <span className="text-[10px] text-stone-400 font-semibold block mb-1">
-                    ✨ Quick Select Image Presets:
+                    ✨ Or Quick Select Classic Dish Preset:
                   </span>
-                  <div className="grid grid-cols-3 gap-1.5">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                     {FOOD_PRESET_IMAGES.map((preset, idx) => (
                       <button
                         key={idx}
@@ -760,7 +835,7 @@ const AdminFoods = () => {
                         className={`p-1.5 rounded-lg border text-left text-[10px] truncate transition-colors flex items-center gap-1.5 ${
                           formData.image === preset.url
                             ? 'bg-brand-600/30 border-brand-500 text-amber-300'
-                            : 'bg-stone-950 border-stone-800 text-stone-400 hover:text-stone-200'
+                            : 'bg-stone-900 border-stone-800 text-stone-400 hover:text-stone-200'
                         }`}
                       >
                         <img src={preset.url} alt="" className="w-4 h-4 rounded object-cover" />
