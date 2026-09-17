@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const RestaurantSettings = require('../models/RestaurantSettings');
 const mockStore = require('../utils/mockStore');
+const cache = require('../utils/cache');
 
 const isDbConnected = () => mongoose.connection.readyState === 1;
 
@@ -16,7 +17,7 @@ const getSettings = async (req, res, next) => {
       });
     }
 
-    let settings = await RestaurantSettings.findOne();
+    let settings = await RestaurantSettings.findOne().lean();
     if (!settings) {
       settings = await RestaurantSettings.create(mockStore.settings);
     }
@@ -40,6 +41,7 @@ const updateSettings = async (req, res, next) => {
   try {
     if (!isDbConnected()) {
       mockStore.settings = { ...mockStore.settings, ...req.body };
+      cache.invalidatePattern('settings');
       return res.status(200).json({
         success: true,
         message: 'Restaurant settings updated successfully',
@@ -54,8 +56,11 @@ const updateSettings = async (req, res, next) => {
       settings = await RestaurantSettings.findByIdAndUpdate(settings._id, req.body, {
         new: true,
         runValidators: true,
-      });
+      }).lean();
     }
+
+    // Invalidate settings cache
+    cache.invalidatePattern('settings');
 
     res.status(200).json({
       success: true,

@@ -3,6 +3,7 @@ const Franchise = require('../models/Franchise');
 const User = require('../models/User');
 
 const isDbConnected = () => mongoose.connection.readyState === 1;
+const cache = require('../utils/cache');
 
 // Default 5 Franchise Branches Data with Branch Manager & Staff Team
 const DEFAULT_FRANCHISES = [
@@ -171,7 +172,7 @@ const getAllFranchises = async (req, res) => {
       });
     }
 
-    let franchises = await Franchise.find({ isActive: true }).sort({ sortOrder: 1, createdAt: 1 });
+    let franchises = await Franchise.find({ isActive: true }).sort({ sortOrder: 1, createdAt: 1 }).lean();
 
     if (!franchises || franchises.length === 0) {
       franchises = await Franchise.insertMany(DEFAULT_FRANCHISES);
@@ -212,11 +213,10 @@ const getMyBranch = async (req, res) => {
         { managerEmail: userEmail },
         { email: userEmail },
       ],
-    });
+    }).lean();
 
     if (!branch && isAdmin) {
-      // Admin sees the first/flagship branch or all
-      branch = await Franchise.findOne({ isActive: true }).sort({ sortOrder: 1 });
+      branch = await Franchise.findOne({ isActive: true }).sort({ sortOrder: 1 }).lean();
     }
 
     if (!branch) {
@@ -247,7 +247,7 @@ const getFranchiseById = async (req, res) => {
       return res.status(200).json({ success: true, data: branch || DEFAULT_FRANCHISES[0] });
     }
 
-    const franchise = await Franchise.findById(id);
+    const franchise = await Franchise.findById(id).lean();
     if (!franchise) {
       return res.status(404).json({ success: false, message: 'Franchise location not found' });
     }

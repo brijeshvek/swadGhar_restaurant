@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Category = require('../models/Category');
 const Food = require('../models/Food');
 const mockStore = require('../utils/mockStore');
+const cache = require('../utils/cache');
 
 const isDbConnected = () => mongoose.connection.readyState === 1;
 
@@ -20,7 +21,9 @@ const getAllCategories = async (req, res, next) => {
 
     const { includeInactive } = req.query;
     const filter = includeInactive === 'true' ? {} : { isActive: true };
-    const categories = await Category.find(filter).sort({ sortOrder: 1, createdAt: 1 });
+    const categories = await Category.find(filter)
+      .sort({ sortOrder: 1, createdAt: 1 })
+      .lean();
 
     if (!categories || categories.length === 0) {
       return res.status(200).json({
@@ -36,7 +39,6 @@ const getAllCategories = async (req, res, next) => {
       data: categories,
     });
   } catch (error) {
-    // Graceful memory fallback
     res.status(200).json({
       success: true,
       count: mockStore.categories.length,
@@ -60,9 +62,9 @@ const getCategoryById = async (req, res, next) => {
 
     let category;
     if (id.match(/^[0-9a-fA-F]{24}$/)) {
-      category = await Category.findById(id);
+      category = await Category.findById(id).lean();
     } else {
-      category = await Category.findOne({ slug: id });
+      category = await Category.findOne({ slug: id }).lean();
     }
 
     if (!category) {
@@ -105,6 +107,7 @@ const createCategory = async (req, res, next) => {
         isActive: isActive !== undefined ? isActive : true,
       };
       mockStore.categories.push(newCat);
+      cache.invalidatePattern('categories');
       return res.status(201).json({ success: true, message: 'Category created successfully', data: newCat });
     }
 
@@ -115,6 +118,10 @@ const createCategory = async (req, res, next) => {
       isActive: isActive !== undefined ? isActive : true,
       sortOrder: sortOrder || 0,
     });
+
+    // Invalidate cache immediately
+    cache.invalidatePattern('categories');
+    cache.invalidatePattern('foods');
 
     res.status(201).json({
       success: true,
@@ -135,6 +142,7 @@ const updateCategory = async (req, res, next) => {
       const idx = mockStore.categories.findIndex(c => c._id === req.params.id);
       if (idx > -1) {
         mockStore.categories[idx] = { ...mockStore.categories[idx], ...req.body };
+        cache.invalidatePattern('categories');
         return res.status(200).json({ success: true, message: 'Category updated', data: mockStore.categories[idx] });
       }
     }
@@ -142,7 +150,11 @@ const updateCategory = async (req, res, next) => {
     const category = await Category.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
-    });
+    }).lean();
+
+    // Invalidate cache
+    cache.invalidatePattern('categories');
+    cache.invalidatePattern('foods');
 
     res.status(200).json({
       success: true,
@@ -161,10 +173,16 @@ const deleteCategory = async (req, res, next) => {
   try {
     if (!isDbConnected()) {
       mockStore.categories = mockStore.categories.filter(c => c._id !== req.params.id);
+      cache.invalidatePattern('categories');
       return res.status(200).json({ success: true, message: 'Category deleted successfully' });
     }
 
     await Category.findByIdAndDelete(req.params.id);
+
+    // Invalidate cache
+    cache.invalidatePattern('categories');
+    cache.invalidatePattern('foods');
+
     res.status(200).json({
       success: true,
       message: 'Category deleted successfully',

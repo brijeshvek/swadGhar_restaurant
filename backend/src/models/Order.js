@@ -130,4 +130,9 @@ const orderSchema = new mongoose.Schema({
   timestamps: true,
 });
 
+// Compound & Performance Indexes for Fast Customer History & Admin Dashboard
+orderSchema.index({ customer: 1, createdAt: -1 });
+orderSchema.index({ orderStatus: 1, createdAt: -1 });
+orderSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('Order', orderSchema);

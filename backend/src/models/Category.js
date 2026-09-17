@@ -43,4 +43,7 @@ categorySchema.pre('save', function (next) {
   next();
 });
 
+// Compound index for menu category ordering
+categorySchema.index({ isActive: 1, sortOrder: 1 });
+
 module.exports = mongoose.model('Category', categorySchema);

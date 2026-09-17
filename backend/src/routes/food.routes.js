@@ -11,12 +11,13 @@ const {
   toggleFoodAvailability,
 } = require('../controllers/food.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
+const cache = require('../utils/cache');
 
-// Public routes
-router.get('/', getAllFoods);
-router.get('/featured', getFeaturedFoods);
-router.get('/popular', getPopularFoods);
-router.get('/:id', getFoodById);
+// Public routes with fast in-memory TTL caching (sub-5ms response)
+router.get('/', cache.middleware(60, 'foods'), getAllFoods);
+router.get('/featured', cache.middleware(120, 'foods'), getFeaturedFoods);
+router.get('/popular', cache.middleware(120, 'foods'), getPopularFoods);
+router.get('/:id', cache.middleware(120, 'foods'), getFoodById);
 
 // Staff & Admin routes
 router.patch('/:id/availability', protect, authorize('admin', 'staff'), toggleFoodAvailability);

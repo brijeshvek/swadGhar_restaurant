@@ -117,7 +117,12 @@ foodSchema.pre('save', function (next) {
   next();
 });
 
-// Text index for search functionality
+// Compound & Performance Indexes for Ultra-Fast Query Execution
+foodSchema.index({ category: 1, isAvailable: 1 });
+foodSchema.index({ isFeatured: 1, isAvailable: 1 });
+foodSchema.index({ isPopular: 1, isAvailable: 1 });
+foodSchema.index({ price: 1 });
+foodSchema.index({ createdAt: -1 });
 foodSchema.index({ name: 'text', description: 'text', tags: 'text' });
 
 module.exports = mongoose.model('Food', foodSchema);

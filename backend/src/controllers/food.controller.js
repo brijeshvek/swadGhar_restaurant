@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Food = require('../models/Food');
 const Review = require('../models/Review');
 const mockStore = require('../utils/mockStore');
+const cache = require('../utils/cache');
 
 const isDbConnected = () => mongoose.connection.readyState === 1;
 
@@ -95,7 +96,7 @@ const getAllFoods = async (req, res, next) => {
         query.category = category;
       } else {
         const Category = require('../models/Category');
-        const cat = await Category.findOne({ slug: category });
+        const cat = await Category.findOne({ slug: category }).lean();
         if (cat) query.category = cat._id;
       }
     }
@@ -122,12 +123,16 @@ const getAllFoods = async (req, res, next) => {
     const limitNum = parseInt(limit, 10) || 12;
     const skip = (pageNum - 1) * limitNum;
 
-    const totalFoods = await Food.countDocuments(query);
-    const foods = await Food.find(query)
-      .populate('category', 'name slug image')
-      .sort(sortOption)
-      .skip(skip)
-      .limit(limitNum);
+    // Parallel count & query for max speed
+    const [totalFoods, foods] = await Promise.all([
+      Food.countDocuments(query),
+      Food.find(query)
+        .populate('category', 'name slug image')
+        .sort(sortOption)
+        .skip(skip)
+        .limit(limitNum)
+        .lean(),
+    ]);
 
     if (!foods) {
       return res.status(200).json({
@@ -175,9 +180,9 @@ const getFoodById = async (req, res, next) => {
 
     let food;
     if (id.match(/^[0-9a-fA-F]{24}$/)) {
-      food = await Food.findById(id).populate('category', 'name slug image');
+      food = await Food.findById(id).populate('category', 'name slug image').lean();
     } else {
-      food = await Food.findOne({ slug: id }).populate('category', 'name slug image');
+      food = await Food.findOne({ slug: id }).populate('category', 'name slug image').lean();
     }
 
     if (!food) {
@@ -188,12 +193,13 @@ const getFoodById = async (req, res, next) => {
 
     const reviews = await Review.find({ food: food._id, isApproved: true })
       .sort({ createdAt: -1 })
-      .limit(10);
+      .limit(10)
+      .lean();
 
     res.status(200).json({
       success: true,
       data: {
-        ...food.toObject(),
+        ...food,
         reviews,
       },
     });
@@ -214,7 +220,8 @@ const getFeaturedFoods = async (req, res, next) => {
 
     const foods = await Food.find({ isFeatured: true, isAvailable: true })
       .populate('category', 'name slug')
-      .limit(8);
+      .limit(8)
+      .lean();
 
     if (!foods || foods.length === 0) {
       return res.status(200).json({ success: true, count: mockStore.foods.length, data: mockStore.foods.slice(0, 4) });
@@ -242,7 +249,8 @@ const getPopularFoods = async (req, res, next) => {
 
     const foods = await Food.find({ isPopular: true, isAvailable: true })
       .populate('category', 'name slug')
-      .limit(8);
+      .limit(8)
+      .lean();
 
     if (!foods || foods.length === 0) {
       return res.status(200).json({ success: true, count: mockStore.foods.length, data: mockStore.foods.slice(0, 4) });
@@ -310,6 +318,7 @@ const createFood = async (req, res, next) => {
         numReviews: 1,
       };
       mockStore.foods.unshift(newFood);
+      cache.invalidatePattern('foods');
       return res.status(201).json({ success: true, message: 'Dish created successfully', data: newFood });
     }
 
@@ -331,7 +340,10 @@ const createFood = async (req, res, next) => {
       tags: Array.isArray(tags) ? tags : (tags ? tags.split(',').map(s => s.trim()) : []),
     });
 
-    const populatedFood = await Food.findById(food._id).populate('category', 'name slug');
+    const populatedFood = await Food.findById(food._id).populate('category', 'name slug').lean();
+
+    // Invalidate cache immediately on creation
+    cache.invalidatePattern('foods');
 
     res.status(201).json({
       success: true,
@@ -352,6 +364,7 @@ const updateFood = async (req, res, next) => {
       const idx = mockStore.foods.findIndex(f => f._id === req.params.id);
       if (idx > -1) {
         mockStore.foods[idx] = { ...mockStore.foods[idx], ...req.body };
+        cache.invalidatePattern('foods');
         return res.status(200).json({ success: true, message: 'Dish updated successfully', data: mockStore.foods[idx] });
       }
     }
@@ -359,7 +372,10 @@ const updateFood = async (req, res, next) => {
     const food = await Food.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
-    }).populate('category', 'name slug');
+    }).populate('category', 'name slug').lean();
+
+    // Invalidate cache on update
+    cache.invalidatePattern('foods');
 
     res.status(200).json({
       success: true,
@@ -378,10 +394,15 @@ const deleteFood = async (req, res, next) => {
   try {
     if (!isDbConnected()) {
       mockStore.foods = mockStore.foods.filter(f => f._id !== req.params.id);
+      cache.invalidatePattern('foods');
       return res.status(200).json({ success: true, message: 'Dish deleted successfully' });
     }
 
     await Food.findByIdAndDelete(req.params.id);
+
+    // Invalidate cache on deletion
+    cache.invalidatePattern('foods');
+
     res.status(200).json({
       success: true,
       message: 'Food item deleted successfully',
@@ -400,6 +421,7 @@ const toggleFoodAvailability = async (req, res, next) => {
       const f = mockStore.foods.find(x => x._id === req.params.id);
       if (f) {
         f.isAvailable = !f.isAvailable;
+        cache.invalidatePattern('foods');
         return res.status(200).json({ success: true, message: `Dish availability is now ${f.isAvailable ? 'In Stock' : 'Sold Out'}` });
       }
     }
@@ -411,6 +433,9 @@ const toggleFoodAvailability = async (req, res, next) => {
 
     food.isAvailable = !food.isAvailable;
     await food.save();
+
+    // Invalidate cache
+    cache.invalidatePattern('foods');
 
     res.status(200).json({
       success: true,

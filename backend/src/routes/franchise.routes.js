@@ -13,9 +13,10 @@ const {
   submitFranchiseInquiry,
 } = require('../controllers/franchise.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
+const cache = require('../utils/cache');
 
-// Public routes
-router.get('/', getAllFranchises);
+// Public routes with fast in-memory caching
+router.get('/', cache.middleware(180, 'franchises'), getAllFranchises);
 router.post('/inquiry', submitFranchiseInquiry);
 
 // Protected branch manager / staff route

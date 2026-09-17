@@ -8,10 +8,11 @@ const {
   deleteCategory,
 } = require('../controllers/category.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
+const cache = require('../utils/cache');
 
-// Public routes
-router.get('/', getAllCategories);
-router.get('/:id', getCategoryById);
+// Public routes with fast in-memory caching
+router.get('/', cache.middleware(180, 'categories'), getAllCategories);
+router.get('/:id', cache.middleware(180, 'categories'), getCategoryById);
 
 // Admin only routes
 router.post('/', protect, authorize('admin'), createCategory);

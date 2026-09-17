@@ -3,6 +3,7 @@ const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const compression = require('compression');
 
 // Import routes
 const authRoutes = require('./routes/auth.routes');
@@ -76,6 +77,9 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions)); // Handle all preflight OPTIONS requests
+
+// Gzip / Deflate Response Compression (Speed up API responses by 70-80%)
+app.use(compression());
 
 // Body Parsers (Increased to 50MB for Base64 image uploads)
 app.use(express.json({ limit: '50mb' }));
