@@ -186,59 +186,81 @@ const Checkout = () => {
       // 2. Handle Razorpay Online Payment Flow
       if (paymentMethod === 'razorpay') {
         try {
-          const rzpInitRes = await api.post('/payments/razorpay/create-order', {
-            orderId: createdOrder._id,
+          const targetOrderId = createdOrder?._id || createdOrder?.order?._id;
+          const targetOrderNumber = createdOrder?.orderNumber || createdOrder?.order?.orderNumber;
+
+          // Dynamically ensure Razorpay SDK is loaded
+          const isRzpLoaded = window.Razorpay || await new Promise((resolve) => {
+            const script = document.createElement('script');
+            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
           });
 
-          const rzpData = rzpInitRes.data;
+          const rzpInitRes = await api.post('/payments/razorpay/create-order', {
+            orderId: targetOrderId,
+          });
 
-          // Check if Razorpay SDK script is loaded in window
-          if (window.Razorpay && rzpData.orderId && !rzpData.orderId.startsWith('order_sim_')) {
+          const rzpData = rzpInitRes?.data || rzpInitRes;
+          const rzpKey = rzpData?.key || 'rzp_test_Td5GYtIrYigZH7';
+          const rzpOrderId = rzpData?.orderId || rzpData?.id;
+
+          // Check if Razorpay SDK is available and orderId is generated
+          if (window.Razorpay && rzpOrderId && !rzpOrderId.startsWith('order_sim_')) {
             const options = {
-              key: rzpData.key,
+              key: rzpKey,
               amount: rzpData.amount,
-              currency: rzpData.currency,
+              currency: rzpData.currency || 'INR',
               name: 'SwadGhar Restaurant',
-              description: `Order #${createdOrder.orderNumber}`,
-              image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=150&q=80',
-              order_id: rzpData.orderId,
+              description: `Order #${targetOrderNumber}`,
+              image: '/logo.png',
+              order_id: rzpOrderId,
               handler: async function (response) {
                 try {
                   await api.post('/payments/razorpay/verify', {
-                    orderId: createdOrder._id,
+                    orderId: targetOrderId,
                     razorpay_order_id: response.razorpay_order_id,
                     razorpay_payment_id: response.razorpay_payment_id,
                     razorpay_signature: response.razorpay_signature,
                   });
                   clearCart();
                   showSuccess('Payment Successful! Order Confirmed.');
-                  navigate(`/order-success/${createdOrder.orderNumber}`);
+                  navigate(`/order-success/${targetOrderNumber}`);
                 } catch (verifyErr) {
-                  showError('Payment verification failed.');
+                  console.error('Razorpay verification error:', verifyErr);
+                  showError('Payment verification failed. Please check with support.');
                 }
               },
               prefill: {
-                name: fullName || user?.name,
-                email: email || user?.email,
-                contact: phone || user?.phone,
+                name: fullName || user?.name || '',
+                email: email || user?.email || '',
+                contact: phone || user?.phone || '',
               },
               theme: {
                 color: '#ea580c',
+              },
+              modal: {
+                ondismiss: function () {
+                  setProcessing(false);
+                  showInfo('Payment window closed. You can retry payment anytime.');
+                },
               },
             };
 
             const rzp = new window.Razorpay(options);
             rzp.on('payment.failed', function (resp) {
+              setProcessing(false);
               showError(`Payment failed: ${resp.error?.description || 'Gateway error'}`);
             });
             rzp.open();
             setProcessing(false);
             return;
           } else {
-            // Simulated Test Payment Mode
+            // Simulated / Sandbox fallback
             await api.post('/payments/razorpay/verify', {
-              orderId: createdOrder._id,
-              razorpay_order_id: rzpData.orderId,
+              orderId: targetOrderId,
+              razorpay_order_id: rzpOrderId || `order_sim_${Date.now()}`,
               razorpay_payment_id: `pay_sim_${Date.now()}`,
               razorpay_signature: 'simulated_valid_signature',
             });
