@@ -26,21 +26,22 @@ const Menu = () => {
   const [foods, setFoods] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
 
-  // Filters State
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
-  const [cuisineFilter, setCuisineFilter] = useState('all'); // 'all', 'gujarati', 'punjabi'
+  // Filter States
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [foodType, setFoodType] = useState('all');
   const [spiceLevel, setSpiceLevel] = useState('all');
+  const [priceRange, setPriceRange] = useState(2000);
   const [sortOption, setSortOption] = useState('popular');
-  const [priceRange, setPriceRange] = useState(1000);
+  const [cuisineFilter, setCuisineFilter] = useState('all');
 
-  // Pagination for Menu
+  // Customer Pagination: 12 dishes per page
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 24;
+  const itemsPerPage = 12;
 
-  // Load Categories on Mount
+  // Fetch Categories on Mount
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -68,47 +69,48 @@ const Menu = () => {
     setCurrentPage(1);
   }, [selectedCategory, searchQuery, foodType, spiceLevel, sortOption, priceRange, cuisineFilter]);
 
+  const fetchFilteredFoods = async () => {
+    setLoading(true);
+    try {
+      const params = {
+        limit: 500, // Load all items to display complete database catalog
+        category: selectedCategory !== 'all' ? selectedCategory : undefined,
+        search: searchQuery.trim() !== '' ? searchQuery.trim() : undefined,
+        foodType: foodType !== 'all' ? foodType : undefined,
+        spiceLevel: spiceLevel !== 'all' ? spiceLevel : undefined,
+        maxPrice: priceRange,
+        sort: sortOption,
+      };
+
+      const res = await api.get('/foods', { params });
+      if (res?.data) {
+        let items = res.data;
+        // Apply client-side cuisine filter if chosen and no specific category is selected
+        if (cuisineFilter === 'gujarati' && selectedCategory === 'all') {
+          items = items.filter(
+            (f) =>
+              f.category?.name?.toLowerCase().includes('gujarati') ||
+              f.category?.name?.toLowerCase().includes('kathiyawadi')
+          );
+        } else if (cuisineFilter === 'punjabi' && selectedCategory === 'all') {
+          items = items.filter((f) =>
+            f.category?.name?.toLowerCase().includes('punjabi') ||
+            f.category?.name?.toLowerCase().includes('paneer')
+          );
+        }
+        setFoods(items);
+        setFetchError(null);
+      }
+    } catch (err) {
+      console.error('Error fetching filtered menu:', err);
+      setFetchError(err.message || 'Server timeout');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch Foods with active filters
   useEffect(() => {
-    const fetchFilteredFoods = async () => {
-      setLoading(true);
-      try {
-        const params = {
-          limit: 500, // Load all items to display complete database catalog
-          category: selectedCategory !== 'all' ? selectedCategory : undefined,
-          search: searchQuery.trim() !== '' ? searchQuery.trim() : undefined,
-          foodType: foodType !== 'all' ? foodType : undefined,
-          spiceLevel: spiceLevel !== 'all' ? spiceLevel : undefined,
-          maxPrice: priceRange,
-          sort: sortOption,
-        };
-
-        const res = await api.get('/foods', { params });
-        if (res?.data) {
-          let items = res.data;
-          // Apply client-side cuisine filter if chosen and no specific category is selected
-          if (cuisineFilter === 'gujarati' && selectedCategory === 'all') {
-            items = items.filter(
-              (f) =>
-                f.category?.name?.toLowerCase().includes('gujarati') ||
-                f.category?.name?.toLowerCase().includes('kathiyawadi')
-            );
-          } else if (cuisineFilter === 'punjabi' && selectedCategory === 'all') {
-            items = items.filter((f) =>
-              f.category?.name?.toLowerCase().includes('punjabi') ||
-              f.category?.name?.toLowerCase().includes('paneer')
-            );
-          }
-          setFoods(items);
-        }
-      } catch (err) {
-        console.error('Error fetching filtered menu:', err);
-        setFoods([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     const timer = setTimeout(() => {
       fetchFilteredFoods();
     }, 200); // Debounce search
@@ -428,24 +430,45 @@ const Menu = () => {
             ))}
           </div>
         ) : paginatedFoods.length === 0 ? (
-          /* Empty State */
-          <div className="text-center py-16 px-4 bg-white rounded-3xl border border-stone-200/80 shadow-sm space-y-4 max-w-md mx-auto">
-            <div className="w-16 h-16 rounded-full bg-brand-50 text-brand-500 flex items-center justify-center mx-auto">
-              <Search className="w-8 h-8" />
+          fetchError ? (
+            <div className="text-center py-16 px-4 bg-white rounded-3xl border border-amber-200 shadow-sm space-y-4 max-w-md mx-auto">
+              <div className="w-16 h-16 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
+                <RotateCcw className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-serif font-bold text-stone-900">
+                Warming Up Live Server...
+              </h3>
+              <p className="text-stone-500 text-sm">
+                Render server was sleeping and is starting up. Please click below to reload the menu.
+              </p>
+              <button
+                onClick={() => fetchFilteredFoods()}
+                className="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm transition-colors shadow-md inline-flex items-center gap-2 mx-auto"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Reload Menu Now</span>
+              </button>
             </div>
-            <h3 className="text-xl font-serif font-bold text-stone-900">
-              No Dishes Found
-            </h3>
-            <p className="text-stone-500 text-sm">
-              We couldn’t find any delicacies matching your selected category or filter criteria.
-            </p>
-            <button
-              onClick={handleResetFilters}
-              className="px-6 py-2.5 rounded-xl bg-brand-600 text-white font-semibold text-sm hover:bg-brand-500 transition-colors shadow-md"
-            >
-              Clear All Filters
-            </button>
-          </div>
+          ) : (
+            /* Empty State */
+            <div className="text-center py-16 px-4 bg-white rounded-3xl border border-stone-200/80 shadow-sm space-y-4 max-w-md mx-auto">
+              <div className="w-16 h-16 rounded-full bg-brand-50 text-brand-500 flex items-center justify-center mx-auto">
+                <Search className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-serif font-bold text-stone-900">
+                No Dishes Found
+              </h3>
+              <p className="text-stone-500 text-sm">
+                We couldn’t find any delicacies matching your selected category or filter criteria.
+              </p>
+              <button
+                onClick={handleResetFilters}
+                className="px-6 py-2.5 rounded-xl bg-brand-600 text-white font-semibold text-sm hover:bg-brand-500 transition-colors shadow-md"
+              >
+                Clear All Filters
+              </button>
+            </div>
+          )
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {paginatedFoods.map((food) => (

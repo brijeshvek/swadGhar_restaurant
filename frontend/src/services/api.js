@@ -25,7 +25,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 30000,
+  timeout: 60000, // 60 seconds to accommodate Render free-tier cold starts
 });
 
 // Request interceptor for injecting Bearer token
@@ -42,17 +42,34 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor for unified error formatting
+// Response interceptor with Auto-Retry for cold starts & timeouts
 api.interceptors.response.use(
   (response) => {
     return response.data;
   },
-  (error) => {
+  async (error) => {
+    const config = error.config;
+
+    // Retry on timeout or network connection error for GET requests (up to 2 retries)
+    if (
+      config &&
+      config.method === 'get' &&
+      (error.code === 'ECONNABORTED' || error.message?.includes('timeout') || !error.response)
+    ) {
+      config.__retryCount = config.__retryCount || 0;
+      if (config.__retryCount < 2) {
+        config.__retryCount += 1;
+        // Wait 1.5s before retrying
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        return api(config);
+      }
+    }
+
     const message =
       error.response?.data?.message ||
       error.message ||
       'An unexpected error occurred. Please try again.';
-    
+
     // Auto logout on 401 Unauthorized if token expired
     if (error.response?.status === 401) {
       if (localStorage.getItem('swadghar_token')) {
