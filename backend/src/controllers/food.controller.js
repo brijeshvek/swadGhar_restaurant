@@ -129,14 +129,14 @@ const getAllFoods = async (req, res, next) => {
       .skip(skip)
       .limit(limitNum);
 
-    if (!foods || foods.length === 0) {
+    if (!foods) {
       return res.status(200).json({
         success: true,
-        count: mockStore.foods.length,
-        total: mockStore.foods.length,
+        count: 0,
+        total: 0,
         totalPages: 1,
-        currentPage: 1,
-        data: mockStore.foods,
+        currentPage: pageNum,
+        data: [],
       });
     }
 

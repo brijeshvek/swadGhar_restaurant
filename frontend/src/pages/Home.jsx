@@ -28,6 +28,7 @@ const Home = () => {
   const [featuredFoods, setFeaturedFoods] = useState([]);
   const [popularFoods, setPopularFoods] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [categoryTab, setCategoryTab] = useState('all');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -51,6 +52,22 @@ const Home = () => {
 
     fetchHomeData();
   }, []);
+
+  const filteredCategories = categories.filter((cat) => {
+    if (categoryTab === 'gujarati') {
+      return (
+        cat.name.toLowerCase().includes('gujarati') ||
+        cat.name.toLowerCase().includes('kathiyawadi')
+      );
+    }
+    if (categoryTab === 'punjabi') {
+      return (
+        cat.name.toLowerCase().includes('punjabi') ||
+        cat.name.toLowerCase().includes('paneer')
+      );
+    }
+    return true;
+  });
 
   return (
     <div className="space-y-16 sm:space-y-24">
@@ -148,22 +165,57 @@ const Home = () => {
                 Explore by Category
               </h2>
             </div>
-            <Link
-              to="/menu"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700 group"
-            >
-              <span>View All Categories</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
+
+            {/* Cuisine Filter Tabs & View All Link */}
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => setCategoryTab('all')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  categoryTab === 'all'
+                    ? 'bg-stone-900 text-white shadow-sm'
+                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                }`}
+              >
+                All ({categories.length})
+              </button>
+              <button
+                onClick={() => setCategoryTab('gujarati')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  categoryTab === 'gujarati'
+                    ? 'bg-amber-600 text-white shadow-sm'
+                    : 'bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200/60'
+                }`}
+              >
+                🔶 Gujarati (15)
+              </button>
+              <button
+                onClick={() => setCategoryTab('punjabi')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  categoryTab === 'punjabi'
+                    ? 'bg-brand-600 text-white shadow-sm'
+                    : 'bg-orange-50 text-orange-800 hover:bg-orange-100 border border-orange-200/60'
+                }`}
+              >
+                🔷 Punjabi (16)
+              </button>
+
+              <Link
+                to="/menu"
+                className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-brand-600 hover:text-brand-700 ml-2 group"
+              >
+                <span>Complete Menu</span>
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
           </div>
         </AnimatedContent>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
-          {categories.map((cat, idx) => (
-            <AnimatedContent key={cat._id} delay={idx * 0.05}>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-5">
+          {filteredCategories.map((cat, idx) => (
+            <AnimatedContent key={cat._id} delay={idx * 0.03}>
               <Link
                 to={`/menu?category=${cat.slug || cat._id}`}
-                className="group relative rounded-3xl overflow-hidden aspect-[4/3] bg-stone-900 shadow-md hover:shadow-xl transition-all duration-300 block"
+                className="group relative rounded-2xl overflow-hidden aspect-[4/3] bg-stone-900 shadow-sm hover:shadow-xl transition-all duration-300 block border border-stone-200/40"
               >
                 <img
                   src={cat.image}
@@ -171,8 +223,8 @@ const Home = () => {
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-75 group-hover:opacity-90"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/40 to-transparent"></div>
-                <div className="absolute bottom-3.5 left-3.5 right-3.5 text-white">
-                  <h3 className="font-serif font-bold text-sm sm:text-base leading-tight group-hover:text-amber-300 transition-colors">
+                <div className="absolute bottom-2.5 left-2.5 right-2.5 text-white">
+                  <h3 className="font-serif font-bold text-xs sm:text-sm leading-tight group-hover:text-amber-300 transition-colors line-clamp-2">
                     {cat.name}
                   </h3>
                 </div>
