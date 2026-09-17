@@ -15,6 +15,14 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 import FoodCard from '../components/common/FoodCard';
+import {
+  BlurText,
+  ShinyText,
+  CountUp,
+  AnimatedContent,
+  SpotlightCard,
+  Magnetic,
+} from '../components/animations';
 
 const Home = () => {
   const [featuredFoods, setFeaturedFoods] = useState([]);
@@ -53,137 +61,167 @@ const Home = () => {
           <img
             src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1920&q=80"
             alt="SwadGhar Fine Dining"
-            className="w-full h-full object-cover opacity-25 scale-105 animate-pulse duration-10000"
+            className="w-full h-full object-cover opacity-25 scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/80 to-transparent"></div>
-          <div className="absolute inset-0 bg-hero-pattern"></div>
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8 animate-fade-in">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-500/15 border border-brand-500/30 text-amber-300 text-xs sm:text-sm font-semibold shadow-glow">
-            <Sparkles className="w-4 h-4 text-amber-400" />
-            <span>Welcome to SwadGhar Fine Dining & Delicacies</span>
-          </div>
+          <AnimatedContent delay={0.1}>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-500/15 border border-brand-500/30 text-amber-300 text-xs sm:text-sm font-semibold shadow-glow">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <ShinyText text="Welcome to SwadGhar Fine Dining & Delicacies" />
+            </div>
+          </AnimatedContent>
 
           {/* Heading */}
           <div className="space-y-4 max-w-4xl mx-auto">
             <h1 className="text-4xl sm:text-6xl lg:text-7xl font-serif font-bold text-gradient leading-[1.1] tracking-tight">
-              A Symphony of Authentic Flavors & Royal Indian Heritage
+              <BlurText
+                text="A Symphony of Authentic Flavors & Royal Indian Heritage"
+                delay={0.04}
+                animateBy="words"
+              />
             </h1>
-            <p className="text-stone-300 text-base sm:text-xl font-normal max-w-2xl mx-auto leading-relaxed">
-              Indulge in artisanal Gujarati thalis, succulent Punjabi curries, charcoal-fired tandoor specials, and handcrafted royal desserts.
-            </p>
+            <AnimatedContent delay={0.3}>
+              <p className="text-stone-300 text-base sm:text-xl font-normal max-w-2xl mx-auto leading-relaxed">
+                Indulge in artisanal Gujarati thalis, succulent Punjabi curries, charcoal-fired tandoor specials, and handcrafted royal desserts.
+              </p>
+            </AnimatedContent>
           </div>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-            <Link
-              to="/menu"
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 text-white font-bold text-base shadow-xl shadow-brand-500/20 hover:shadow-glow hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2.5"
-            >
-              <span>Explore Our Menu</span>
-              <ArrowRight className="w-5 h-5" />
-            </Link>
+          <AnimatedContent delay={0.4}>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+              <Magnetic strength={0.2}>
+                <Link
+                  to="/menu"
+                  className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 text-white font-bold text-base shadow-xl shadow-brand-500/20 hover:shadow-glow transition-all flex items-center justify-center gap-2.5 active:scale-95"
+                >
+                  <span>Explore Our Menu</span>
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </Magnetic>
 
-            <Link
-              to="/reservations"
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-stone-900/80 hover:bg-stone-800 border border-stone-700 text-stone-200 hover:text-white font-semibold text-base backdrop-blur-md transition-all flex items-center justify-center gap-2"
-            >
-              <Calendar className="w-5 h-5 text-amber-400" />
-              <span>Book a Table</span>
-            </Link>
-          </div>
+              <Magnetic strength={0.2}>
+                <Link
+                  to="/reservations"
+                  className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-stone-900/80 hover:bg-stone-800 border border-stone-700 text-stone-200 hover:text-white font-semibold text-base backdrop-blur-md transition-all flex items-center justify-center gap-2 active:scale-95"
+                >
+                  <Calendar className="w-5 h-5 text-amber-400" />
+                  <span>Book a Table</span>
+                </Link>
+              </Magnetic>
+            </div>
+          </AnimatedContent>
 
           {/* Highlights Metrics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 pt-10 max-w-4xl mx-auto border-t border-stone-800/80">
-            <div className="p-4 rounded-xl bg-stone-900/40 border border-stone-800/60">
-              <span className="block text-2xl sm:text-3xl font-bold text-brand-400 font-serif">100%</span>
-              <span className="text-xs text-stone-400">Pure Ghee & Spices</span>
+          <AnimatedContent delay={0.5}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 pt-10 max-w-4xl mx-auto border-t border-stone-800/80">
+              <div className="p-4 rounded-2xl bg-stone-900/50 border border-stone-800/60 backdrop-blur-sm">
+                <span className="block text-2xl sm:text-3xl font-bold text-brand-400 font-serif">
+                  <CountUp to={100} suffix="%" duration={1.5} />
+                </span>
+                <span className="text-xs text-stone-400">Pure Ghee & Spices</span>
+              </div>
+              <div className="p-4 rounded-2xl bg-stone-900/50 border border-stone-800/60 backdrop-blur-sm">
+                <span className="block text-2xl sm:text-3xl font-bold text-amber-400 font-serif">
+                  <CountUp to={4.9} duration={1.5} suffix=" ★" />
+                </span>
+                <span className="text-xs text-stone-400">Customer Rating</span>
+              </div>
+              <div className="p-4 rounded-2xl bg-stone-900/50 border border-stone-800/60 backdrop-blur-sm">
+                <span className="block text-2xl sm:text-3xl font-bold text-brand-400 font-serif">
+                  <CountUp to={30} suffix="+ Mins" duration={1.5} />
+                </span>
+                <span className="text-xs text-stone-400">Fast Hot Delivery</span>
+              </div>
+              <div className="p-4 rounded-2xl bg-stone-900/50 border border-stone-800/60 backdrop-blur-sm">
+                <span className="block text-2xl sm:text-3xl font-bold text-amber-400 font-serif">
+                  <CountUp to={25} suffix="+ Yrs" duration={1.5} />
+                </span>
+                <span className="text-xs text-stone-400">Culinary Legacy</span>
+              </div>
             </div>
-            <div className="p-4 rounded-xl bg-stone-900/40 border border-stone-800/60">
-              <span className="block text-2xl sm:text-3xl font-bold text-amber-400 font-serif">4.9 ★</span>
-              <span className="text-xs text-stone-400">Customer Rating</span>
-            </div>
-            <div className="p-4 rounded-xl bg-stone-900/40 border border-stone-800/60">
-              <span className="block text-2xl sm:text-3xl font-bold text-brand-400 font-serif">30+ Mins</span>
-              <span className="text-xs text-stone-400">Fast Hot Delivery</span>
-            </div>
-            <div className="p-4 rounded-xl bg-stone-900/40 border border-stone-800/60">
-              <span className="block text-2xl sm:text-3xl font-bold text-amber-400 font-serif">25+ Yrs</span>
-              <span className="text-xs text-stone-400">Culinary Legacy</span>
-            </div>
-          </div>
+          </AnimatedContent>
         </div>
       </section>
 
       {/* 2. CATEGORIES SECTION */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-widest text-brand-600 block">
-              Curated Palettes
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-stone-900">
-              Explore by Category
-            </h2>
+        <AnimatedContent>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-widest text-brand-600 block">
+                Curated Palettes
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-stone-900">
+                Explore by Category
+              </h2>
+            </div>
+            <Link
+              to="/menu"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700 group"
+            >
+              <span>View All Categories</span>
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
-          <Link
-            to="/menu"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700 group"
-          >
-            <span>View All Categories</span>
-            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-        </div>
+        </AnimatedContent>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
-          {categories.map((cat) => (
-            <Link
-              key={cat._id}
-              to={`/menu?category=${cat.slug || cat._id}`}
-              className="group relative rounded-2xl overflow-hidden aspect-[4/3] bg-stone-900 shadow-md hover:shadow-xl transition-all duration-300"
-            >
-              <img
-                src={cat.image}
-                alt={cat.name}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-75 group-hover:opacity-90"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/40 to-transparent"></div>
-              <div className="absolute bottom-3 left-3 right-3 text-white">
-                <h3 className="font-serif font-bold text-sm sm:text-base leading-tight group-hover:text-amber-300 transition-colors">
-                  {cat.name}
-                </h3>
-              </div>
-            </Link>
+          {categories.map((cat, idx) => (
+            <AnimatedContent key={cat._id} delay={idx * 0.05}>
+              <Link
+                to={`/menu?category=${cat.slug || cat._id}`}
+                className="group relative rounded-3xl overflow-hidden aspect-[4/3] bg-stone-900 shadow-md hover:shadow-xl transition-all duration-300 block"
+              >
+                <img
+                  src={cat.image}
+                  alt={cat.name}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-75 group-hover:opacity-90"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/40 to-transparent"></div>
+                <div className="absolute bottom-3.5 left-3.5 right-3.5 text-white">
+                  <h3 className="font-serif font-bold text-sm sm:text-base leading-tight group-hover:text-amber-300 transition-colors">
+                    {cat.name}
+                  </h3>
+                </div>
+              </Link>
+            </AnimatedContent>
           ))}
         </div>
       </section>
 
       {/* 3. FEATURED CHEF DELICACIES */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-widest text-brand-600 block flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5" />
-              Handpicked Masterpieces
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-stone-900">
-              Chef’s Signature Dishes
-            </h2>
+        <AnimatedContent>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-widest text-brand-600 block flex items-center gap-1">
+                <Sparkles className="w-3.5 h-3.5" />
+                Handpicked Masterpieces
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-stone-900">
+                Chef’s Signature Dishes
+              </h2>
+            </div>
+            <Link
+              to="/menu"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700"
+            >
+              <span>See Full Menu</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
           </div>
-          <Link
-            to="/menu"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700"
-          >
-            <span>See Full Menu</span>
-            <ChevronRight className="w-4 h-4" />
-          </Link>
-        </div>
+        </AnimatedContent>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredFoods.slice(0, 4).map((food) => (
-            <FoodCard key={food._id} food={food} />
+          {featuredFoods.slice(0, 4).map((food, idx) => (
+            <AnimatedContent key={food._id} delay={idx * 0.08} className="h-full">
+              <FoodCard food={food} />
+            </AnimatedContent>
           ))}
         </div>
       </section>
@@ -191,186 +229,189 @@ const Home = () => {
       {/* 4. HERITAGE & EXPERIENCE BANNER */}
       <section className="bg-stone-900 text-stone-100 py-16 sm:py-20 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <span className="text-xs font-bold uppercase tracking-widest text-amber-400">
-              The SwadGhar Tradition
-            </span>
-            <h2 className="text-3xl sm:text-5xl font-serif font-bold text-gradient leading-tight">
-              Where Ancient Recipes Meet Modern Hospitality
-            </h2>
-            <p className="text-stone-300 text-sm sm:text-base leading-relaxed">
-              At SwadGhar, food is not merely prepared; it is honored. Every morning, our chefs hand-roast whole Gujarati cumin, coriander, and dry Kashmiri chilies. We simmer black lentils for 16 hours in copper vessels and bake artisan naans directly over coal tandoors.
-            </p>
+          <AnimatedContent direction="horizontal" distance={40}>
+            <div className="space-y-6">
+              <span className="text-xs font-bold uppercase tracking-widest text-amber-400">
+                The SwadGhar Tradition
+              </span>
+              <h2 className="text-3xl sm:text-5xl font-serif font-bold text-gradient leading-tight">
+                Where Ancient Recipes Meet Modern Hospitality
+              </h2>
+              <p className="text-stone-300 text-sm sm:text-base leading-relaxed">
+                At SwadGhar, food is not merely prepared; it is honored. Every morning, our chefs hand-roast whole Gujarati cumin, coriander, and dry Kashmiri chilies. We simmer black lentils for 16 hours in copper vessels and bake artisan naans directly over coal tandoors.
+              </p>
 
-            <div className="grid grid-cols-2 gap-4 pt-2">
-              <div className="flex items-start gap-3">
-                <ChefHat className="w-6 h-6 text-brand-500 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-bold text-white">Master Artisans</h4>
-                  <p className="text-xs text-stone-400">Recipes perfected over 3 generations.</p>
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                <div className="flex items-start gap-3">
+                  <ChefHat className="w-6 h-6 text-brand-500 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Master Artisans</h4>
+                    <p className="text-xs text-stone-400">Recipes perfected over 3 generations.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <ShieldCheck className="w-6 h-6 text-emerald-400 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-sm font-bold text-white">FSSAI Gold Hygiene</h4>
+                    <p className="text-xs text-stone-400">Sterilized contact-free packaging.</p>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <ShieldCheck className="w-6 h-6 text-emerald-400 shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-bold text-white">FSSAI Gold Hygiene</h4>
-                  <p className="text-xs text-stone-400">Sterilized contact-free packaging.</p>
-                </div>
+
+              <div className="pt-4">
+                <Link
+                  to="/about"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-semibold shadow-md hover:shadow-glow transition-all"
+                >
+                  <span>Read Our Heritage Story</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
               </div>
             </div>
+          </AnimatedContent>
 
-            <div className="pt-4">
-              <Link
-                to="/about"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-semibold shadow-md transition-all"
-              >
-                <span>Read Our Heritage Story</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+          <AnimatedContent direction="horizontal" distance={-40}>
+            <div className="grid grid-cols-2 gap-4">
+              <img
+                src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80"
+                alt="Restaurant Ambience"
+                className="rounded-3xl shadow-2xl object-cover h-64 w-full"
+              />
+              <img
+                src="https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=600&q=80"
+                alt="Authentic Thali"
+                className="rounded-3xl shadow-2xl object-cover h-64 w-full mt-6"
+              />
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <img
-              src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80"
-              alt="Restaurant Ambience"
-              className="rounded-2xl shadow-xl object-cover h-64 w-full"
-            />
-            <img
-              src="https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=600&q=80"
-              alt="Authentic Thali"
-              className="rounded-2xl shadow-xl object-cover h-64 w-full mt-6"
-            />
-          </div>
+          </AnimatedContent>
         </div>
       </section>
 
       {/* 5. POPULAR BESTSELLERS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-widest text-brand-600 block flex items-center gap-1">
-              <Flame className="w-3.5 h-3.5 text-amber-500" />
-              Crowd Favorites
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-stone-900">
-              Most Loved Delicacies
-            </h2>
+        <AnimatedContent>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-widest text-brand-600 block flex items-center gap-1">
+                <Flame className="w-3.5 h-3.5 text-amber-500" />
+                Crowd Favorites
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-stone-900">
+                Most Loved Delicacies
+              </h2>
+            </div>
+            <Link
+              to="/menu"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700"
+            >
+              <span>Explore All Dishes</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
           </div>
-          <Link
-            to="/menu"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700"
-          >
-            <span>Explore All Dishes</span>
-            <ChevronRight className="w-4 h-4" />
-          </Link>
-        </div>
+        </AnimatedContent>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {popularFoods.slice(0, 4).map((food) => (
-            <FoodCard key={food._id} food={food} />
+          {popularFoods.slice(0, 4).map((food, idx) => (
+            <AnimatedContent key={food._id} delay={idx * 0.08} className="h-full">
+              <FoodCard food={food} />
+            </AnimatedContent>
           ))}
         </div>
       </section>
 
       {/* 6. TESTIMONIALS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center space-y-3 mb-12">
-          <span className="text-xs font-bold uppercase tracking-widest text-brand-600">
-            Diner Reviews
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-stone-900">
-            What Our Patrons Say
-          </h2>
-        </div>
+        <AnimatedContent>
+          <div className="text-center space-y-3 mb-12">
+            <span className="text-xs font-bold uppercase tracking-widest text-brand-600">
+              Diner Reviews
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-stone-900">
+              What Our Patrons Say
+            </h2>
+          </div>
+        </AnimatedContent>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-6 sm:p-8 rounded-2xl bg-white border border-stone-200/80 shadow-sm space-y-4 relative">
-            <Quote className="w-8 h-8 text-brand-200" />
-            <div className="flex items-center gap-1 text-amber-400">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-amber-400" />
-              ))}
-            </div>
-            <p className="text-sm text-stone-600 italic leading-relaxed">
-              "The Royal Gujarati Thali transported me straight back to grandmother’s kitchen. Unmatched authenticity and warm hospitable service."
-            </p>
-            <div className="pt-2 border-t border-stone-100 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-brand-100 text-brand-700 font-bold flex items-center justify-center text-sm">
-                AS
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-stone-900">Aarav Sharma</h4>
-                <p className="text-xs text-stone-400">Food Connoisseur</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-6 sm:p-8 rounded-2xl bg-white border border-stone-200/80 shadow-sm space-y-4 relative">
-            <Quote className="w-8 h-8 text-brand-200" />
-            <div className="flex items-center gap-1 text-amber-400">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-amber-400" />
-              ))}
-            </div>
-            <p className="text-sm text-stone-600 italic leading-relaxed">
-              "Best Paneer Butter Masala and Garlic Naan in the city. Delivery was hot and prompt in under 30 minutes with leak-proof eco boxes."
-            </p>
-            <div className="pt-2 border-t border-stone-100 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-700 font-bold flex items-center justify-center text-sm">
-                PM
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-stone-900">Pooja Mehta</h4>
-                <p className="text-xs text-stone-400">Regular Diner</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-6 sm:p-8 rounded-2xl bg-white border border-stone-200/80 shadow-sm space-y-4 relative">
-            <Quote className="w-8 h-8 text-brand-200" />
-            <div className="flex items-center gap-1 text-amber-400">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-4 h-4 fill-amber-400" />
-              ))}
-            </div>
-            <p className="text-sm text-stone-600 italic leading-relaxed">
-              "We booked our anniversary banquet table online. The ambiance, royal lighting, and Dum Biryani handi were completely extraordinary!"
-            </p>
-            <div className="pt-2 border-t border-stone-100 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-sm">
-                RD
-              </div>
-              <div>
-                <h4 className="text-sm font-bold text-stone-900">Rohan Desai</h4>
-                <p className="text-xs text-stone-400">Verified Table Guest</p>
-              </div>
-            </div>
-          </div>
+          {[
+            {
+              quote: 'The Royal Gujarati Thali transported me straight back to grandmother’s kitchen. Unmatched authenticity and warm hospitable service.',
+              initials: 'AS',
+              name: 'Aarav Sharma',
+              role: 'Food Connoisseur',
+              color: 'bg-brand-100 text-brand-700',
+            },
+            {
+              quote: 'Best Paneer Butter Masala and Garlic Naan in the city. Delivery was hot and prompt in under 30 minutes with leak-proof eco boxes.',
+              initials: 'PM',
+              name: 'Pooja Mehta',
+              role: 'Regular Diner',
+              color: 'bg-amber-100 text-amber-700',
+            },
+            {
+              quote: 'We booked our anniversary banquet table online. The ambiance, royal lighting, and Dum Biryani handi were completely extraordinary!',
+              initials: 'RD',
+              name: 'Rohan Desai',
+              role: 'Verified Table Guest',
+              color: 'bg-emerald-100 text-emerald-700',
+            },
+          ].map((t, idx) => (
+            <AnimatedContent key={idx} delay={idx * 0.1}>
+              <SpotlightCard
+                spotlightColor="rgba(217, 119, 6, 0.1)"
+                className="p-6 sm:p-8 rounded-3xl bg-white border border-stone-200/80 shadow-sm space-y-4 relative h-full flex flex-col justify-between"
+              >
+                <div className="space-y-3">
+                  <Quote className="w-8 h-8 text-brand-200" />
+                  <div className="flex items-center gap-1 text-amber-400">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-sm text-stone-600 italic leading-relaxed">
+                    "{t.quote}"
+                  </p>
+                </div>
+                <div className="pt-3 border-t border-stone-100 flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full font-bold flex items-center justify-center text-sm ${t.color}`}>
+                    {t.initials}
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-stone-900">{t.name}</h4>
+                    <p className="text-xs text-stone-400">{t.role}</p>
+                  </div>
+                </div>
+              </SpotlightCard>
+            </AnimatedContent>
+          ))}
         </div>
       </section>
 
       {/* 7. TABLE RESERVATION CTA */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <div className="rounded-3xl bg-gradient-to-r from-stone-950 via-stone-900 to-brand-950 p-8 sm:p-12 text-white border border-stone-800 shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-8">
-          <div className="space-y-3 text-center lg:text-left">
-            <span className="text-xs font-bold uppercase tracking-widest text-amber-400">
-              Experience Fine Dining
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-serif font-bold text-white">
-              Reserve Your Table in Advance
-            </h2>
-            <p className="text-stone-300 text-sm sm:text-base max-w-xl">
-              Planning a family feast, romantic dinner or business luncheon? Secure your table instantly with zero booking fee.
-            </p>
+        <AnimatedContent>
+          <div className="rounded-3xl bg-gradient-to-r from-stone-950 via-stone-900 to-brand-950 p-8 sm:p-12 text-white border border-stone-800 shadow-2xl flex flex-col lg:flex-row items-center justify-between gap-8">
+            <div className="space-y-3 text-center lg:text-left">
+              <span className="text-xs font-bold uppercase tracking-widest text-amber-400">
+                Experience Fine Dining
+              </span>
+              <h2 className="text-2xl sm:text-4xl font-serif font-bold text-white">
+                Reserve Your Table in Advance
+              </h2>
+              <p className="text-stone-300 text-sm sm:text-base max-w-xl">
+                Planning a family feast, romantic dinner or business luncheon? Secure your table instantly with zero booking fee.
+              </p>
+            </div>
+            <Magnetic strength={0.25}>
+              <Link
+                to="/reservations"
+                className="px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 text-white font-bold text-base shadow-xl hover:shadow-glow transition-all shrink-0 active:scale-95"
+              >
+                Book Table Now
+              </Link>
+            </Magnetic>
           </div>
-          <Link
-            to="/reservations"
-            className="px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 text-white font-bold text-base shadow-xl hover:shadow-glow transition-all shrink-0"
-          >
-            Book Table Now
-          </Link>
-        </div>
+        </AnimatedContent>
       </section>
     </div>
   );

@@ -2,7 +2,10 @@ const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const User = require('../models/User');
 const Food = require('../models/Food');
+const Category = require('../models/Category');
 const Reservation = require('../models/Reservation');
+const Coupon = require('../models/Coupon');
+const Review = require('../models/Review');
 const mockStore = require('../utils/mockStore');
 
 const isDbConnected = () => mongoose.connection.readyState === 1;
@@ -12,30 +15,41 @@ const isDbConnected = () => mongoose.connection.readyState === 1;
 // @access  Private/Admin
 const getDashboardStats = async (req, res, next) => {
   try {
-    const weeklyTrends = [
-      { day: 'Mon', revenue: 4200, orders: 12 },
-      { day: 'Tue', revenue: 3800, orders: 9 },
-      { day: 'Wed', revenue: 5600, orders: 15 },
-      { day: 'Thu', revenue: 6100, orders: 18 },
-      { day: 'Fri', revenue: 8900, orders: 24 },
-      { day: 'Sat', revenue: 12400, orders: 35 },
-      { day: 'Sun', revenue: 14200, orders: 40 },
-    ];
-
     if (!isDbConnected()) {
+      const totalRev = mockStore.orders.reduce((sum, o) => sum + (o.pricing?.total || 0), 0);
+      const pendingOrds = mockStore.orders.filter(o => ['pending', 'confirmed', 'preparing'].includes(o.orderStatus)).length;
+      const pendingRes = mockStore.reservations.filter(r => r.status === 'pending').length;
+
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const todayIndex = new Date().getDay();
+      const last7Days = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        return {
+          day: days[d.getDay()],
+          date: d.toISOString().split('T')[0],
+          revenue: Math.round(totalRev / 7) + (i * 350),
+          orders: Math.max(1, Math.round(mockStore.orders.length / 7) + (i % 3)),
+        };
+      });
+
       return res.status(200).json({
         success: true,
         data: {
-          totalOrders: mockStore.orders.length + 152,
-          todayOrders: 14,
-          totalRevenue: 55200,
-          todayRevenue: 4890,
-          totalCustomers: mockStore.users.length + 84,
-          pendingOrders: mockStore.orders.filter(o => o.orderStatus === 'pending').length || 2,
-          pendingReservations: mockStore.reservations.filter(r => r.status === 'pending').length || 1,
-          weeklyTrends,
+          totalRevenue: totalRev,
+          todayRevenue: Math.round(totalRev * 0.18),
+          totalOrders: mockStore.orders.length,
+          todayOrders: Math.max(1, Math.round(mockStore.orders.length * 0.2)),
+          totalCustomers: mockStore.users.filter(u => u.role === 'customer').length,
+          totalFoods: mockStore.foods.length,
+          totalCategories: mockStore.categories.length,
+          totalReservations: mockStore.reservations.length,
+          totalCoupons: mockStore.coupons.length,
+          pendingOrders: pendingOrds,
+          pendingReservations: pendingRes,
+          weeklyTrends: last7Days,
           popularFoods: mockStore.foods.slice(0, 5),
-          recentOrders: mockStore.orders,
+          recentOrders: mockStore.orders.slice(0, 8),
         },
       });
     }
@@ -43,70 +57,96 @@ const getDashboardStats = async (req, res, next) => {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
 
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
     const [
       totalOrdersCount,
       todayOrdersCount,
-      allOrders,
-      todayOrders,
+      allPaidOrders,
+      todayPaidOrders,
       totalCustomersCount,
+      totalFoodsCount,
+      totalCategoriesCount,
+      totalReservationsCount,
+      totalCouponsCount,
+      totalReviewsCount,
       pendingOrdersCount,
       pendingReservationsCount,
       popularFoods,
       recentOrders,
+      recent7DaysOrders,
     ] = await Promise.all([
       Order.countDocuments(),
       Order.countDocuments({ createdAt: { $gte: todayStart } }),
       Order.find({ 'paymentInfo.status': 'paid' }),
       Order.find({ createdAt: { $gte: todayStart }, 'paymentInfo.status': 'paid' }),
       User.countDocuments({ role: 'customer' }),
+      Food.countDocuments(),
+      Category.countDocuments(),
+      Reservation.countDocuments(),
+      Coupon.countDocuments(),
+      Review.countDocuments(),
       Order.countDocuments({ orderStatus: { $in: ['pending', 'confirmed', 'preparing'] } }),
       Reservation.countDocuments({ status: 'pending' }),
       Food.find().sort({ numReviews: -1, rating: -1 }).limit(5).populate('category', 'name'),
       Order.find().sort({ createdAt: -1 }).limit(8).populate('customer', 'name email avatar'),
+      Order.find({ createdAt: { $gte: sevenDaysAgo } }),
     ]);
 
-    const totalRevenue = allOrders.reduce((sum, ord) => sum + (ord.pricing?.total || 0), 0);
-    const todayRevenue = todayOrders.reduce((sum, ord) => sum + (ord.pricing?.total || 0), 0);
+    const totalRevenue = allPaidOrders.reduce((sum, ord) => sum + (ord.pricing?.total || 0), 0);
+    const todayRevenue = todayPaidOrders.reduce((sum, ord) => sum + (ord.pricing?.total || 0), 0);
+
+    // Group real orders by day for last 7 days
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const trendMap = {};
+    for (let i = 0; i < 7; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      const key = d.toISOString().split('T')[0];
+      trendMap[key] = {
+        day: days[d.getDay()],
+        date: key,
+        revenue: 0,
+        orders: 0,
+      };
+    }
+
+    recent7DaysOrders.forEach((ord) => {
+      const dateKey = new Date(ord.createdAt).toISOString().split('T')[0];
+      if (trendMap[dateKey]) {
+        trendMap[dateKey].orders += 1;
+        if (ord.paymentInfo?.status === 'paid' || ord.orderStatus === 'delivered') {
+          trendMap[dateKey].revenue += (ord.pricing?.total || 0);
+        }
+      }
+    });
+
+    const weeklyTrends = Object.values(trendMap);
 
     res.status(200).json({
       success: true,
       data: {
-        totalOrders: totalOrdersCount || 152,
-        todayOrders: todayOrdersCount || 14,
-        totalRevenue: totalRevenue || 55200,
-        todayRevenue: todayRevenue || 4890,
-        totalCustomers: totalCustomersCount || 84,
-        pendingOrders: pendingOrdersCount || 2,
-        pendingReservations: pendingReservationsCount || 1,
+        totalRevenue,
+        todayRevenue,
+        totalOrders: totalOrdersCount,
+        todayOrders: todayOrdersCount,
+        totalCustomers: totalCustomersCount,
+        totalFoods: totalFoodsCount,
+        totalCategories: totalCategoriesCount,
+        totalReservations: totalReservationsCount,
+        totalCoupons: totalCouponsCount,
+        totalReviews: totalReviewsCount,
+        pendingOrders: pendingOrdersCount,
+        pendingReservations: pendingReservationsCount,
         weeklyTrends,
         popularFoods: popularFoods.length > 0 ? popularFoods : mockStore.foods.slice(0, 5),
-        recentOrders: recentOrders.length > 0 ? recentOrders : mockStore.orders,
+        recentOrders: recentOrders.length > 0 ? recentOrders : mockStore.orders.slice(0, 8),
       },
     });
   } catch (error) {
-    res.status(200).json({
-      success: true,
-      data: {
-        totalOrders: 152,
-        todayOrders: 14,
-        totalRevenue: 55200,
-        todayRevenue: 4890,
-        totalCustomers: 84,
-        pendingOrders: 2,
-        pendingReservations: 1,
-        weeklyTrends: [
-          { day: 'Mon', revenue: 4200, orders: 12 },
-          { day: 'Tue', revenue: 3800, orders: 9 },
-          { day: 'Wed', revenue: 5600, orders: 15 },
-          { day: 'Thu', revenue: 6100, orders: 18 },
-          { day: 'Fri', revenue: 8900, orders: 24 },
-          { day: 'Sat', revenue: 12400, orders: 35 },
-          { day: 'Sun', revenue: 14200, orders: 40 },
-        ],
-        popularFoods: mockStore.foods.slice(0, 5),
-        recentOrders: mockStore.orders,
-      },
-    });
+    next(error);
   }
 };
 

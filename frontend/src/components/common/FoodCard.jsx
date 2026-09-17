@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Star, Flame, Plus, Minus, Check, Clock } from 'lucide-react';
+import { Star, Flame, Plus, Minus, Check, Clock, Eye } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { SpotlightCard } from '../animations';
 
 const FoodCard = ({ food }) => {
   const { cartItems, addToCart, updateQuantity } = useCart();
@@ -16,7 +17,10 @@ const FoodCard = ({ food }) => {
     : 0;
 
   return (
-    <div className="group rounded-2xl bg-white border border-stone-200/80 hover:border-brand-500/30 overflow-hidden shadow-sm hover:shadow-card-hover transition-all duration-300 flex flex-col justify-between">
+    <SpotlightCard
+      spotlightColor="rgba(217, 119, 6, 0.12)"
+      className="group rounded-3xl bg-white border border-stone-200/80 hover:border-brand-500/40 overflow-hidden shadow-sm hover:shadow-card-hover transition-all duration-300 flex flex-col justify-between h-full"
+    >
       {/* Food Image Container */}
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-stone-100">
         <Link to={`/food/${food._id || food.slug}`} className="block w-full h-full">
@@ -25,6 +29,10 @@ const FoodCard = ({ food }) => {
             alt={food.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             loading="lazy"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80';
+            }}
           />
         </Link>
 
@@ -76,11 +84,11 @@ const FoodCard = ({ food }) => {
       <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4">
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs text-stone-500">
-            <span className="font-medium text-brand-600">
+            <span className="font-semibold text-brand-600 truncate max-w-[150px]">
               {food.category?.name || 'SwadGhar Delicacy'}
             </span>
             {food.preparationTime && (
-              <span className="flex items-center gap-1 text-[11px]">
+              <span className="flex items-center gap-1 text-[11px] shrink-0 font-medium text-stone-400">
                 <Clock className="w-3 h-3 text-stone-400" />
                 {food.preparationTime} mins
               </span>
@@ -96,13 +104,13 @@ const FoodCard = ({ food }) => {
             </h3>
           </Link>
 
-          <p className="text-xs sm:text-sm text-stone-500 line-clamp-2 leading-relaxed">
+          <p className="text-xs sm:text-sm text-stone-500 line-clamp-2 leading-relaxed min-h-[36px]">
             {food.description}
           </p>
         </div>
 
         {/* Price & Action Button */}
-        <div className="pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
+        <div className="pt-3 border-t border-stone-100 flex items-center justify-between gap-2 mt-auto">
           {/* Price */}
           <div>
             <div className="flex items-baseline gap-1.5">
@@ -120,7 +128,7 @@ const FoodCard = ({ food }) => {
 
           {/* Add to Cart Actions */}
           {!food.isAvailable ? (
-            <span className="text-xs font-semibold text-rose-500 bg-rose-50 px-3 py-1.5 rounded-xl">
+            <span className="text-xs font-semibold text-rose-500 bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-100">
               Sold Out
             </span>
           ) : quantityInCart > 0 ? (
@@ -144,7 +152,7 @@ const FoodCard = ({ food }) => {
           ) : (
             <button
               onClick={() => addToCart(food, 1)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 active:scale-95 text-white text-xs sm:text-sm font-semibold shadow-sm hover:shadow-glow transition-all"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 active:scale-95 text-white text-xs sm:text-sm font-semibold shadow-sm hover:shadow-glow transition-all"
             >
               <Plus className="w-4 h-4" />
               <span>Add</span>
@@ -152,7 +160,7 @@ const FoodCard = ({ food }) => {
           )}
         </div>
       </div>
-    </div>
+    </SpotlightCard>
   );
 };
 

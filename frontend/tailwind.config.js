@@ -39,6 +39,15 @@ export default {
       backgroundImage: {
         'hero-pattern': "radial-gradient(ellipse at top, rgba(249, 115, 22, 0.15), transparent 70%)",
       },
+      keyframes: {
+        shine: {
+          '0%': { 'background-position': '100%' },
+          '100%': { 'background-position': '-100%' },
+        },
+      },
+      animation: {
+        shine: 'shine 5s linear infinite',
+      },
     },
   },
   plugins: [],

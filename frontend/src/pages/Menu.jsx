@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 import FoodCard from '../components/common/FoodCard';
+import { BlurText, AnimatedContent, ShinyText } from '../components/animations';
 
 const Menu = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -106,14 +107,14 @@ const Menu = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8 animate-fade-in">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
       {/* Page Title */}
       <div className="text-center space-y-2 max-w-2xl mx-auto">
         <span className="text-xs font-bold uppercase tracking-widest text-brand-600 block">
           Freshly Handcrafted
         </span>
         <h1 className="text-3xl sm:text-5xl font-serif font-bold text-stone-900">
-          Our Culinary Repertoire
+          <BlurText text="Our Culinary Repertoire" delay={0.05} animateBy="words" />
         </h1>
         <p className="text-stone-500 text-sm sm:text-base">
           Browse through our rich selection of authentic appetizers, thalis, gravies, and royal desserts.
