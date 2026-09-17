@@ -16,6 +16,7 @@ import Reservations from '../pages/Reservations';
 import About from '../pages/About';
 import Gallery from '../pages/Gallery';
 import Contact from '../pages/Contact';
+import Franchise from '../pages/Franchise';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import ForgotPassword from '../pages/ForgotPassword';
@@ -68,6 +69,8 @@ const AppRoutes = () => {
         <Route path="food/:id" element={<FoodDetails />} />
         <Route path="cart" element={<Cart />} />
         <Route path="about" element={<About />} />
+        <Route path="franchise" element={<Franchise />} />
+        <Route path="franchises" element={<Franchise />} />
         <Route path="gallery" element={<Gallery />} />
         <Route path="contact" element={<Contact />} />
         <Route path="reservations" element={<Reservations />} />

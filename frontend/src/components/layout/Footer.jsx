@@ -95,6 +95,11 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/franchise" className="hover:text-amber-400 font-semibold text-amber-300 transition-colors flex items-center gap-1.5">
+                  <span>🏪 5 Restaurant Franchises</span>
+                </Link>
+              </li>
+              <li>
                 <Link to="/contact" className="hover:text-brand-400 transition-colors">
                   Contact & Directions
                 </Link>

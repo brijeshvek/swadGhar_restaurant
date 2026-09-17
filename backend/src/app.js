@@ -15,6 +15,7 @@ const paymentRoutes = require('./routes/payment.routes');
 const reviewRoutes = require('./routes/review.routes');
 const adminRoutes = require('./routes/admin.routes');
 const inquiryRoutes = require('./routes/inquiry.routes');
+const franchiseRoutes = require('./routes/franchise.routes');
 
 const { notFoundHandler, errorHandler } = require('./middleware/error.middleware');
 
@@ -108,6 +109,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/inquiries', inquiryRoutes);
+app.use('/api/franchises', franchiseRoutes);
 
 // Error Handling Middlewares
 app.use(notFoundHandler);

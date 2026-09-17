@@ -11,6 +11,7 @@ const Food = require('../models/Food');
 const Coupon = require('../models/Coupon');
 const RestaurantSettings = require('../models/RestaurantSettings');
 const Review = require('../models/Review');
+const Franchise = require('../models/Franchise');
 
 const seedData = async () => {
   try {
@@ -29,6 +30,7 @@ const seedData = async () => {
       Coupon.deleteMany({}),
       RestaurantSettings.deleteMany({}),
       Review.deleteMany({}),
+      Franchise.deleteMany({}),
     ]);
 
     // 2. Create Users (Admin, Staff, Customer)
@@ -2595,6 +2597,98 @@ const seedData = async () => {
       });
     }
 
+    // 7. Create 5 Franchise Branches
+    console.log('[Seed] Creating 5 Official Restaurant Franchises...');
+    const franchisesData = [
+      {
+        name: 'SwadGhar - Ahmedabad Flagship (SG Highway)',
+        city: 'Ahmedabad',
+        state: 'Gujarat',
+        branchType: 'Flagship Dine-In',
+        address: 'Grand Imperial Complex, Opp. Iscon Mall, SG Highway, Bodakdev, Ahmedabad - 380054',
+        phone: '+91 98250 11234',
+        email: 'ahmedabad@swadghar.com',
+        timings: '11:00 AM - 11:30 PM (Daily)',
+        seatingCapacity: 160,
+        features: ['Grand AC Banquet Hall', 'Live Kathiyawadi Chula Counter', 'Valet Parking', 'VIP Dining Cabin', 'SwadGhar Sweet & Farsan Mart'],
+        image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
+        googleMapsUrl: 'https://maps.google.com/?q=Bodakdev+Ahmedabad',
+        managerName: 'Rajesh Patel',
+        isActive: true,
+        sortOrder: 1,
+      },
+      {
+        name: 'SwadGhar - Surat Diamond City (Ghod Dod Road)',
+        city: 'Surat',
+        state: 'Gujarat',
+        branchType: 'Premium Family Dining',
+        address: 'Royal Palace Arcade, Near St. Xavier School, Ghod Dod Road, Athwa Lines, Surat - 395007',
+        phone: '+91 98250 22345',
+        email: 'surat@swadghar.com',
+        timings: '11:00 AM - 11:00 PM (Daily)',
+        seatingCapacity: 130,
+        features: ['Surti Farsan & Locho Live Counter', 'Royal Punjabi Tandoor Section', 'Family Private Lounges', 'Covered Parking'],
+        image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=1200&q=80',
+        googleMapsUrl: 'https://maps.google.com/?q=Ghod+Dod+Road+Surat',
+        managerName: 'Ketan Vaghani',
+        isActive: true,
+        sortOrder: 2,
+      },
+      {
+        name: 'SwadGhar - Vadodara Royal Heritage (Alkapuri)',
+        city: 'Vadodara',
+        state: 'Gujarat',
+        branchType: 'Royal Heritage Dining',
+        address: 'Heritage Landmark, RC Dutt Road, Opp. Welcome Hotel, Alkapuri, Vadodara - 390007',
+        phone: '+91 98250 33456',
+        email: 'vadodara@swadghar.com',
+        timings: '11:30 AM - 11:00 PM (Daily)',
+        seatingCapacity: 110,
+        features: ['Gaekwad Heritage Decor', 'Authentic Kathiyawadi Thali Bar', 'Open Courtyard Seating', 'Gourmet Dessert Corner'],
+        image: 'https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?auto=format&fit=crop&w=1200&q=80',
+        googleMapsUrl: 'https://maps.google.com/?q=Alkapuri+Vadodara',
+        managerName: 'Hardik Shah',
+        isActive: true,
+        sortOrder: 3,
+      },
+      {
+        name: 'SwadGhar - Rajkot Kathiyawad Darbar (Kalawad Road)',
+        city: 'Rajkot',
+        state: 'Gujarat',
+        branchType: 'Premium Family Dining',
+        address: 'Swad Circle, Near Kotecha Chowk, Kalawad Road, Rajkot - 360005',
+        phone: '+91 98250 44567',
+        email: 'rajkot@swadghar.com',
+        timings: '11:00 AM - 11:30 PM (Daily)',
+        seatingCapacity: 150,
+        features: ['Traditional Rotla & Ringan Olo Station', 'Live Shehanai & Folk Music', 'Spacious Party Hall', 'Fast Takeaway Counter'],
+        image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80',
+        googleMapsUrl: 'https://maps.google.com/?q=Kalawad+Road+Rajkot',
+        managerName: 'Bhavesh Jadeja',
+        isActive: true,
+        sortOrder: 4,
+      },
+      {
+        name: 'SwadGhar - Mumbai Express (Borivali West)',
+        city: 'Mumbai',
+        state: 'Maharashtra',
+        branchType: 'Express & Takeaway',
+        address: 'Silver Arch Building, SV Road, Near Shimpoli Signal, Borivali West, Mumbai - 400092',
+        phone: '+91 98250 55678',
+        email: 'mumbai@swadghar.com',
+        timings: '11:30 AM - 12:00 AM (Daily)',
+        seatingCapacity: 90,
+        features: ['Express Thali Meals', 'Authentic Gujarati & Punjabi Catering', 'Corporate Delivery Fleet', 'Late Night Dining'],
+        image: 'https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?auto=format&fit=crop&w=1200&q=80',
+        googleMapsUrl: 'https://maps.google.com/?q=Borivali+West+Mumbai',
+        managerName: 'Nitin Mehta',
+        isActive: true,
+        sortOrder: 5,
+      },
+    ];
+
+    const createdFranchises = await Franchise.insertMany(franchisesData);
+
     console.log('===========================================================');
     console.log('  [Seed Success] SwadGhar Database Populated Successfully! ');
     console.log('  Admin User    : admin@swadghar.com    / Password: Admin@123');
@@ -2602,6 +2696,7 @@ const seedData = async () => {
     console.log('  Customer User : customer@gmail.com    / Password: Customer@123');
     console.log(`  Categories    : ${createdCategories.length}`);
     console.log(`  Food Items    : ${createdFoods.length}`);
+    console.log(`  Franchises    : ${createdFranchises.length} Restaurant Branches`);
     console.log(`  Coupons       : ${couponsData.length}`);
     console.log('===========================================================');
 
