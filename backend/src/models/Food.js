@@ -69,7 +69,7 @@ const foodSchema = new mongoose.Schema({
   },
   spiceLevel: {
     type: String,
-    enum: ['mild', 'medium', 'spicy', 'extra-spicy'],
+    enum: ['non-spicy', 'mild', 'medium', 'spicy', 'extra-spicy'],
     default: 'medium',
   },
   preparationTime: {
