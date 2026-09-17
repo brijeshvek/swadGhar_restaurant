@@ -426,7 +426,7 @@ const AdminCategories = () => {
                     </div>
 
                     <input
-                      type="url"
+                      type="text"
                       required
                       value={formData.image}
                       onChange={(e) => setFormData({ ...formData, image: e.target.value })}
