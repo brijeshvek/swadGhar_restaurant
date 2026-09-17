@@ -1,12 +1,22 @@
 import axios from 'axios';
 
-// Dynamically determine Base URL (falls back to local proxy in dev or uses VITE_API_URL in production Netlify deploy)
+// Dynamically determine Base URL (uses VITE_API_URL or defaults to live Render backend in production / Netlify)
 const getBaseURL = () => {
   const envUrl = import.meta.env.VITE_API_URL;
   if (envUrl && envUrl.trim() !== '') {
     const trimmed = envUrl.trim().replace(/\/+$/, '');
     return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
   }
+
+  // Automatic fallback for production or when hosted on Netlify
+  if (typeof window !== 'undefined' && window.location.hostname.includes('netlify.app')) {
+    return 'https://swadghar-restaurant-backend.onrender.com/api';
+  }
+
+  if (import.meta.env.PROD) {
+    return 'https://swadghar-restaurant-backend.onrender.com/api';
+  }
+
   return '/api';
 };
 
@@ -15,7 +25,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 25000,
+  timeout: 30000,
 });
 
 // Request interceptor for injecting Bearer token

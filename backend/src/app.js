@@ -21,34 +21,58 @@ const { notFoundHandler, errorHandler } = require('./middleware/error.middleware
 const app = express();
 
 // Security Middlewares
-app.use(helmet({
-  crossOriginResourcePolicy: false,
-}));
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    crossOriginOpenerPolicy: false,
+  })
+);
 
-// CORS Configuration
+// CORS Configuration for Live Netlify Frontend & Render Backend
 const allowedOrigins = [
+  'https://swadghar-restaurant.netlify.app',
+  'https://swadghar-restaurant-backend.onrender.com',
   process.env.CLIENT_URL,
   'http://localhost:5173',
   'http://127.0.0.1:5173',
+  'http://localhost:3000',
 ].filter(Boolean);
 
-app.use(cors({
+const corsOptions = {
   origin: (origin, callback) => {
+    // Allow server-to-server, mobile, postman, and curl requests with no origin
     if (!origin) return callback(null, true);
-    if (
+
+    const isAllowed =
       allowedOrigins.includes(origin) ||
       origin.endsWith('.netlify.app') ||
-      origin.endsWith('.render.com') ||
-      origin.includes('localhost')
-    ) {
+      origin.endsWith('.onrender.com') ||
+      origin.includes('localhost') ||
+      origin.includes('127.0.0.1');
+
+    if (isAllowed) {
       return callback(null, true);
     }
+    // Allow any other frontend origin gracefully
     return callback(null, true);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'Access-Control-Request-Method',
+    'Access-Control-Request-Headers',
+  ],
+  exposedHeaders: ['Set-Cookie', 'Authorization'],
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Handle all preflight OPTIONS requests
 
 // Body Parsers
 app.use(express.json({ limit: '10mb' }));
@@ -65,12 +89,14 @@ app.get('/api/health', (req, res) => {
     success: true,
     message: 'SwadGhar Restaurant API is healthy and operational',
     timestamp: new Date().toISOString(),
-    version: '1.0.0',
-    environment: process.env.NODE_ENV || 'development',
+    corsAllowed: [
+      'https://swadghar-restaurant.netlify.app',
+      'https://swadghar-restaurant-backend.onrender.com',
+    ],
   });
 });
 
-// API Routes Mounting
+// Mount Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/foods', foodRoutes);
@@ -83,28 +109,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/inquiries', inquiryRoutes);
 
-// Root API Welcome
-app.get('/', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Welcome to SwadGhar Restaurant Management System API',
-    endpoints: {
-      health: '/api/health',
-      auth: '/api/auth',
-      categories: '/api/categories',
-      foods: '/api/foods',
-      orders: '/api/orders',
-      reservations: '/api/reservations',
-      coupons: '/api/coupons',
-      payments: '/api/payments',
-      reviews: '/api/reviews',
-      admin: '/api/admin',
-      settings: '/api/settings',
-    },
-  });
-});
-
-// Centralized Error Handlers
+// Error Handling Middlewares
 app.use(notFoundHandler);
 app.use(errorHandler);
 
