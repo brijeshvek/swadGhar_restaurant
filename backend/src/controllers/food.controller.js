@@ -96,7 +96,14 @@ const getAllFoods = async (req, res, next) => {
         query.category = category;
       } else {
         const Category = require('../models/Category');
-        const cat = await Category.findOne({ slug: category }).lean();
+        const formatted = category.replace(/-/g, ' ');
+        const cat = await Category.findOne({
+          $or: [
+            { slug: category },
+            { name: new RegExp('^' + formatted + '$', 'i') },
+            { name: new RegExp(formatted, 'i') },
+          ],
+        }).lean();
         if (cat) query.category = cat._id;
       }
     }

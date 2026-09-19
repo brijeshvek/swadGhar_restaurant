@@ -11,34 +11,36 @@ const isDbConnected = () => mongoose.connection.readyState === 1;
 // @access  Public
 const getAllCategories = async (req, res, next) => {
   try {
-    if (!isDbConnected()) {
-      return res.status(200).json({
-        success: true,
-        count: mockStore.categories.length,
-        data: mockStore.categories,
-      });
+    if (isDbConnected()) {
+      const { includeInactive } = req.query;
+      const filter = includeInactive === 'true' ? {} : { isActive: { $ne: false } };
+      let categories = await Category.find(filter).lean();
+
+      if (categories && categories.length > 0) {
+        const mappedCategories = categories
+          .map((c, idx) => ({
+            ...c,
+            slug: c.slug || c.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+            sortOrder: c.sortOrder !== undefined ? c.sortOrder : idx + 1,
+            isActive: c.isActive !== false,
+          }))
+          .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+
+        return res.status(200).json({
+          success: true,
+          count: mappedCategories.length,
+          data: mappedCategories,
+        });
+      }
     }
 
-    const { includeInactive } = req.query;
-    const filter = includeInactive === 'true' ? {} : { isActive: true };
-    const categories = await Category.find(filter)
-      .sort({ sortOrder: 1, createdAt: 1 })
-      .lean();
-
-    if (!categories || categories.length === 0) {
-      return res.status(200).json({
-        success: true,
-        count: mockStore.categories.length,
-        data: mockStore.categories,
-      });
-    }
-
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      count: categories.length,
-      data: categories,
+      count: mockStore.categories.length,
+      data: mockStore.categories,
     });
   } catch (error) {
+    console.error('[Category Controller Error]:', error);
     res.status(200).json({
       success: true,
       count: mockStore.categories.length,
@@ -54,30 +56,37 @@ const getCategoryById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    if (!isDbConnected()) {
-      const cat = mockStore.categories.find(c => c._id === id || c.slug === id);
-      if (!cat) return res.status(404).json({ success: false, message: 'Category not found' });
-      return res.status(200).json({ success: true, data: cat });
+    if (isDbConnected()) {
+      let cat;
+      if (id.match(/^[0-9a-fA-F]{24}$/)) {
+        cat = await Category.findById(id).lean();
+      } else {
+        const formatted = id.replace(/-/g, ' ');
+        cat = await Category.findOne({
+          $or: [
+            { slug: id },
+            { name: new RegExp('^' + formatted + '$', 'i') },
+            { name: new RegExp(formatted, 'i') },
+          ],
+        }).lean();
+      }
+
+      if (cat) {
+        return res.status(200).json({
+          success: true,
+          data: {
+            ...cat,
+            slug: cat.slug || cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+          },
+        });
+      }
     }
 
-    let category;
-    if (id.match(/^[0-9a-fA-F]{24}$/)) {
-      category = await Category.findById(id).lean();
-    } else {
-      category = await Category.findOne({ slug: id }).lean();
-    }
-
-    if (!category) {
-      const fallback = mockStore.categories.find(c => c._id === id || c.slug === id);
-      if (fallback) return res.status(200).json({ success: true, data: fallback });
-      return res.status(404).json({ success: false, message: 'Category not found' });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: category,
-    });
+    const fallbackCat = mockStore.categories.find((c) => c._id === id || c.slug === id);
+    if (!fallbackCat) return res.status(404).json({ success: false, message: 'Category not found' });
+    return res.status(200).json({ success: true, data: fallbackCat });
   } catch (error) {
+    console.error('[Get Category By Id Error]:', error);
     next(error);
   }
 };

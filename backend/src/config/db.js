@@ -24,15 +24,18 @@ const autoSeedIfEmpty = async () => {
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      maxPoolSize: 10,              // Lightweight connection pool suitable for 512MB RAM instances
+      maxPoolSize: 10,
       minPoolSize: 1,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 30000,
-      connectTimeoutMS: 10000,
-      family: 4,                    // Force IPv4 for faster DNS lookup
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 30000,
     });
     console.log(`[Database] MongoDB Connected: ${conn.connection.host} / ${conn.connection.name}`);
     
+    // Invalidate any transient startup cache
+    const cache = require('../utils/cache');
+    cache.flush();
+
     // Auto-seed if collections are empty
     await autoSeedIfEmpty();
   } catch (error) {

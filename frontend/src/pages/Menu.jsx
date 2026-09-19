@@ -47,8 +47,9 @@ const Menu = () => {
     const fetchCategories = async () => {
       try {
         const res = await api.get('/categories');
-        if (res?.data) {
-          setCategories(res.data);
+        const items = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+        if (items.length > 0) {
+          setCategories(items);
         }
       } catch (err) {
         console.error('Error fetching categories:', err);
