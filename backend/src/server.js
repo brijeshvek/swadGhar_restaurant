@@ -1,11 +1,5 @@
 const path = require('path');
 const dotenv = require('dotenv');
-const v8 = require('v8');
-
-// Enforce 256MB memory limit for Render Free/Starter 512MB RAM instances
-try {
-  v8.setFlagsFromString('--max_old_space_size=256');
-} catch (e) {}
 
 // Load environment variables from backend/.env
 dotenv.config({ path: path.join(__dirname, '../.env') });

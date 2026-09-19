@@ -6,13 +6,13 @@ services:
     region: oregon
     rootDir: backend
     buildCommand: npm install --omit=dev
-    startCommand: node --max-old-space-size=256 src/server.js
+    startCommand: node src/server.js
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
       - key: NODE_OPTIONS
-        value: "--max-old-space-size=256"
+        value: "--max-old-space-size=460"
       - key: PORT
         value: 5000
       - key: MONGODB_URI
