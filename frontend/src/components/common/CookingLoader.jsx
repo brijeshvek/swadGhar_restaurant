@@ -151,10 +151,8 @@ const CookingLoader = ({
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/40 backdrop-blur-md transition-all duration-300 animate-fade-in">
-        <div className="bg-white/95 backdrop-blur-xl border border-amber-100 shadow-2xl rounded-3xl p-6 sm:p-8 max-w-md mx-4 transform transition-all animate-fade-in">
-          {containerContent}
-        </div>
+      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#fbf9f6]/95 backdrop-blur-lg transition-all duration-300 animate-fade-in">
+        {containerContent}
       </div>
     );
   }
