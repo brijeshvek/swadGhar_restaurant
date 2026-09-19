@@ -4,7 +4,7 @@ import { useNotification } from './NotificationContext';
 const CartContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
-  const { showSuccess, showInfo } = useNotification();
+  const { showSuccess, showInfo, showCartToast } = useNotification();
 
   const [cartItems, setCartItems] = useState(() => {
     try {
@@ -62,7 +62,7 @@ export const CartProvider = ({ children }) => {
       }
     });
 
-    showSuccess(`Added ${food.name} (${quantity}x) to your plate.`);
+    showCartToast(food, `Added ${food.name} (${quantity}x) to your plate.`);
     return true;
   };
 

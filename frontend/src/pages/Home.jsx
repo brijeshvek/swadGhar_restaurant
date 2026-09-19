@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 import FoodCard from '../components/common/FoodCard';
+import SectionLoader from '../components/common/SectionLoader';
 import {
   BlurText,
   ShinyText,
@@ -210,28 +211,36 @@ const Home = () => {
           </div>
         </AnimatedContent>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-5">
-          {filteredCategories.map((cat, idx) => (
-            <AnimatedContent key={cat._id} delay={idx * 0.03}>
-              <Link
-                to={`/menu?category=${cat.slug || cat._id}`}
-                className="group relative rounded-2xl overflow-hidden aspect-[4/3] bg-stone-900 shadow-sm hover:shadow-xl transition-all duration-300 block border border-stone-200/40"
-              >
-                <img
-                  src={cat.image}
-                  alt={cat.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-75 group-hover:opacity-90"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/40 to-transparent"></div>
-                <div className="absolute bottom-2.5 left-2.5 right-2.5 text-white">
-                  <h3 className="font-serif font-bold text-xs sm:text-sm leading-tight group-hover:text-amber-300 transition-colors line-clamp-2">
-                    {cat.name}
-                  </h3>
-                </div>
-              </Link>
-            </AnimatedContent>
-          ))}
-        </div>
+        {loading ? (
+          <SectionLoader
+            variant="skeleton"
+            count={5}
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-5"
+          />
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-5">
+            {filteredCategories.map((cat, idx) => (
+              <AnimatedContent key={cat._id} delay={idx * 0.03}>
+                <Link
+                  to={`/menu?category=${cat.slug || cat._id}`}
+                  className="group relative rounded-2xl overflow-hidden aspect-[4/3] bg-stone-900 shadow-sm hover:shadow-xl transition-all duration-300 block border border-stone-200/40"
+                >
+                  <img
+                    src={cat.image}
+                    alt={cat.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-75 group-hover:opacity-90"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/40 to-transparent"></div>
+                  <div className="absolute bottom-2.5 left-2.5 right-2.5 text-white">
+                    <h3 className="font-serif font-bold text-xs sm:text-sm leading-tight group-hover:text-amber-300 transition-colors line-clamp-2">
+                      {cat.name}
+                    </h3>
+                  </div>
+                </Link>
+              </AnimatedContent>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* 3. FEATURED CHEF DELICACIES */}
@@ -257,13 +266,22 @@ const Home = () => {
           </div>
         </AnimatedContent>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredFoods.slice(0, 4).map((food, idx) => (
-            <AnimatedContent key={food._id} delay={idx * 0.08} className="h-full">
-              <FoodCard food={food} />
-            </AnimatedContent>
-          ))}
-        </div>
+        {loading ? (
+          <SectionLoader
+            variant="cooking"
+            title="Preparing Chef's Masterpieces..."
+            subtitle="Plating signature tandoor & royal curries..."
+            size="md"
+          />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {featuredFoods.slice(0, 4).map((food, idx) => (
+              <AnimatedContent key={food._id} delay={idx * 0.08} className="h-full">
+                <FoodCard food={food} />
+              </AnimatedContent>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* 4. HERITAGE & EXPERIENCE BANNER */}
@@ -350,13 +368,22 @@ const Home = () => {
           </div>
         </AnimatedContent>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {popularFoods.slice(0, 4).map((food, idx) => (
-            <AnimatedContent key={food._id} delay={idx * 0.08} className="h-full">
-              <FoodCard food={food} />
-            </AnimatedContent>
-          ))}
-        </div>
+        {loading ? (
+          <SectionLoader
+            variant="cooking"
+            title="Simmering Most Loved Recipes..."
+            subtitle="Preparing hot sizzling popular favorites..."
+            size="md"
+          />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {popularFoods.slice(0, 4).map((food, idx) => (
+              <AnimatedContent key={food._id} delay={idx * 0.08} className="h-full">
+                <FoodCard food={food} />
+              </AnimatedContent>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* 6. TESTIMONIALS */}
