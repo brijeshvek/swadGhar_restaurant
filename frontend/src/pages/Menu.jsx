@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 import FoodCard from '../components/common/FoodCard';
+import CookingLoader from '../components/common/CookingLoader';
 import { BlurText, AnimatedContent, ShinyText } from '../components/animations';
 
 const Menu = () => {
@@ -415,20 +416,11 @@ const Menu = () => {
       {/* Food Grid Section */}
       <div>
         {loading ? (
-          /* Skeletons */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, idx) => (
-              <div
-                key={idx}
-                className="rounded-2xl bg-white border border-stone-200 p-4 space-y-4 animate-pulse"
-              >
-                <div className="aspect-[4/3] bg-stone-200 rounded-xl"></div>
-                <div className="h-4 bg-stone-200 rounded w-3/4"></div>
-                <div className="h-3 bg-stone-200 rounded w-full"></div>
-                <div className="h-8 bg-stone-200 rounded-xl"></div>
-              </div>
-            ))}
-          </div>
+          <CookingLoader
+            text="Preparing Fresh Menu Items..."
+            subtext="Simmering aromatic spices & loading authentic delicacies from our kitchen..."
+            size="md"
+          />
         ) : paginatedFoods.length === 0 ? (
           fetchError ? (
             <div className="text-center py-16 px-4 bg-white rounded-3xl border border-amber-200 shadow-sm space-y-4 max-w-md mx-auto">

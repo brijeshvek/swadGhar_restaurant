@@ -39,25 +39,32 @@ import AdminSettings from '../pages/admin/AdminSettings';
 
 
 import { useAuth } from '../context/AuthContext';
+import CookingLoader from '../components/common/CookingLoader';
 
 // Protected Customer Guard
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
-  if (loading) return null;
+  if (loading) {
+    return <CookingLoader fullScreen={true} text="Verifying SwadGhar Access..." subtext="Checking your login session..." />;
+  }
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
 
 // Protected Staff & Admin Guard
 const StaffRoute = ({ children }) => {
   const { isStaff, loading } = useAuth();
-  if (loading) return null;
+  if (loading) {
+    return <CookingLoader fullScreen={true} text="Verifying Kitchen Staff Access..." subtext="Checking permissions..." />;
+  }
   return isStaff ? children : <Navigate to="/login" replace />;
 };
 
 // Protected Admin-Only Guard
 const AdminRoute = ({ children }) => {
   const { isAdmin, loading } = useAuth();
-  if (loading) return null;
+  if (loading) {
+    return <CookingLoader fullScreen={true} text="Verifying Restaurant Admin..." subtext="Securing administrative dashboard..." />;
+  }
   return isAdmin ? children : <Navigate to="/login" replace />;
 };
 

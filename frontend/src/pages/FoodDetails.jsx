@@ -21,6 +21,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import api from '../services/api';
+import CookingLoader from '../components/common/CookingLoader';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
@@ -123,11 +124,12 @@ const FoodDetails = () => {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-28 flex flex-col items-center justify-center space-y-4">
-        <div className="w-10 h-10 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-stone-500 text-xs tracking-wider uppercase font-semibold">
-          Preparing culinary dish details...
-        </p>
+      <div className="min-h-[65vh] flex items-center justify-center">
+        <CookingLoader
+          text="Plating Culinary Delicacy..."
+          subtext="Fetching chef's special recipe, ingredients, and spices..."
+          size="lg"
+        />
       </div>
     );
   }

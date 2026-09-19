@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 import { useNotification } from '../context/NotificationContext';
+import CookingLoader from '../components/common/CookingLoader';
 
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -86,8 +87,12 @@ const MyOrders = () => {
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto px-4 py-20 flex justify-center">
-        <div className="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <CookingLoader
+          text="Retrieving Order History..."
+          subtext="Fetching your culinary journey and past orders..."
+          size="md"
+        />
       </div>
     );
   }
