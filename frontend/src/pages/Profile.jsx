@@ -22,6 +22,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import api from '../services/api';
 import { AnimatedContent, SpotlightCard } from '../components/animations';
+import { convertFileToBase64 } from '../utils/imageUtils';
 
 const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
@@ -85,13 +86,13 @@ const Profile = () => {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      const base64Data = event.target.result;
-      setAvatarPreview(base64Data);
-      await saveAvatar(base64Data);
-    };
-    reader.readAsDataURL(file);
+    try {
+      const webpBase64 = await convertFileToBase64(file, 600, 0.85);
+      setAvatarPreview(webpBase64);
+      await saveAvatar(webpBase64);
+    } catch (err) {
+      showError('Failed to process image to WebP: ' + err.message);
+    }
   };
 
   const saveAvatar = async (avatarUrl) => {

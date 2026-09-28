@@ -6,17 +6,24 @@ dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const app = require('./app');
 const connectDB = require('./config/db');
+const { initDbHealthSchedule, checkDbHealth } = require('./services/dbHealthMonitor');
 
 const PORT = process.env.PORT || 5000;
 
-// Connect to MongoDB
-connectDB();
+// Connect to MongoDB & Initialize Health Schedule
+connectDB().then(() => {
+  // Start automated 2x daily schedule (12:00 AM & 12:00 PM IST)
+  initDbHealthSchedule();
+  // Run initial health check on launch
+  checkDbHealth();
+});
 
 const server = app.listen(PORT, () => {
   console.log(`====================================================`);
   console.log(`  SwadGhar Backend Server running on port ${PORT}`);
-  console.log(`  Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`  SwadGhar  : http://localhost:${PORT}/api/health`);
+  console.log(`  Environment : ${process.env.NODE_ENV || 'development'}`);
+  console.log(`  Health API  : http://localhost:${PORT}/api/health`);
+  console.log(`  Schedule    : 2x Daily DB Health Check (12 AM / 12 PM)`);
   console.log(`====================================================`);
 });
 

@@ -3,6 +3,7 @@ const Category = require('../models/Category');
 const Food = require('../models/Food');
 const mockStore = require('../utils/mockStore');
 const cache = require('../utils/cache');
+const { processImageToWebp } = require('../utils/imageOptimizer');
 
 const isDbConnected = () => mongoose.connection.readyState === 1;
 
@@ -105,13 +106,15 @@ const createCategory = async (req, res, next) => {
       });
     }
 
+    const optimizedImage = image ? await processImageToWebp(image) : undefined;
+
     if (!isDbConnected()) {
       const newCat = {
         _id: `cat_${Date.now()}`,
         name,
         slug: name.toLowerCase().replace(/\s+/g, '-'),
         description,
-        image: image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80',
+        image: optimizedImage || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80&fm=webp',
         sortOrder: Number(sortOrder) || mockStore.categories.length + 1,
         isActive: isActive !== undefined ? isActive : true,
       };
@@ -123,7 +126,7 @@ const createCategory = async (req, res, next) => {
     const category = await Category.create({
       name,
       description,
-      image,
+      image: optimizedImage,
       isActive: isActive !== undefined ? isActive : true,
       sortOrder: sortOrder || 0,
     });
@@ -147,16 +150,21 @@ const createCategory = async (req, res, next) => {
 // @access  Private/Admin
 const updateCategory = async (req, res, next) => {
   try {
+    const updateData = { ...req.body };
+    if (updateData.image) {
+      updateData.image = await processImageToWebp(updateData.image);
+    }
+
     if (!isDbConnected()) {
       const idx = mockStore.categories.findIndex(c => c._id === req.params.id);
       if (idx > -1) {
-        mockStore.categories[idx] = { ...mockStore.categories[idx], ...req.body };
+        mockStore.categories[idx] = { ...mockStore.categories[idx], ...updateData };
         cache.invalidatePattern('categories');
         return res.status(200).json({ success: true, message: 'Category updated', data: mockStore.categories[idx] });
       }
     }
 
-    const category = await Category.findByIdAndUpdate(req.params.id, req.body, {
+    const category = await Category.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
       runValidators: true,
     }).lean();

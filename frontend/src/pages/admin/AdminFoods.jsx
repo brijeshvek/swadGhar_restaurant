@@ -170,12 +170,11 @@ const AdminFoods = () => {
     setUploadingImage(true);
 
     try {
-      // Convert file into optimized Base64 Data URI
+      // Convert file into optimized WebP Base64 Data URI
       const base64Data = await convertFileToBase64(file, 1200, 0.85);
       setFormData((prev) => ({ ...prev, image: base64Data }));
-      showSuccess('Image converted to Base64 and preview updated!');
     } catch (err) {
-      console.error('Base64 conversion failed:', err);
+      console.error('Image conversion failed:', err);
       showError('Failed to process image. Please try another image file.');
     } finally {
       setUploadingImage(false);
@@ -190,14 +189,22 @@ const AdminFoods = () => {
       return;
     }
 
+    const regularPrice = Number(formData.price);
+    const discPrice = Number(formData.discountPrice) || 0;
+
+    if (discPrice > 0 && discPrice >= regularPrice) {
+      showError(`Discount Price (₹${discPrice}) must be less than Regular Price (₹${regularPrice}). If no discount, set it to 0.`);
+      return;
+    }
+
     setSubmitting(true);
     try {
       const payload = {
         name: formData.name.trim(),
         description: formData.description.trim(),
         category: formData.category,
-        price: Number(formData.price),
-        discountPrice: Number(formData.discountPrice) || 0,
+        price: regularPrice,
+        discountPrice: discPrice,
         image: formData.image.trim(),
         foodType: formData.foodType,
         spiceLevel: formData.spiceLevel,
@@ -681,13 +688,16 @@ const AdminFoods = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="font-bold text-stone-300">Discount Price (₹, optional)</label>
+                  <div className="flex items-center justify-between">
+                    <label className="font-bold text-stone-300">Discount Price (₹, optional)</label>
+                    <span className="text-[10px] text-stone-500">Must be &lt; Regular Price (or 0)</span>
+                  </div>
                   <input
                     type="number"
                     min="0"
                     value={formData.discountPrice}
                     onChange={(e) => setFormData({ ...formData, discountPrice: e.target.value })}
-                    placeholder="0"
+                    placeholder="0 (no discount)"
                     className="w-full px-3.5 py-2.5 rounded-xl bg-stone-950 border border-stone-800 text-white focus:outline-none focus:border-brand-500 text-xs"
                   />
                 </div>

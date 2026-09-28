@@ -90,12 +90,17 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// Health Check API
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'SwadGhar Restaurant API is healthy and operational',
-    timestamp: new Date().toISOString(),
+// Health Check API with Live Database & System Diagnostics
+const { checkDbHealth } = require('./services/dbHealthMonitor');
+
+app.get(['/api/health', '/api/health/db'], async (req, res) => {
+  const healthData = await checkDbHealth();
+  const statusCode = healthData.status === 'healthy' ? 200 : (healthData.status === 'degraded' ? 200 : 503);
+  res.status(statusCode).json({
+    success: healthData.status === 'healthy',
+    message: 'SwadGhar Restaurant API & Database Health Check',
+    schedule: 'Automated 2x Daily (12:00 AM & 12:00 PM IST)',
+    ...healthData,
     corsAllowed: [
       'https://swadghar-restaurant.netlify.app',
       'https://swadghar-restaurant-backend.onrender.com',

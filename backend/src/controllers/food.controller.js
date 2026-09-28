@@ -3,6 +3,7 @@ const Food = require('../models/Food');
 const Review = require('../models/Review');
 const mockStore = require('../utils/mockStore');
 const cache = require('../utils/cache');
+const { processImageToWebp } = require('../utils/imageOptimizer');
 
 const isDbConnected = () => mongoose.connection.readyState === 1;
 
@@ -303,6 +304,17 @@ const createFood = async (req, res, next) => {
       });
     }
 
+    const numPrice = Number(price);
+    const numDiscount = Number(discountPrice) || 0;
+    if (numDiscount > 0 && numDiscount >= numPrice) {
+      return res.status(400).json({
+        success: false,
+        message: `Discount price (₹${numDiscount}) must be less than standard price (₹${numPrice}). Set to 0 if there is no discount.`,
+      });
+    }
+
+    const optimizedImage = image ? await processImageToWebp(image) : undefined;
+
     if (!isDbConnected()) {
       const newFood = {
         _id: `food_${Date.now()}`,
@@ -312,7 +324,7 @@ const createFood = async (req, res, next) => {
         category: mockStore.categories.find(c => c._id === category) || { name: 'Specialty', slug: 'specialty' },
         price: Number(price),
         discountPrice: discountPrice ? Number(discountPrice) : 0,
-        image: image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+        image: optimizedImage || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80&fm=webp',
         foodType: foodType || 'veg',
         ingredients: Array.isArray(ingredients) ? ingredients : (ingredients ? ingredients.split(',').map(s => s.trim()) : []),
         nutrition: nutrition || { calories: 0, protein: 0, carbs: 0, fats: 0 },
@@ -335,7 +347,7 @@ const createFood = async (req, res, next) => {
       category,
       price: Number(price),
       discountPrice: discountPrice ? Number(discountPrice) : 0,
-      image,
+      image: optimizedImage || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80&fm=webp',
       foodType: foodType || 'veg',
       ingredients: Array.isArray(ingredients) ? ingredients : (ingredients ? ingredients.split(',').map(s => s.trim()) : []),
       nutrition: nutrition || { calories: 0, protein: 0, carbs: 0, fats: 0 },
@@ -367,16 +379,35 @@ const createFood = async (req, res, next) => {
 // @access  Private/Admin
 const updateFood = async (req, res, next) => {
   try {
+    const updateData = { ...req.body };
+    if (updateData.image) {
+      updateData.image = await processImageToWebp(updateData.image);
+    }
+
+    if (updateData.discountPrice !== undefined && Number(updateData.discountPrice) > 0) {
+      let comparePrice = Number(updateData.price);
+      if (isNaN(comparePrice) || comparePrice === 0) {
+        const existing = await Food.findById(req.params.id).lean();
+        if (existing) comparePrice = Number(existing.price);
+      }
+      if (comparePrice > 0 && Number(updateData.discountPrice) >= comparePrice) {
+        return res.status(400).json({
+          success: false,
+          message: `Discount price (₹${updateData.discountPrice}) must be less than standard price (₹${comparePrice}). Set to 0 if there is no discount.`,
+        });
+      }
+    }
+
     if (!isDbConnected()) {
       const idx = mockStore.foods.findIndex(f => f._id === req.params.id);
       if (idx > -1) {
-        mockStore.foods[idx] = { ...mockStore.foods[idx], ...req.body };
+        mockStore.foods[idx] = { ...mockStore.foods[idx], ...updateData };
         cache.invalidatePattern('foods');
         return res.status(200).json({ success: true, message: 'Dish updated successfully', data: mockStore.foods[idx] });
       }
     }
 
-    const food = await Food.findByIdAndUpdate(req.params.id, req.body, {
+    const food = await Food.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
       runValidators: true,
     }).populate('category', 'name slug').lean();

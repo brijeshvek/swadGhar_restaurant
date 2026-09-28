@@ -43,7 +43,14 @@ const foodSchema = new mongoose.Schema({
     default: 0,
     validate: {
       validator: function (val) {
-        return val === 0 || val < this.price;
+        if (!val || Number(val) === 0) return true;
+        // Check document context (this.price) or update context
+        const price = this.price !== undefined
+          ? Number(this.price)
+          : (this.getUpdate ? Number(this.getUpdate()?.price || this.getUpdate()?.$set?.price) : undefined);
+
+        if (price === undefined || isNaN(price)) return true; // Let controller handle cross-field validation if price not passed
+        return Number(val) < price;
       },
       message: 'Discount price ({VALUE}) must be strictly less than standard price',
     },
@@ -51,7 +58,7 @@ const foodSchema = new mongoose.Schema({
   image: {
     type: String,
     required: [true, 'Please provide a food image URL'],
-    default: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80',
+    default: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80&fm=webp',
   },
   foodType: {
     type: String,

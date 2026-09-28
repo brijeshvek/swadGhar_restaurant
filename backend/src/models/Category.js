@@ -21,7 +21,7 @@ const categorySchema = new mongoose.Schema({
   },
   image: {
     type: String,
-    default: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80',
+    default: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80&fm=webp',
   },
   isActive: {
     type: Boolean,

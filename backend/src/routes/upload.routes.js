@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const cloudinary = require('cloudinary').v2;
 const { protect, authorize } = require('../middleware/auth.middleware');
+const { convertLocalFileToWebp, convertBase64ToWebp } = require('../utils/imageOptimizer');
 
 const router = express.Router();
 
@@ -70,7 +71,7 @@ if (isCloudinaryConfigured) {
   });
 }
 
-// @desc    Upload an image (multipart or base64)
+// @desc    Upload an image (multipart or base64) - converted to WebP
 // @route   POST /api/upload
 // @access  Private (Admin or Manager)
 router.post(
@@ -90,20 +91,27 @@ router.post(
       // 1. If Multipart File Uploaded
       if (req.file) {
         const localPath = req.file.path;
-        const relativeUrl = `/uploads/${req.file.filename}`;
+        
+        // Auto convert uploaded file to WebP format
+        const { filename: webpFilename, relativeUrl, fullPath } = await convertLocalFileToWebp(localPath, {
+          maxWidth: 1200,
+          quality: 80,
+        });
 
         // If Cloudinary is configured, upload to Cloudinary
         if (isCloudinaryConfigured) {
           try {
-            const result = await cloudinary.uploader.upload(localPath, {
+            const result = await cloudinary.uploader.upload(fullPath, {
               folder: 'swadghar_restaurant',
               resource_type: 'image',
+              format: 'webp',
             });
             return res.status(200).json({
               success: true,
-              message: 'Image uploaded to Cloudinary successfully',
+              message: 'Image converted to WebP and uploaded to Cloudinary successfully',
               url: result.secure_url || result.url,
               publicId: result.public_id,
+              format: 'webp',
             });
           } catch (cloudErr) {
             console.error('Cloudinary upload fallback to local:', cloudErr.message);
@@ -112,33 +120,28 @@ router.post(
 
         return res.status(200).json({
           success: true,
-          message: 'Image uploaded successfully to server storage',
+          message: 'Image converted to WebP and saved successfully',
           url: relativeUrl,
-          filename: req.file.filename,
+          filename: webpFilename,
+          format: 'webp',
         });
       }
 
       // 2. If Base64 data URI passed in body
       if (req.body?.dataUri) {
         const base64Data = req.body.dataUri;
-        const matches = base64Data.match(/^data:image\/([a-zA-Z0-9\+\-\.]+);base64,(.+)$/);
-
-        if (!matches || matches.length !== 3) {
-          return res.status(400).json({ success: false, message: 'Invalid Base64 image format' });
-        }
-
-        const ext = matches[1] === 'jpeg' ? '.jpg' : `.${matches[1]}`;
-        const buffer = Buffer.from(matches[2], 'base64');
-        const filename = `upload-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
-        const targetPath = path.join(uploadDir, filename);
-
-        fs.writeFileSync(targetPath, buffer);
+        // Convert base64 data to WebP
+        const webpDataUri = await convertBase64ToWebp(base64Data, {
+          maxWidth: 1200,
+          quality: 80,
+        });
 
         return res.status(200).json({
           success: true,
-          message: 'Base64 image saved successfully',
-          url: `/uploads/${filename}`,
-          filename,
+          message: 'Base64 image converted to WebP successfully',
+          url: webpDataUri,
+          dataUri: webpDataUri,
+          format: 'webp',
         });
       }
 

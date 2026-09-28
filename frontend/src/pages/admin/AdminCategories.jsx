@@ -127,12 +127,11 @@ const AdminCategories = () => {
     setUploadingImage(true);
 
     try {
-      // Convert file into optimized Base64 Data URI
+      // Convert file into optimized WebP Base64 Data URI
       const base64Data = await convertFileToBase64(file, 1200, 0.85);
       setFormData((prev) => ({ ...prev, image: base64Data }));
-      showSuccess('Category banner converted to Base64 & ready to save!');
     } catch (err) {
-      console.error('Base64 conversion failed:', err);
+      console.error('Image conversion failed:', err);
       showError('Failed to process image. Please try another image file.');
     } finally {
       setUploadingImage(false);
