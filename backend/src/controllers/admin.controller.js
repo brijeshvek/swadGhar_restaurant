@@ -7,15 +7,19 @@ const Reservation = require('../models/Reservation');
 const Coupon = require('../models/Coupon');
 const Review = require('../models/Review');
 const Inquiry = require('../models/Inquiry');
+const Franchise = require('../models/Franchise');
 const mockStore = require('../utils/mockStore');
 
 const isDbConnected = () => mongoose.connection.readyState === 1;
 
-// @desc    Get Admin Dashboard Analytics
+// @desc    Get Admin Dashboard Analytics (Isolates branch data for Branch Managers)
 // @route   GET /api/admin/dashboard-stats
-// @access  Private/Admin
+// @access  Private/Admin & Staff
 const getDashboardStats = async (req, res, next) => {
   try {
+    const userEmail = req.user?.email?.toLowerCase();
+    const isSuperAdmin = req.user?.role === 'admin';
+
     if (!isDbConnected()) {
       const totalRev = mockStore.orders.reduce((sum, o) => sum + (o.pricing?.total || 0), 0);
       const pendingOrds = mockStore.orders.filter(o => ['pending', 'confirmed', 'preparing'].includes(o.orderStatus)).length;
@@ -24,7 +28,6 @@ const getDashboardStats = async (req, res, next) => {
       const newInqs = inqs.filter(i => i.status === 'new').length;
 
       const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const todayIndex = new Date().getDay();
       const last7Days = Array.from({ length: 7 }, (_, i) => {
         const d = new Date();
         d.setDate(d.getDate() - (6 - i));
@@ -39,6 +42,9 @@ const getDashboardStats = async (req, res, next) => {
       return res.status(200).json({
         success: true,
         data: {
+          isSuperAdmin,
+          isBranchManager: !isSuperAdmin,
+          branchCity: isSuperAdmin ? 'HQ' : 'Ahmedabad',
           totalRevenue: totalRev,
           todayRevenue: Math.round(totalRev * 0.18),
           totalOrders: mockStore.orders.length,
@@ -52,9 +58,11 @@ const getDashboardStats = async (req, res, next) => {
           newInquiries: newInqs,
           pendingOrders: pendingOrds,
           pendingReservations: pendingRes,
+          totalFranchises: isSuperAdmin ? 5 : 1,
           weeklyTrends: last7Days,
           popularFoods: mockStore.foods.slice(0, 5),
           recentOrders: mockStore.orders.slice(0, 8),
+          franchises: [],
         },
       });
     }
@@ -65,6 +73,39 @@ const getDashboardStats = async (req, res, next) => {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
     sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    // If user is Staff / Branch Manager, look up their specific Franchise branch
+    let managerBranch = null;
+    if (!isSuperAdmin && userEmail) {
+      managerBranch = await Franchise.findOne({
+        $or: [
+          { managerEmail: userEmail },
+          { email: userEmail },
+          { 'staffTeam.email': userEmail },
+        ],
+      }).lean();
+
+      // If no exact email match, check city in user name (e.g. "Ahmedabad Branch Manager")
+      if (!managerBranch && req.user?.name) {
+        const cityName = ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Mumbai'].find(c =>
+          req.user.name.toLowerCase().includes(c.toLowerCase())
+        );
+        if (cityName) {
+          managerBranch = await Franchise.findOne({ city: new RegExp(cityName, 'i') }).lean();
+        }
+      }
+
+      // Default to first branch if still not matched for staff
+      if (!managerBranch) {
+        managerBranch = await Franchise.findOne({ isActive: true }).sort({ sortOrder: 1 }).lean();
+      }
+    }
+
+    // Prepare query filters based on role
+    const branchCityFilter = managerBranch?.city ? new RegExp(managerBranch.city, 'i') : null;
+    const orderBranchFilter = (!isSuperAdmin && branchCityFilter)
+      ? { 'deliveryAddress.city': branchCityFilter }
+      : {};
 
     const [
       totalOrdersCount,
@@ -81,14 +122,15 @@ const getDashboardStats = async (req, res, next) => {
       newInquiriesCount,
       pendingOrdersCount,
       pendingReservationsCount,
+      franchisesList,
       popularFoods,
       recentOrders,
       recent7DaysOrders,
     ] = await Promise.all([
-      Order.countDocuments(),
-      Order.countDocuments({ createdAt: { $gte: todayStart } }),
-      Order.find({ 'paymentInfo.status': 'paid' }),
-      Order.find({ createdAt: { $gte: todayStart }, 'paymentInfo.status': 'paid' }),
+      Order.countDocuments(orderBranchFilter),
+      Order.countDocuments({ ...orderBranchFilter, createdAt: { $gte: todayStart } }),
+      Order.find({ ...orderBranchFilter, 'paymentInfo.status': 'paid' }),
+      Order.find({ ...orderBranchFilter, createdAt: { $gte: todayStart }, 'paymentInfo.status': 'paid' }),
       User.countDocuments({ role: 'customer' }),
       Food.countDocuments(),
       Category.countDocuments(),
@@ -97,11 +139,12 @@ const getDashboardStats = async (req, res, next) => {
       Review.countDocuments(),
       Inquiry.countDocuments(),
       Inquiry.countDocuments({ status: 'new' }),
-      Order.countDocuments({ orderStatus: { $in: ['pending', 'confirmed', 'preparing'] } }),
+      Order.countDocuments({ ...orderBranchFilter, orderStatus: { $in: ['pending', 'confirmed', 'preparing'] } }),
       Reservation.countDocuments({ status: 'pending' }),
+      Franchise.find().select('name city managerName managerEmail managerPhone status rating staffTeam image address seatingCapacity branchType').lean(),
       Food.find().sort({ numReviews: -1, rating: -1 }).limit(5).populate('category', 'name'),
-      Order.find().sort({ createdAt: -1 }).limit(8).populate('customer', 'name email avatar'),
-      Order.find({ createdAt: { $gte: sevenDaysAgo } }),
+      Order.find(orderBranchFilter).sort({ createdAt: -1 }).limit(8).populate('customer', 'name email avatar'),
+      Order.find({ ...orderBranchFilter, createdAt: { $gte: sevenDaysAgo } }),
     ]);
 
     const totalRevenue = allPaidOrders.reduce((sum, ord) => sum + (ord.pricing?.total || 0), 0);
@@ -134,9 +177,20 @@ const getDashboardStats = async (req, res, next) => {
 
     const weeklyTrends = Object.values(trendMap);
 
+    // If staff/branch manager, only return THEIR branch in franchises array
+    const visibleFranchises = isSuperAdmin
+      ? franchisesList
+      : (managerBranch ? [managerBranch] : (franchisesList.slice(0, 1)));
+
     res.status(200).json({
       success: true,
       data: {
+        isSuperAdmin,
+        isBranchManager: !isSuperAdmin,
+        myBranch: managerBranch || (isSuperAdmin ? null : visibleFranchises[0]),
+        branchCity: managerBranch?.city || (isSuperAdmin ? 'Central HQ' : 'Branch'),
+        branchName: managerBranch?.name || 'SwadGhar Restaurant',
+        branchStaffCount: managerBranch?.staffTeam?.length || 0,
         totalRevenue,
         todayRevenue,
         totalOrders: totalOrdersCount,
@@ -151,6 +205,8 @@ const getDashboardStats = async (req, res, next) => {
         newInquiries: newInquiriesCount,
         pendingOrders: pendingOrdersCount,
         pendingReservations: pendingReservationsCount,
+        totalFranchises: visibleFranchises.length,
+        franchises: visibleFranchises,
         weeklyTrends,
         popularFoods: popularFoods.length > 0 ? popularFoods : mockStore.foods.slice(0, 5),
         recentOrders: recentOrders.length > 0 ? recentOrders : mockStore.orders.slice(0, 8),

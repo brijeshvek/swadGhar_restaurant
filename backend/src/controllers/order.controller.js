@@ -3,6 +3,7 @@ const Order = require('../models/Order');
 const Food = require('../models/Food');
 const User = require('../models/User');
 const Coupon = require('../models/Coupon');
+const Franchise = require('../models/Franchise');
 const mockStore = require('../utils/mockStore');
 const { sendOrderStatusNotification } = require('../services/notificationService');
 
@@ -374,7 +375,7 @@ const getOrderInvoice = async (req, res, next) => {
   }
 };
 
-// @desc    Get all orders (Admin & Staff Only)
+// @desc    Get all orders (Admin & Staff Only - Filtered by Branch for Staff)
 // @route   GET /api/orders
 // @access  Private/Staff or Admin
 const getAllOrders = async (req, res, next) => {
@@ -383,8 +384,35 @@ const getAllOrders = async (req, res, next) => {
       return res.status(200).json({ success: true, count: mockStore.orders.length, total: mockStore.orders.length, data: mockStore.orders });
     }
 
-    const { status, search } = req.query;
+    const { status, search, city } = req.query;
     const query = {};
+
+    // Branch manager data isolation: only show orders for their branch
+    if (req.user && req.user.role === 'staff') {
+      const userEmail = req.user.email?.toLowerCase();
+      let managerBranch = await Franchise.findOne({
+        $or: [
+          { managerEmail: userEmail },
+          { email: userEmail },
+          { 'staffTeam.email': userEmail },
+        ],
+      }).lean();
+
+      if (!managerBranch && req.user.name) {
+        const cityName = ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Mumbai'].find(c =>
+          req.user.name.toLowerCase().includes(c.toLowerCase())
+        );
+        if (cityName) {
+          managerBranch = await Franchise.findOne({ city: new RegExp(cityName, 'i') }).lean();
+        }
+      }
+
+      if (managerBranch?.city) {
+        query['deliveryAddress.city'] = new RegExp(managerBranch.city, 'i');
+      }
+    } else if (city && city !== 'all') {
+      query['deliveryAddress.city'] = new RegExp(city, 'i');
+    }
 
     if (status && status !== 'all') {
       query.orderStatus = status;

@@ -151,14 +151,7 @@ const AppRoutes = () => {
         }
       >
         <Route index element={<Navigate to="dashboard" replace />} />
-        <Route
-          path="dashboard"
-          element={
-            <AdminRoute>
-              <AdminDashboard />
-            </AdminRoute>
-          }
-        />
+        <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="franchises" element={<AdminFranchises />} />
         <Route path="orders" element={<AdminOrders />} />
 

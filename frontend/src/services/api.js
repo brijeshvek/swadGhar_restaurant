@@ -20,6 +20,18 @@ const getBaseURL = () => {
   return '/api';
 };
 
+// Client-Side In-Memory Cache & In-Flight Request Deduplication Map
+const apiCache = new Map();
+const inFlightRequests = new Map();
+const DEFAULT_CACHE_TTL = 120 * 1000; // 2 minutes
+
+const getCacheKey = (config) => {
+  const method = (config.method || 'get').toLowerCase();
+  const url = config.url || '';
+  const params = config.params ? JSON.stringify(config.params) : '';
+  return `${method}:${url}:${params}`;
+};
+
 const api = axios.create({
   baseURL: getBaseURL(),
   headers: {
@@ -28,13 +40,40 @@ const api = axios.create({
   timeout: 60000, // 60 seconds to accommodate Render free-tier cold starts
 });
 
-// Request interceptor for injecting Bearer token
+// Cache invalidation utility
+api.invalidateCache = (pattern) => {
+  if (!pattern) {
+    apiCache.clear();
+    return;
+  }
+  for (const key of apiCache.keys()) {
+    if (key.includes(pattern)) {
+      apiCache.delete(key);
+    }
+  }
+};
+
+// Request interceptor for injecting Bearer token & Cache Check
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('swadghar_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Auto invalidate cache on mutations
+    const method = (config.method || 'get').toLowerCase();
+    if (['post', 'put', 'delete', 'patch'].includes(method)) {
+      const url = config.url || '';
+      if (url.includes('/foods')) api.invalidateCache('/foods');
+      if (url.includes('/categories')) api.invalidateCache('/categories');
+      if (url.includes('/settings')) api.invalidateCache('/settings');
+      if (url.includes('/coupons')) api.invalidateCache('/coupons');
+      if (url.includes('/franchises')) api.invalidateCache('/franchises');
+      if (url.includes('/orders')) api.invalidateCache('/orders');
+      if (url.includes('/reviews')) api.invalidateCache('/reviews');
+    }
+
     return config;
   },
   (error) => {
@@ -42,9 +81,22 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor with Auto-Retry for cold starts & timeouts
+// Response interceptor with Auto-Retry and Caching
 api.interceptors.response.use(
   (response) => {
+    const config = response.config;
+    const method = (config.method || 'get').toLowerCase();
+
+    // Cache successful GET responses for ultra-fast instant UI re-renders
+    if (method === 'get' && config.cache !== false) {
+      const cacheKey = getCacheKey(config);
+      const ttl = config.cacheTTL || DEFAULT_CACHE_TTL;
+      apiCache.set(cacheKey, {
+        data: response.data,
+        expireAt: Date.now() + ttl,
+      });
+    }
+
     return response.data;
   },
   async (error) => {
@@ -85,5 +137,32 @@ api.interceptors.response.use(
     });
   }
 );
+
+// Wrapped GET with In-Flight Deduplication and Client Cache Hit
+const originalGet = api.get.bind(api);
+api.get = (url, config = {}) => {
+  const mergedConfig = { url, method: 'get', ...config };
+  const cacheKey = getCacheKey(mergedConfig);
+
+  // 1. Check in-memory cache if caching not disabled
+  if (config.cache !== false) {
+    const cached = apiCache.get(cacheKey);
+    if (cached && Date.now() < cached.expireAt) {
+      return Promise.resolve(cached.data);
+    }
+  }
+
+  // 2. In-Flight Request Deduplication (prevents duplicate simultaneous calls)
+  if (inFlightRequests.has(cacheKey)) {
+    return inFlightRequests.get(cacheKey);
+  }
+
+  const promise = originalGet(url, config).finally(() => {
+    inFlightRequests.delete(cacheKey);
+  });
+
+  inFlightRequests.set(cacheKey, promise);
+  return promise;
+};
 
 export default api;

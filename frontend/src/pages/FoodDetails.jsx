@@ -21,7 +21,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import api from '../services/api';
-import CookingLoader from '../components/common/CookingLoader';
+import { FoodDetailsSkeleton } from '../components/common/FoodCardSkeleton';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
@@ -123,15 +123,7 @@ const FoodDetails = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-[65vh] flex items-center justify-center">
-        <CookingLoader
-          text="Plating Culinary Delicacy..."
-          subtext="Fetching chef's special recipe, ingredients, and spices..."
-          size="lg"
-        />
-      </div>
-    );
+    return <FoodDetailsSkeleton />;
   }
 
   if (!food) {

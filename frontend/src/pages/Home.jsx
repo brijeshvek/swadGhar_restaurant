@@ -16,6 +16,7 @@ import {
 import api from '../services/api';
 import FoodCard from '../components/common/FoodCard';
 import SectionLoader from '../components/common/SectionLoader';
+import { FoodCardSkeletonGrid } from '../components/common/FoodCardSkeleton';
 import {
   BlurText,
   ShinyText,
@@ -267,12 +268,7 @@ const Home = () => {
         </AnimatedContent>
 
         {loading ? (
-          <SectionLoader
-            variant="cooking"
-            title="Preparing Chef's Masterpieces..."
-            subtitle="Plating signature tandoor & royal curries..."
-            size="md"
-          />
+          <FoodCardSkeletonGrid count={4} />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {featuredFoods.slice(0, 4).map((food, idx) => (
@@ -369,12 +365,7 @@ const Home = () => {
         </AnimatedContent>
 
         {loading ? (
-          <SectionLoader
-            variant="cooking"
-            title="Simmering Most Loved Recipes..."
-            subtitle="Preparing hot sizzling popular favorites..."
-            size="md"
-          />
+          <FoodCardSkeletonGrid count={4} />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {popularFoods.slice(0, 4).map((food, idx) => (

@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 import FoodCard from '../components/common/FoodCard';
-import CookingLoader from '../components/common/CookingLoader';
+import { FoodCardSkeletonGrid } from '../components/common/FoodCardSkeleton';
 import { BlurText, AnimatedContent, ShinyText } from '../components/animations';
 
 const Menu = () => {
@@ -417,11 +417,7 @@ const Menu = () => {
       {/* Food Grid Section */}
       <div>
         {loading ? (
-          <CookingLoader
-            text="Preparing Fresh Menu Items..."
-            subtext="Simmering aromatic spices & loading authentic delicacies from our kitchen..."
-            size="md"
-          />
+          <FoodCardSkeletonGrid count={itemsPerPage} />
         ) : paginatedFoods.length === 0 ? (
           fetchError ? (
             <div className="text-center py-16 px-4 bg-white rounded-3xl border border-amber-200 shadow-sm space-y-4 max-w-md mx-auto">

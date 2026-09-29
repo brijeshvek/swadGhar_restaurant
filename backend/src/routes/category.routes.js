@@ -10,9 +10,9 @@ const {
 const { protect, authorize } = require('../middleware/auth.middleware');
 const cache = require('../utils/cache');
 
-// Public routes
-router.get('/', getAllCategories);
-router.get('/:id', getCategoryById);
+// Public routes (Cached for ultra-fast response)
+router.get('/', cache.middleware(180, 'categories'), getAllCategories);
+router.get('/:id', cache.middleware(180, 'categories'), getCategoryById);
 
 // Admin only routes
 router.post('/', protect, authorize('admin'), createCategory);

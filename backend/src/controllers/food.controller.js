@@ -135,7 +135,7 @@ const getAllFoods = async (req, res, next) => {
     const [totalFoods, foods] = await Promise.all([
       Food.countDocuments(query),
       Food.find(query)
-        .populate('category', 'name slug image')
+        .populate('category', 'name slug')
         .sort(sortOption)
         .skip(skip)
         .limit(limitNum)
@@ -188,9 +188,9 @@ const getFoodById = async (req, res, next) => {
 
     let food;
     if (id.match(/^[0-9a-fA-F]{24}$/)) {
-      food = await Food.findById(id).populate('category', 'name slug image').lean();
+      food = await Food.findById(id).populate('category', 'name slug').lean();
     } else {
-      food = await Food.findOne({ slug: id }).populate('category', 'name slug image').lean();
+      food = await Food.findOne({ slug: id }).populate('category', 'name slug').lean();
     }
 
     if (!food) {
