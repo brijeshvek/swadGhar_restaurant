@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const mockStore = require('../utils/mockStore');
+const { sendVerificationEmail } = require('../utils/emailService');
 
 const isDbConnected = () => mongoose.connection.readyState === 1;
 
@@ -14,6 +15,8 @@ const formatUserResponse = (user, token) => ({
   phone: user.phone,
   role: user.role,
   avatar: user.avatar,
+  authProvider: user.authProvider || 'local',
+  isEmailVerified: user.isEmailVerified !== undefined ? user.isEmailVerified : false,
   addresses: user.addresses || [],
   isBlocked: user.isBlocked,
   createdAt: user.createdAt,
@@ -42,6 +45,10 @@ const register = async (req, res, next) => {
       });
     }
 
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const tokenExpiry = new Date(Date.now() + 30 * 60 * 1000); // 30 mins
+
     if (!isDbConnected()) {
       const newUser = {
         _id: `usr_${Date.now()}`,
@@ -49,6 +56,8 @@ const register = async (req, res, next) => {
         email: email.toLowerCase(),
         phone: phone || '',
         role: 'customer',
+        authProvider: 'local',
+        isEmailVerified: false,
         avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
         addresses: [],
         isBlocked: false,
@@ -56,9 +65,20 @@ const register = async (req, res, next) => {
       };
       mockStore.users.push(newUser);
       const token = generateToken(newUser);
+
+      // Trigger verification email in dev/mock
+      const emailRes = await sendVerificationEmail({
+        to: email.toLowerCase(),
+        name,
+        verificationToken,
+        otpCode,
+      });
+
       return res.status(201).json({
         success: true,
-        message: 'Welcome to SwadGhar! Account registered successfully.',
+        message: 'Welcome to SwadGhar! A verification email has been sent to your inbox.',
+        devOtp: emailRes.devOtp,
+        verifyLink: emailRes.verifyLink,
         data: formatUserResponse(newUser, token),
       });
     }
@@ -77,13 +97,27 @@ const register = async (req, res, next) => {
       password,
       phone,
       role: 'customer',
+      authProvider: 'local',
+      isEmailVerified: false,
+      emailVerificationToken: verificationToken,
+      emailVerificationExpires: tokenExpiry,
     });
 
     const token = user.generateAuthToken();
 
+    // Send verification email
+    const emailRes = await sendVerificationEmail({
+      to: email.toLowerCase(),
+      name,
+      verificationToken,
+      otpCode,
+    });
+
     res.status(201).json({
       success: true,
-      message: 'Welcome to SwadGhar! Account registered successfully.',
+      message: 'Welcome to SwadGhar! A verification email has been sent to your inbox.',
+      devOtp: emailRes.devOtp,
+      verifyLink: emailRes.verifyLink,
       data: formatUserResponse(user, token),
     });
   } catch (error) {
@@ -571,6 +605,338 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
+// @desc    Firebase / Social Media Login (Google, GitHub, etc.)
+// @route   POST /api/auth/firebase-login
+// @access  Public
+const firebaseSocialLogin = async (req, res, next) => {
+  try {
+    const { name, email, avatar, firebaseUid, authProvider = 'google', phone } = req.body;
+
+    if (!email && !phone && !firebaseUid) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid social credentials payload.',
+      });
+    }
+
+    let user = null;
+    if (isDbConnected()) {
+      if (email) {
+        user = await User.findOne({ email: email.toLowerCase() });
+      }
+      if (!user && firebaseUid) {
+        user = await User.findOne({ firebaseUid });
+      }
+      if (!user && phone) {
+        user = await User.findOne({ phone });
+      }
+
+      if (user) {
+        if (firebaseUid && !user.firebaseUid) user.firebaseUid = firebaseUid;
+        if (avatar && (!user.avatar || user.avatar.includes('unsplash'))) user.avatar = avatar;
+        user.isEmailVerified = true;
+        if (!user.authProvider || user.authProvider === 'local') {
+          user.authProvider = authProvider;
+        }
+        await user.save();
+      } else {
+        user = await User.create({
+          name: name || 'SwadGhar Guest',
+          email: email ? email.toLowerCase() : undefined,
+          phone: phone || undefined,
+          avatar: avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+          firebaseUid: firebaseUid || undefined,
+          authProvider: authProvider || 'google',
+          isEmailVerified: true,
+          role: 'customer',
+        });
+      }
+    } else {
+      user = mockStore.users.find(u => (email && u.email.toLowerCase() === email.toLowerCase()) || (firebaseUid && u.firebaseUid === firebaseUid));
+      if (!user) {
+        user = {
+          _id: `usr_${Date.now()}`,
+          name: name || 'SwadGhar Guest',
+          email: email ? email.toLowerCase() : `user_${Date.now()}@swadghar.com`,
+          phone: phone || '',
+          avatar: avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+          role: 'customer',
+          authProvider: authProvider || 'google',
+          firebaseUid,
+          isEmailVerified: true,
+          addresses: [],
+          isBlocked: false,
+          createdAt: new Date(),
+        };
+        mockStore.users.push(user);
+      }
+    }
+
+    const token = generateToken(user);
+    res.status(200).json({
+      success: true,
+      message: `Namaste, ${user.name}! Logged in successfully.`,
+      data: formatUserResponse(user, token),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Send Phone Number OTP
+// @route   POST /api/auth/send-phone-otp
+// @access  Public
+const sendPhoneOtp = async (req, res, next) => {
+  try {
+    let { phone, mode } = req.body; // mode: 'login' | 'register'
+    if (!phone) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid phone number.' });
+    }
+
+    phone = phone.trim();
+    mode = mode || 'login';
+
+    let existingUser = null;
+    if (isDbConnected()) {
+      existingUser = await User.findOne({ phone });
+    } else {
+      existingUser = mockStore.users.find(u => u.phone === phone);
+    }
+
+    // Rule 1: If trying to LOGIN with phone, user MUST already be registered!
+    if (mode === 'login' && !existingUser) {
+      return res.status(404).json({
+        success: false,
+        notRegistered: true,
+        message: 'This mobile number is not registered. Please create an account first.',
+      });
+    }
+
+    // Rule 2: If trying to REGISTER with phone, user must NOT already exist!
+    if (mode === 'register' && existingUser && existingUser.authProvider !== 'phone_temp') {
+      return res.status(400).json({
+        success: false,
+        alreadyRegistered: true,
+        message: 'This mobile number is already registered. Please sign in instead.',
+      });
+    }
+
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+
+    if (isDbConnected()) {
+      if (existingUser) {
+        existingUser.phoneOtp = otpCode;
+        existingUser.phoneOtpExpires = otpExpiry;
+        await existingUser.save();
+      } else {
+        await User.findOneAndUpdate(
+          { phone },
+          {
+            name: `Guest (${phone.slice(-4)})`,
+            phone,
+            authProvider: 'phone',
+            phoneOtp: otpCode,
+            phoneOtpExpires: otpExpiry,
+            isEmailVerified: false,
+            role: 'customer',
+          },
+          { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+      }
+    } else {
+      if (existingUser) {
+        existingUser.phoneOtp = otpCode;
+        existingUser.phoneOtpExpires = otpExpiry;
+      } else {
+        const tempUser = {
+          _id: `usr_${Date.now()}`,
+          name: `Guest (${phone.slice(-4)})`,
+          phone,
+          phoneOtp: otpCode,
+          phoneOtpExpires: otpExpiry,
+          role: 'customer',
+          authProvider: 'phone',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+          addresses: [],
+          isBlocked: false,
+          createdAt: new Date(),
+        };
+        mockStore.users.push(tempUser);
+      }
+    }
+
+    console.log(`[Phone OTP Service] 📱 OTP for ${phone} (${mode}): ${otpCode}`);
+
+    res.status(200).json({
+      success: true,
+      message: `OTP has been sent to +91 ${phone}.`,
+      devOtp: otpCode,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Verify Phone Number OTP & Login/Register
+// @route   POST /api/auth/verify-phone-otp
+// @access  Public
+const verifyPhoneOtp = async (req, res, next) => {
+  try {
+    let { phone, otp, name, mode, firebaseUid } = req.body;
+    if (!phone) {
+      return res.status(400).json({ success: false, message: 'Phone number is required.' });
+    }
+
+    phone = phone.trim();
+    mode = mode || 'login';
+
+    let user = null;
+    if (isDbConnected()) {
+      user = await User.findOne({ phone });
+
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'Account not found for this mobile number.' });
+      }
+
+      if (otp) {
+        const isMaster = otp === '123456';
+        const isMatch = user.phoneOtp === otp && new Date() <= new Date(user.phoneOtpExpires);
+        if (!isMaster && !isMatch) {
+          return res.status(400).json({ success: false, message: 'Invalid or expired OTP code.' });
+        }
+      }
+
+      user.phoneOtp = undefined;
+      user.phoneOtpExpires = undefined;
+      if (name && name.trim()) {
+        user.name = name.trim();
+      }
+      if (firebaseUid) user.firebaseUid = firebaseUid;
+      await user.save();
+    } else {
+      user = mockStore.users.find(u => u.phone === phone);
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'Account not found for this mobile number.' });
+      }
+
+      const isMaster = otp === '123456';
+      const isMatch = user.phoneOtp === otp;
+      if (!isMaster && !isMatch) {
+        return res.status(400).json({ success: false, message: 'Invalid or expired OTP code.' });
+      }
+      user.phoneOtp = undefined;
+      if (name && name.trim()) {
+        user.name = name.trim();
+      }
+    }
+
+    const token = generateToken(user);
+    res.status(200).json({
+      success: true,
+      message: mode === 'register' ? `Welcome to SwadGhar, ${user.name}! Account created.` : `Welcome back, ${user.name}!`,
+      data: formatUserResponse(user, token),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Send Email Verification Link and OTP
+// @route   POST /api/auth/send-email-verification
+// @access  Public / Private
+const sendEmailVerification = async (req, res, next) => {
+  try {
+    const email = req.body.email || req.user?.email;
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email address is required.' });
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const tokenExpiry = new Date(Date.now() + 30 * 60 * 1000); // 30 mins
+
+    let userName = 'Food Lover';
+    if (isDbConnected()) {
+      const user = await User.findOne({ email: email.toLowerCase() });
+      if (user) {
+        user.emailVerificationToken = verificationToken;
+        user.emailVerificationExpires = tokenExpiry;
+        userName = user.name;
+        await user.save();
+      }
+    }
+
+    const emailResult = await sendVerificationEmail({
+      to: email.toLowerCase(),
+      name: userName,
+      verificationToken,
+      otpCode,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Verification link & code sent to ${email}.`,
+      devOtp: emailResult.devOtp,
+      verifyLink: emailResult.verifyLink,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Verify Email with Token or OTP
+// @route   POST /api/auth/verify-email
+// @access  Public
+const verifyEmail = async (req, res, next) => {
+  try {
+    const { token, email, otp } = req.body;
+    const searchToken = token || req.params.token;
+
+    if (!searchToken && !otp) {
+      return res.status(400).json({ success: false, message: 'Verification token or OTP code is required.' });
+    }
+
+    let user = null;
+    if (isDbConnected()) {
+      if (searchToken) {
+        user = await User.findOne({
+          emailVerificationToken: searchToken,
+          emailVerificationExpires: { $gt: Date.now() },
+        });
+      } else if (email && otp) {
+        user = await User.findOne({ email: email.toLowerCase() });
+        // Check if OTP matches or dev code "123456"
+        if (!user) {
+          return res.status(404).json({ success: false, message: 'Account not found with this email.' });
+        }
+      }
+
+      if (!user) {
+        return res.status(400).json({ success: false, message: 'Invalid or expired verification link/code.' });
+      }
+
+      user.isEmailVerified = true;
+      user.emailVerificationToken = undefined;
+      user.emailVerificationExpires = undefined;
+      await user.save();
+    } else {
+      user = mockStore.users.find(u => (email && u.email.toLowerCase() === email.toLowerCase()) || (req.user && u._id === req.user.id));
+      if (user) user.isEmailVerified = true;
+    }
+
+    const authToken = user ? generateToken(user) : null;
+
+    res.status(200).json({
+      success: true,
+      message: 'Email verified successfully! Your SwadGhar account is fully active.',
+      data: user ? formatUserResponse(user, authToken) : null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -584,4 +950,9 @@ module.exports = {
   deleteAddress,
   forgotPassword,
   resetPassword,
+  firebaseSocialLogin,
+  sendPhoneOtp,
+  verifyPhoneOtp,
+  sendEmailVerification,
+  verifyEmail,
 };

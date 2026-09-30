@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { useTranslation } from '../context/LanguageContext';
 import api from '../services/api';
 import { AnimatedContent, SpotlightCard } from '../components/animations';
 import { convertFileToBase64 } from '../utils/imageUtils';
@@ -35,6 +36,7 @@ const PRESET_AVATARS = [
 const Profile = () => {
   const { user, updateUserData } = useAuth();
   const { showSuccess, showError } = useNotification();
+  const { t } = useTranslation();
   const fileInputRef = useRef(null);
 
   // Profile Form State
@@ -284,8 +286,21 @@ const Profile = () => {
               <span className="px-3 py-0.5 rounded-full bg-brand-500/20 text-amber-300 border border-brand-500/30 text-xs font-bold uppercase">
                 {user.role}
               </span>
+              {user.isEmailVerified ? (
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                  <span>Verified Email</span>
+                </span>
+              ) : (
+                <a
+                  href={`/verify-email?email=${encodeURIComponent(user.email || '')}`}
+                  className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-bold hover:bg-amber-500/30 transition-colors"
+                >
+                  ⚠️ Verify Email
+                </a>
+              )}
             </div>
-            <p className="text-stone-400 text-sm">{user.email}</p>
+            <p className="text-stone-400 text-sm">{user.email || user.phone || 'Gourmet Member'}</p>
             <p className="text-stone-500 text-xs">
               Registered SwadGhar Gourmet Diner • Member since{' '}
               {new Date(user.createdAt || Date.now()).toLocaleDateString('en-IN', {
@@ -326,12 +341,12 @@ const Profile = () => {
         <div className="p-6 sm:p-8 rounded-3xl bg-white border border-stone-200/80 shadow-sm space-y-6">
           <h3 className="text-xl font-serif font-bold text-stone-900 flex items-center gap-2">
             <User className="w-5 h-5 text-brand-600" />
-            <span>Personal Information</span>
+            <span>{t('profile.personalInfo', 'Personal Information')}</span>
           </h3>
 
           <form onSubmit={handleUpdateProfile} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-stone-700">Full Name *</label>
+              <label className="text-xs font-bold text-stone-700">{t('auth.name', 'Full Name')} *</label>
               <input
                 type="text"
                 required
@@ -342,7 +357,7 @@ const Profile = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-stone-700">Email Address (Read-only)</label>
+              <label className="text-xs font-bold text-stone-700">{t('auth.email', 'Email Address')} ({t('common.info', 'Read-only')})</label>
               <input
                 type="email"
                 disabled
@@ -352,7 +367,7 @@ const Profile = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-stone-700">Mobile Phone Number</label>
+              <label className="text-xs font-bold text-stone-700">{t('contact.phone', 'Mobile Phone Number')}</label>
               <input
                 type="tel"
                 value={phone}
@@ -360,16 +375,16 @@ const Profile = () => {
                 placeholder="+91 98765 43210"
                 className="w-full px-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-sm text-stone-900 focus:outline-none focus:border-brand-500"
               />
-              <span className="text-[11px] text-stone-400 block">Used for order tracking and SMS dispatch notifications.</span>
+              <span className="text-[11px] text-stone-400 block">{t('checkout.phone', 'Used for order tracking and SMS dispatch notifications.')}</span>
             </div>
 
             <button
               type="submit"
               disabled={profileSaving}
-              className="py-2.5 px-6 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm shadow-sm transition-colors flex items-center gap-2"
+              className="py-2.5 px-6 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm shadow-sm transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {profileSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              <span>{profileSaving ? 'Saving...' : 'Save Profile Changes'}</span>
+              <span>{profileSaving ? t('common.saving', 'Saving...') : t('profile.updateProfileBtn', 'Save Profile Changes')}</span>
             </button>
           </form>
         </div>
@@ -378,12 +393,12 @@ const Profile = () => {
         <div className="p-6 sm:p-8 rounded-3xl bg-white border border-stone-200/80 shadow-sm space-y-6">
           <h3 className="text-xl font-serif font-bold text-stone-900 flex items-center gap-2">
             <Lock className="w-5 h-5 text-brand-600" />
-            <span>Security & Password</span>
+            <span>{t('profile.changePassword', 'Security & Password')}</span>
           </h3>
 
           <form onSubmit={handleChangePassword} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-stone-700">Current Password</label>
+              <label className="text-xs font-bold text-stone-700">{t('profile.oldPassword', 'Current Password')}</label>
               <input
                 type="password"
                 required
@@ -395,7 +410,7 @@ const Profile = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-stone-700">New Password</label>
+              <label className="text-xs font-bold text-stone-700">{t('profile.newPassword', 'New Password')}</label>
               <input
                 type="password"
                 required
@@ -408,7 +423,7 @@ const Profile = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-stone-700">Confirm New Password</label>
+              <label className="text-xs font-bold text-stone-700">{t('auth.confirmPassword', 'Confirm New Password')}</label>
               <input
                 type="password"
                 required
@@ -423,10 +438,10 @@ const Profile = () => {
             <button
               type="submit"
               disabled={passwordSaving}
-              className="py-2.5 px-6 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-semibold text-sm shadow-sm transition-colors flex items-center gap-2"
+              className="py-2.5 px-6 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-semibold text-sm shadow-sm transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {passwordSaving && <Loader2 className="w-4 h-4 animate-spin" />}
-              <span>{passwordSaving ? 'Updating...' : 'Update Password'}</span>
+              <span>{passwordSaving ? t('common.updating', 'Updating...') : t('profile.changePassword', 'Update Password')}</span>
             </button>
           </form>
         </div>
@@ -438,20 +453,20 @@ const Profile = () => {
           <div>
             <h3 className="text-xl font-serif font-bold text-stone-900 flex items-center gap-2">
               <MapPin className="w-5 h-5 text-brand-600" />
-              <span>Saved Delivery Addresses</span>
+              <span>{t('profile.savedAddresses', 'Saved Delivery Addresses')}</span>
             </h3>
             <p className="text-xs text-stone-500">
-              Manage locations for quick 1-click selection during checkout
+              {t('checkout.deliveryAddressTitle', 'Manage locations for quick 1-click selection during checkout')}
             </p>
           </div>
 
           <button
             type="button"
             onClick={handleOpenAddAddress}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-sm transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Add New Address</span>
+            <span>{t('profile.addAddressBtn', 'Add New Address')}</span>
           </button>
         </div>
 
@@ -510,7 +525,7 @@ const Profile = () => {
                     <button
                       type="button"
                       onClick={() => handleSetDefaultAddress(addr)}
-                      className="text-amber-700 hover:text-amber-900 hover:underline"
+                      className="text-amber-700 hover:text-amber-900 hover:underline cursor-pointer"
                     >
                       Set Default
                     </button>
@@ -525,7 +540,7 @@ const Profile = () => {
                     <button
                       type="button"
                       onClick={() => handleOpenEditAddress(addr)}
-                      className="p-1.5 rounded-lg bg-white border border-stone-200 text-stone-600 hover:text-brand-600 transition-colors"
+                      className="p-1.5 rounded-lg bg-white border border-stone-200 text-stone-600 hover:text-brand-600 transition-colors cursor-pointer"
                       title="Edit address"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
@@ -533,7 +548,7 @@ const Profile = () => {
                     <button
                       type="button"
                       onClick={() => handleDeleteAddress(addr._id)}
-                      className="p-1.5 rounded-lg bg-white border border-stone-200 text-stone-600 hover:text-rose-600 transition-colors"
+                      className="p-1.5 rounded-lg bg-white border border-stone-200 text-stone-600 hover:text-rose-600 transition-colors cursor-pointer"
                       title="Delete address"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -544,7 +559,7 @@ const Profile = () => {
             ))
           ) : (
             <div className="sm:col-span-3 text-center py-8 text-stone-500 text-xs bg-stone-50 rounded-2xl border border-dashed border-stone-300">
-              No saved addresses yet. Click "Add New Address" above for instant 1-click checkout!
+              {t('common.noData', 'No saved addresses yet. Click "Add New Address" above for instant 1-click checkout!')}
             </div>
           )}
         </div>
@@ -563,11 +578,11 @@ const Profile = () => {
             <div className="flex items-center justify-between border-b border-stone-100 pb-3">
               <h3 className="text-lg font-serif font-bold text-stone-900 flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-brand-600" />
-                <span>{editingAddressId ? 'Edit Delivery Address' : 'Add New Delivery Address'}</span>
+                <span>{editingAddressId ? t('common.edit', 'Edit Delivery Address') : t('profile.addAddressBtn', 'Add New Delivery Address')}</span>
               </h3>
               <button
                 onClick={() => setAddressModalOpen(false)}
-                className="text-stone-400 hover:text-stone-700"
+                className="text-stone-400 hover:text-stone-700 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -576,14 +591,14 @@ const Profile = () => {
             <form onSubmit={handleSaveAddress} className="space-y-4 text-xs">
               {/* Address Label */}
               <div className="space-y-1.5">
-                <label className="font-bold text-stone-700">Address Label</label>
+                <label className="font-bold text-stone-700">{t('checkout.streetAddress', 'Address Label')}</label>
                 <div className="grid grid-cols-3 gap-2">
                   {['Home', 'Work', 'Other'].map((lbl) => (
                     <button
                       key={lbl}
                       type="button"
                       onClick={() => setAddressForm({ ...addressForm, label: lbl })}
-                      className={`py-2 px-3 rounded-xl font-bold border transition-colors ${
+                      className={`py-2 px-3 rounded-xl font-bold border transition-colors cursor-pointer ${
                         addressForm.label === lbl
                           ? 'bg-brand-50 border-brand-500 text-brand-700'
                           : 'bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100'
@@ -597,7 +612,7 @@ const Profile = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="font-bold text-stone-700">Recipient Name</label>
+                  <label className="font-bold text-stone-700">{t('checkout.fullName', 'Recipient Name')}</label>
                   <input
                     type="text"
                     required
@@ -607,7 +622,7 @@ const Profile = () => {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-bold text-stone-700">Contact Phone</label>
+                  <label className="font-bold text-stone-700">{t('checkout.phone', 'Contact Phone')}</label>
                   <input
                     type="tel"
                     required
@@ -620,7 +635,7 @@ const Profile = () => {
 
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1.5">
-                  <label className="font-bold text-stone-700">Flat / House No.</label>
+                  <label className="font-bold text-stone-700">{t('checkout.streetAddress', 'Flat / House No.')}</label>
                   <input
                     type="text"
                     value={addressForm.houseNo}
@@ -630,7 +645,7 @@ const Profile = () => {
                   />
                 </div>
                 <div className="space-y-1.5 col-span-2">
-                  <label className="font-bold text-stone-700">Street / Society *</label>
+                  <label className="font-bold text-stone-700">{t('checkout.streetAddress', 'Street / Society')} *</label>
                   <input
                     type="text"
                     required
@@ -644,7 +659,7 @@ const Profile = () => {
 
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1.5">
-                  <label className="font-bold text-stone-700">City *</label>
+                  <label className="font-bold text-stone-700">{t('checkout.city', 'City')} *</label>
                   <input
                     type="text"
                     required
@@ -654,7 +669,7 @@ const Profile = () => {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-bold text-stone-700">State</label>
+                  <label className="font-bold text-stone-700">{t('checkout.city', 'State')}</label>
                   <input
                     type="text"
                     required
@@ -664,7 +679,7 @@ const Profile = () => {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-bold text-stone-700">Postal Pincode *</label>
+                  <label className="font-bold text-stone-700">{t('checkout.pincode', 'Postal Pincode')} *</label>
                   <input
                     type="text"
                     required
@@ -677,7 +692,7 @@ const Profile = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-bold text-stone-700">Landmark (Optional)</label>
+                <label className="font-bold text-stone-700">{t('checkout.landmark', 'Landmark (Optional)')}</label>
                 <input
                   type="text"
                   value={addressForm.landmark}
@@ -688,7 +703,7 @@ const Profile = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-bold text-stone-700">Delivery Instructions (Optional)</label>
+                <label className="font-bold text-stone-700">{t('checkout.deliveryInstructions', 'Delivery Instructions (Optional)')}</label>
                 <input
                   type="text"
                   value={addressForm.deliveryInstructions}
@@ -705,7 +720,7 @@ const Profile = () => {
                   onChange={(e) => setAddressForm({ ...addressForm, isDefault: e.target.checked })}
                   className="rounded bg-stone-100 border-stone-300 text-brand-600 focus:ring-0 w-4 h-4"
                 />
-                <span className="font-bold text-stone-700">Set as primary default address</span>
+                <span className="font-bold text-stone-700">{t('common.confirm', 'Set as primary default address')}</span>
               </label>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-stone-100">
@@ -713,17 +728,17 @@ const Profile = () => {
                   type="button"
                   onClick={() => setAddressModalOpen(false)}
                   disabled={addressSaving}
-                  className="px-4 py-2 rounded-xl bg-stone-100 text-stone-700 font-semibold"
+                  className="px-4 py-2 rounded-xl bg-stone-100 text-stone-700 font-semibold cursor-pointer"
                 >
-                  Cancel
+                  {t('common.cancel', 'Cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={addressSaving}
-                  className="px-6 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold shadow-md flex items-center gap-1.5"
+                  className="px-6 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold shadow-md flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
                   {addressSaving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                  <span>{editingAddressId ? 'Update Address' : 'Save Address'}</span>
+                  <span>{editingAddressId ? t('common.save', 'Update Address') : t('common.save', 'Save Address')}</span>
                 </button>
               </div>
             </form>

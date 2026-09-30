@@ -19,8 +19,10 @@ import api from '../services/api';
 import FoodCard from '../components/common/FoodCard';
 import { FoodCardSkeletonGrid } from '../components/common/FoodCardSkeleton';
 import { BlurText, AnimatedContent, ShinyText } from '../components/animations';
+import { useTranslation } from '../context/LanguageContext';
 
 const Menu = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialCategory = searchParams.get('category') || 'all';
 
@@ -100,40 +102,39 @@ const Menu = () => {
             f.category?.name?.toLowerCase().includes('paneer')
           );
         }
+
         setFoods(items);
         setFetchError(null);
       }
     } catch (err) {
-      console.error('Error fetching filtered menu:', err);
-      setFetchError(err.message || 'Server timeout');
+      console.error('Error fetching foods:', err);
+      setFetchError(err.message || 'Failed to fetch items');
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch Foods with active filters
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchFilteredFoods();
-    }, 200); // Debounce search
+    }, 200);
 
     return () => clearTimeout(timer);
   }, [selectedCategory, searchQuery, foodType, spiceLevel, sortOption, priceRange, cuisineFilter]);
 
-  // Group Categories for Select Dropdown and Tabs
   const gujaratiCategories = useMemo(() => {
     return categories.filter(
       (c) =>
-        c.name.toLowerCase().includes('gujarati') ||
-        c.name.toLowerCase().includes('kathiyawadi')
+        c.name?.toLowerCase().includes('gujarati') ||
+        c.name?.toLowerCase().includes('kathiyawadi')
     );
   }, [categories]);
 
   const punjabiCategories = useMemo(() => {
     return categories.filter(
       (c) =>
-        c.name.toLowerCase().includes('punjabi') ||
-        c.name.toLowerCase().includes('paneer')
+        c.name?.toLowerCase().includes('punjabi') ||
+        c.name?.toLowerCase().includes('paneer')
     );
   }, [categories]);
 
@@ -200,13 +201,13 @@ const Menu = () => {
       {/* Page Title */}
       <div className="text-center space-y-2 max-w-2xl mx-auto">
         <span className="text-xs font-bold uppercase tracking-widest text-brand-600 block">
-          Freshly Handcrafted Delicacies
+          {t('brand.subTagline', 'Freshly Handcrafted Delicacies')}
         </span>
         <h1 className="text-3xl sm:text-5xl font-serif font-bold text-stone-900">
-          <BlurText text="Our Complete Menu" delay={0.05} animateBy="words" />
+          <BlurText text={t('menu.title', 'SwadGhar Royal Menu')} delay={0.05} animateBy="words" />
         </h1>
         <p className="text-stone-500 text-sm sm:text-base">
-          Browse through all 31 authentic Gujarati & Punjabi categories and 170+ signature dishes.
+          {t('menu.subtitle', 'Browse through all authentic Gujarati & Punjabi categories and signature dishes.')}
         </p>
       </div>
 
@@ -222,7 +223,7 @@ const Menu = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search dishes (e.g. Dhokla, Paneer, Biryani, Thali)..."
+              placeholder={t('menu.searchPlaceholder', 'Search dishes by name, ingredients, or spice...')}
               className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all placeholder:text-stone-400"
             />
           </div>
@@ -236,15 +237,15 @@ const Menu = () => {
                 onChange={(e) => handleCategoryChange(e.target.value)}
                 className="w-full py-2.5 px-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs sm:text-sm font-semibold text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 cursor-pointer transition-all"
               >
-                <option value="all">🍽️ All Categories (31 Categories / All Dishes)</option>
-                <optgroup label="── 🔶 GUJARATI SPECIALTIES (15 Categories) ──">
+                <option value="all">🍽️ {t('menu.allCategories', 'All Categories')} ({categories.length})</option>
+                <optgroup label={`── 🔶 GUJARATI (${gujaratiCategories.length}) ──`}>
                   {gujaratiCategories.map((c) => (
                     <option key={c._id} value={c.slug || c._id}>
                       {c.name}
                     </option>
                   ))}
                 </optgroup>
-                <optgroup label="── 🔷 PUNJABI SPECIALTIES (16 Categories) ──">
+                <optgroup label={`── 🔷 PUNJABI (${punjabiCategories.length}) ──`}>
                   {punjabiCategories.map((c) => (
                     <option key={c._id} value={c.slug || c._id}>
                       {c.name}
@@ -263,32 +264,31 @@ const Menu = () => {
               onChange={(e) => setSortOption(e.target.value)}
               className="w-full py-2 px-3 rounded-xl bg-stone-50 border border-stone-200 text-xs sm:text-sm font-medium text-stone-800 focus:outline-none focus:border-brand-500 cursor-pointer"
             >
-              <option value="popular">Sort: Most Popular</option>
-              <option value="rating">Sort: Highest Rated</option>
-              <option value="price_asc">Price: Low to High</option>
-              <option value="price_desc">Price: High to Low</option>
-              <option value="name_asc">Name: A to Z</option>
+              <option value="popular">{t('menu.sortPopular', 'Sort: Most Popular')}</option>
+              <option value="rating">{t('menu.sortRating', 'Sort: Highest Rated')}</option>
+              <option value="price_asc">{t('menu.sortPriceLowHigh', 'Price: Low to High')}</option>
+              <option value="price_desc">{t('menu.sortPriceHighLow', 'Price: High to Low')}</option>
             </select>
           </div>
         </div>
 
         {/* Row 2: Quick Cuisine Tabs */}
         <div className="flex items-center gap-2 border-t border-stone-100 pt-3">
-          <span className="text-xs font-bold text-stone-500 shrink-0">Cuisine:</span>
+          <span className="text-xs font-bold text-stone-500 shrink-0">{t('common.filter', 'Cuisine')}:</span>
           <div className="flex items-center gap-2">
             <button
               onClick={() => handleCuisineTabChange('all')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 cuisineFilter === 'all'
                   ? 'bg-stone-900 text-white shadow-sm'
                   : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
               }`}
             >
-              All Cuisines ({categories.length})
+              {t('common.all', 'All')} ({categories.length})
             </button>
             <button
               onClick={() => handleCuisineTabChange('gujarati')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 cuisineFilter === 'gujarati'
                   ? 'bg-amber-600 text-white shadow-sm'
                   : 'bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200/60'
@@ -298,7 +298,7 @@ const Menu = () => {
             </button>
             <button
               onClick={() => handleCuisineTabChange('punjabi')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 cuisineFilter === 'punjabi'
                   ? 'bg-brand-600 text-white shadow-sm'
                   : 'bg-orange-50 text-orange-800 hover:bg-orange-100 border border-orange-200/60'
@@ -313,19 +313,19 @@ const Menu = () => {
         <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-2 pt-1">
           <button
             onClick={() => handleCategoryChange('all')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
               selectedCategory === 'all'
                 ? 'bg-brand-600 text-white shadow-md shadow-brand-500/20'
                 : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
             }`}
           >
-            All Categories ({visibleCategories.length})
+            {t('menu.allCategories', 'All Categories')} ({visibleCategories.length})
           </button>
           {visibleCategories.map((cat) => (
             <button
               key={cat._id}
               onClick={() => handleCategoryChange(cat.slug || cat._id)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 cursor-pointer ${
                 selectedCategory === cat.slug || selectedCategory === cat._id
                   ? 'bg-brand-600 text-white shadow-md shadow-brand-500/20 ring-2 ring-brand-500/40'
                   : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
@@ -340,16 +340,16 @@ const Menu = () => {
         <div className="pt-2 border-t border-stone-100 flex flex-wrap items-center justify-between gap-4 text-xs">
           {/* Dietary Type Filter */}
           <div className="flex items-center gap-1.5 sm:gap-2">
-            <span className="font-semibold text-stone-500">Dietary:</span>
+            <span className="font-semibold text-stone-500">{t('menu.filterByDiet', 'Dietary')}:</span>
             {[
-              { id: 'all', label: 'All' },
-              { id: 'veg', label: 'Pure Veg' },
+              { id: 'all', label: t('common.all', 'All') },
+              { id: 'veg', label: t('common.pureVeg', 'Pure Veg') },
               { id: 'vegan', label: 'Vegan' },
             ].map((type) => (
               <button
                 key={type.id}
                 onClick={() => setFoodType(type.id)}
-                className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+                className={`px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer ${
                   foodType === type.id
                     ? 'bg-emerald-700 text-white'
                     : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
@@ -362,17 +362,17 @@ const Menu = () => {
 
           {/* Spice Level Filter */}
           <div className="flex items-center gap-1.5 sm:gap-2">
-            <span className="font-semibold text-stone-500">Spice:</span>
+            <span className="font-semibold text-stone-500">{t('menu.spiceLevel', 'Spice')}:</span>
             {[
-              { id: 'all', label: 'Any' },
-              { id: 'mild', label: 'Mild' },
-              { id: 'medium', label: 'Medium' },
-              { id: 'spicy', label: 'Spicy' },
+              { id: 'all', label: t('common.all', 'Any') },
+              { id: 'mild', label: t('menu.mild', 'Mild') },
+              { id: 'medium', label: t('menu.medium', 'Medium') },
+              { id: 'spicy', label: t('menu.spicy', 'Spicy') },
             ].map((sp) => (
               <button
                 key={sp.id}
                 onClick={() => setSpiceLevel(sp.id)}
-                className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+                className={`px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer ${
                   spiceLevel === sp.id
                     ? 'bg-amber-600 text-white'
                     : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
@@ -386,10 +386,10 @@ const Menu = () => {
           {/* Reset Filters */}
           <button
             onClick={handleResetFilters}
-            className="inline-flex items-center gap-1 text-stone-500 hover:text-brand-600 font-semibold transition-colors ml-auto"
+            className="inline-flex items-center gap-1 text-stone-500 hover:text-brand-600 font-semibold transition-colors ml-auto cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset Filters</span>
+            <span>{t('common.clearAll', 'Reset Filters')}</span>
           </button>
         </div>
       </div>
@@ -397,9 +397,9 @@ const Menu = () => {
       {/* Catalog Status Bar */}
       <div className="flex items-center justify-between text-xs text-stone-500 px-1">
         <div>
-          Showing <span className="font-bold text-stone-900">{foods.length === 0 ? 0 : startIndex + 1}</span> to{' '}
+          Showing <span className="font-bold text-stone-900">{foods.length === 0 ? 0 : startIndex + 1}</span> -{' '}
           <span className="font-bold text-stone-900">{endIndex}</span> of{' '}
-          <span className="font-bold text-brand-600">{foods.length}</span> authentic delicacies
+          <span className="font-bold text-brand-600">{foods.length}</span> {t('common.items', 'dishes')}
           {selectedCategory !== 'all' && (
             <span className="ml-1 font-medium text-stone-700">
               in &quot;{categories.find((c) => c.slug === selectedCategory || c._id === selectedCategory)?.name || selectedCategory}&quot;
@@ -408,7 +408,7 @@ const Menu = () => {
         </div>
         {totalPages > 1 && (
           <div>
-            Page <span className="font-bold text-stone-900">{currentPage}</span> of{' '}
+            Page <span className="font-bold text-stone-900">{currentPage}</span> /{' '}
             <span className="font-bold text-stone-900">{totalPages}</span>
           </div>
         )}
@@ -428,14 +428,14 @@ const Menu = () => {
                 Warming Up Live Server...
               </h3>
               <p className="text-stone-500 text-sm">
-                Render server was sleeping and is starting up. Please click below to reload the menu.
+                Server is starting up. Please reload menu.
               </p>
               <button
                 onClick={() => fetchFilteredFoods()}
-                className="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm transition-colors shadow-md inline-flex items-center gap-2 mx-auto"
+                className="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm transition-colors shadow-md inline-flex items-center gap-2 mx-auto cursor-pointer"
               >
                 <RotateCcw className="w-4 h-4" />
-                <span>Reload Menu Now</span>
+                <span>{t('common.refresh', 'Reload Menu Now')}</span>
               </button>
             </div>
           ) : (
@@ -445,99 +445,90 @@ const Menu = () => {
                 <Search className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-serif font-bold text-stone-900">
-                No Dishes Found
+                {t('menu.noDishesFound', 'No Dishes Found')}
               </h3>
               <p className="text-stone-500 text-sm">
-                We couldn’t find any delicacies matching your selected category or filter criteria.
+                {t('menu.tryDifferentSearch', 'Try searching with another keyword or reset your filters.')}
               </p>
               <button
                 onClick={handleResetFilters}
-                className="px-6 py-2.5 rounded-xl bg-brand-600 text-white font-semibold text-sm hover:bg-brand-500 transition-colors shadow-md"
+                className="px-6 py-2.5 rounded-xl bg-stone-900 hover:bg-stone-800 text-white font-semibold text-sm transition-colors shadow-md inline-flex items-center gap-2 mx-auto cursor-pointer"
               >
-                Clear All Filters
+                <RotateCcw className="w-4 h-4" />
+                <span>{t('common.clearAll', 'Reset All Filters')}</span>
               </button>
             </div>
           )
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {paginatedFoods.map((food) => (
-              <FoodCard key={food._id} food={food} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {paginatedFoods.map((food, idx) => (
+              <AnimatedContent key={food._id} delay={idx * 0.03} className="h-full">
+                <FoodCard food={food} />
+              </AnimatedContent>
             ))}
           </div>
         )}
       </div>
 
-      {/* Customer Menu Pagination Bar */}
-      {totalPages > 1 && (
-        <div className="p-4 bg-white rounded-2xl border border-stone-200/80 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+      {/* Pagination Controls */}
+      {totalPages > 1 && !loading && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-stone-200">
           <div className="text-xs text-stone-500">
-            Showing <span className="font-bold text-stone-800">{startIndex + 1}</span>-
-            <span className="font-bold text-stone-800">{endIndex}</span> of{' '}
+            Showing <span className="font-bold text-stone-900">{startIndex + 1}</span> to{' '}
+            <span className="font-bold text-stone-900">{endIndex}</span> of{' '}
             <span className="font-bold text-brand-600">{foods.length}</span> delicacies
           </div>
 
           <div className="flex items-center gap-1.5">
-            {/* First Page */}
             <button
               onClick={() => setCurrentPage(1)}
               disabled={currentPage === 1}
-              className="p-2 rounded-xl bg-stone-50 border border-stone-200 text-stone-600 hover:text-stone-900 disabled:opacity-40 disabled:hover:text-stone-600 transition-colors"
+              className="p-2 rounded-xl border border-stone-200 text-stone-600 hover:bg-stone-100 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
               title="First Page"
             >
               <ChevronsLeft className="w-4 h-4" />
             </button>
-
-            {/* Prev Page */}
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="p-2 rounded-xl bg-stone-50 border border-stone-200 text-stone-600 hover:text-stone-900 disabled:opacity-40 disabled:hover:text-stone-600 transition-colors"
-              title="Previous Page"
+              className="px-3 py-2 rounded-xl border border-stone-200 text-stone-600 hover:bg-stone-100 disabled:opacity-30 disabled:pointer-events-none text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">{t('common.back', 'Previous')}</span>
             </button>
 
-            {/* Page Numbers */}
-            <div className="flex items-center gap-1">
-              {getPageNumbers().map((num, idx) => {
-                if (num === '...') {
-                  return (
-                    <span key={`menu-dots-${idx}`} className="px-2 text-stone-400 text-xs">
-                      ...
-                    </span>
-                  );
-                }
-                return (
+            <div className="flex items-center gap-1 mx-1">
+              {getPageNumbers().map((p, idx) =>
+                p === '...' ? (
+                  <span key={idx} className="px-2 text-stone-400 text-xs">...</span>
+                ) : (
                   <button
-                    key={`menu-page-${num}`}
-                    onClick={() => setCurrentPage(num)}
-                    className={`min-w-[34px] h-8 px-2 rounded-xl text-xs font-bold transition-all ${
-                      currentPage === num
-                        ? 'bg-brand-600 text-white shadow-md shadow-brand-500/30 scale-105'
-                        : 'bg-stone-50 border border-stone-200 text-stone-700 hover:bg-stone-100 hover:text-stone-900'
+                    key={idx}
+                    onClick={() => setCurrentPage(p)}
+                    className={`w-8 h-8 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      currentPage === p
+                        ? 'bg-brand-600 text-white shadow-md shadow-brand-500/30'
+                        : 'text-stone-700 hover:bg-stone-100 border border-stone-200'
                     }`}
                   >
-                    {num}
+                    {p}
                   </button>
-                );
-              })}
+                )
+              )}
             </div>
 
-            {/* Next Page */}
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="p-2 rounded-xl bg-stone-50 border border-stone-200 text-stone-600 hover:text-stone-900 disabled:opacity-40 disabled:hover:text-stone-600 transition-colors"
-              title="Next Page"
+              className="px-3 py-2 rounded-xl border border-stone-200 text-stone-600 hover:bg-stone-100 disabled:opacity-30 disabled:pointer-events-none text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
             >
+              <span className="hidden sm:inline">Next</span>
               <ChevronRight className="w-4 h-4" />
             </button>
-
-            {/* Last Page */}
             <button
               onClick={() => setCurrentPage(totalPages)}
               disabled={currentPage === totalPages}
-              className="p-2 rounded-xl bg-stone-50 border border-stone-200 text-stone-600 hover:text-stone-900 disabled:opacity-40 disabled:hover:text-stone-600 transition-colors"
+              className="p-2 rounded-xl border border-stone-200 text-stone-600 hover:bg-stone-100 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
               title="Last Page"
             >
               <ChevronsRight className="w-4 h-4" />

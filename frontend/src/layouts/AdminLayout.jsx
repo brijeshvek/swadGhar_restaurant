@@ -16,11 +16,15 @@ import {
   ExternalLink,
   MessageSquare,
   Store,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from '../context/LanguageContext';
+import LanguageSelector from '../components/common/LanguageSelector';
 
 const AdminLayout = () => {
   const { user, isAdmin, isStaff, logout } = useAuth();
+  const { t } = useTranslation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -30,17 +34,78 @@ const AdminLayout = () => {
   };
 
   const navItems = [
-    { name: isAdmin ? 'Executive Dashboard' : 'Branch Dashboard', path: '/admin/dashboard', icon: LayoutDashboard, adminOnly: false },
-    { name: isAdmin ? '5 Franchises & Staff' : 'My Branch & Staff', path: '/admin/franchises', icon: Store, adminOnly: false },
-    { name: 'Live Orders', path: '/admin/orders', icon: ShoppingBag, adminOnly: false },
-    { name: 'Customer Inquiries', path: '/admin/inquiries', icon: MessageSquare, adminOnly: false },
-    { name: 'Food Dishes', path: '/admin/foods', icon: UtensilsCrossed, adminOnly: false },
-    { name: 'Categories', path: '/admin/categories', icon: FolderTree, adminOnly: true },
-    { name: 'Table Reservations', path: '/admin/reservations', icon: Calendar, adminOnly: false },
-    { name: 'Customers', path: '/admin/customers', icon: Users, adminOnly: true },
-    { name: 'Reviews Moderation', path: '/admin/reviews', icon: Star, adminOnly: true },
-    { name: 'Coupons & Offers', path: '/admin/coupons', icon: Tag, adminOnly: true },
-    { name: 'Store Settings', path: '/admin/settings', icon: Settings, adminOnly: true },
+    {
+      name: isAdmin ? t('admin.dashboardTitle', 'Executive Dashboard') : t('admin.branchDashboardTitle', 'Branch Dashboard'),
+      path: '/admin/dashboard',
+      icon: LayoutDashboard,
+      adminOnly: false,
+    },
+    {
+      name: isAdmin ? t('admin.activeFranchises', '5 Franchises & Staff') : t('admin.branchReports', 'My Branch & Staff'),
+      path: '/admin/franchises',
+      icon: Store,
+      adminOnly: false,
+    },
+    {
+      name: isAdmin ? t('admin.franchiseReports', 'Franchise Reports') : t('admin.branchReports', 'Branch Sales Report'),
+      path: '/admin/reports',
+      icon: FileSpreadsheet,
+      adminOnly: false,
+    },
+    {
+      name: t('admin.liveKitchenDesk', 'Live Orders'),
+      path: '/admin/orders',
+      icon: ShoppingBag,
+      adminOnly: false,
+    },
+    {
+      name: t('nav.contact', 'Customer Inquiries'),
+      path: '/admin/inquiries',
+      icon: MessageSquare,
+      adminOnly: false,
+    },
+    {
+      name: t('admin.menuCatalog', 'Food Dishes'),
+      path: '/admin/foods',
+      icon: UtensilsCrossed,
+      adminOnly: false,
+    },
+    {
+      name: t('menu.allCategories', 'Categories'),
+      path: '/admin/categories',
+      icon: FolderTree,
+      adminOnly: true,
+    },
+    {
+      name: t('nav.reservations', 'Table Reservations'),
+      path: '/admin/reservations',
+      icon: Calendar,
+      adminOnly: false,
+    },
+    {
+      name: t('profile.personalInfo', 'Customers'),
+      path: '/admin/customers',
+      icon: Users,
+      adminOnly: true,
+    },
+    {
+      name: t('common.reviews', 'Reviews Moderation'),
+      path: '/admin/reviews',
+      icon: Star,
+      adminOnly: true,
+    },
+    {
+      name: t('cart.haveCoupon', 'Coupons & Offers'),
+      path: '/admin/coupons',
+      icon: Tag,
+      adminOnly: true,
+    },
+    {
+      name: t('profile.title', 'Store Settings'),
+      path: '/admin/settings',
+      icon: Settings,
+      adminOnly: true,
+    },
   ];
 
   const filteredNavItems = navItems.filter(
@@ -58,16 +123,19 @@ const AdminLayout = () => {
             className="w-9 h-9 rounded-full object-contain bg-white p-0.5 border border-amber-500/40 shadow-sm"
           />
           <span className="font-serif font-bold text-lg text-white">
-            SwadGhar {isAdmin ? 'Admin' : 'Staff'}
+            {t('brand.name')} {isAdmin ? t('nav.adminPanel') : t('nav.staffPanel')}
           </span>
         </Link>
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 rounded-lg bg-stone-800 text-stone-300 cursor-pointer"
-          aria-label="Toggle admin sidebar"
-        >
-          {sidebarOpen ? <X className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
-        </button>
+        <div className="flex items-center gap-2">
+          <LanguageSelector />
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-2 rounded-lg bg-stone-800 text-stone-300 cursor-pointer"
+            aria-label="Toggle admin sidebar"
+          >
+            {sidebarOpen ? <X className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Backdrop */}
@@ -97,13 +165,18 @@ const AdminLayout = () => {
             />
             <div className="truncate">
               <span className="text-lg font-serif font-bold text-gradient block leading-none">
-                SwadGhar
+                {t('brand.name')}
               </span>
               <span className="text-[10px] tracking-widest text-amber-400 font-bold uppercase block mt-1">
-                {isAdmin ? 'Admin Portal' : 'Staff Kitchen Desk'}
+                {isAdmin ? t('nav.adminPanel') : t('nav.staffPanel')}
               </span>
             </div>
           </Link>
+        </div>
+
+        {/* Language Selector Pill Bar in Sidebar */}
+        <div className="px-3 pt-2 shrink-0">
+          <LanguageSelector variant="pills" />
         </div>
 
         {/* Navigation Links (Scrolls internally if screen is very short, never scrolls entire page) */}
@@ -113,13 +186,13 @@ const AdminLayout = () => {
               const Icon = item.icon;
               return (
                 <NavLink
-                  key={item.name}
+                  key={item.path}
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                       isActive
-                        ? 'bg-brand-600 text-white shadow-md shadow-brand-500/20'
+                        ? 'bg-brand-600 text-white shadow-md shadow-brand-500/20 font-bold'
                         : 'text-stone-400 hover:text-white hover:bg-stone-900'
                     }`
                   }
@@ -141,7 +214,7 @@ const AdminLayout = () => {
           >
             <span className="flex items-center gap-2">
               <ExternalLink className="w-3.5 h-3.5 text-brand-400 shrink-0" />
-              <span>Customer Website</span>
+              <span>{t('nav.home')} ({t('brand.name')})</span>
             </span>
           </Link>
 
@@ -163,7 +236,7 @@ const AdminLayout = () => {
             <button
               onClick={handleLogout}
               className="p-2 rounded-lg bg-stone-900 hover:bg-rose-500/20 text-stone-400 hover:text-rose-400 transition-colors cursor-pointer shrink-0"
-              title="Sign Out"
+              title={t('nav.logout')}
             >
               <LogOut className="w-4 h-4" />
             </button>

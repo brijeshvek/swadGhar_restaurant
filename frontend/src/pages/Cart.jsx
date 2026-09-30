@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useNotification } from '../context/NotificationContext';
+import { useTranslation } from '../context/LanguageContext';
 import api from '../services/api';
 
 const Cart = () => {
@@ -34,6 +35,7 @@ const Cart = () => {
     removeCoupon,
   } = useCart();
 
+  const { t } = useTranslation();
   const { showSuccess, showError } = useNotification();
   const [couponCodeInput, setCouponCodeInput] = useState('');
   const [validatingCoupon, setValidatingCoupon] = useState(false);
@@ -102,17 +104,17 @@ const Cart = () => {
         </div>
         <div className="space-y-2">
           <h2 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900">
-            Your Plate is Empty
+            {t('cart.emptyTitle', 'Your Cart is Currently Empty')}
           </h2>
           <p className="text-stone-500 text-sm">
-            You haven’t added any appetizing delicacies to your plate yet.
+            {t('cart.emptySubtitle', 'Explore our authentic menu and add traditional delicacies!')}
           </p>
         </div>
         <Link
           to="/menu"
           className="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-md hover:shadow-glow transition-all"
         >
-          <span>Explore Delicious Menu</span>
+          <span>{t('cart.browseMenuBtn', 'Explore Delicious Menu')}</span>
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
@@ -128,19 +130,19 @@ const Cart = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-serif font-bold text-stone-900">
-            Your Dining Plate
+            {t('cart.title', 'Your Royal Dining Cart')}
           </h1>
           <p className="text-stone-500 text-xs sm:text-sm">
-            {cartItems.length} unique dish item(s) selected
+            {cartItems.length} {t('common.items', 'items')}
           </p>
         </div>
 
         <button
           onClick={clearCart}
-          className="text-xs text-stone-400 hover:text-rose-500 font-semibold transition-colors flex items-center gap-1"
+          className="text-xs text-stone-400 hover:text-rose-500 font-semibold transition-colors flex items-center gap-1 cursor-pointer"
         >
           <Trash2 className="w-3.5 h-3.5" />
-          <span>Clear Plate</span>
+          <span>{t('common.clear', 'Clear Cart')}</span>
         </button>
       </div>
 
@@ -150,7 +152,7 @@ const Cart = () => {
           <span className="flex items-center gap-1.5 text-amber-800">
             <Truck className="w-4 h-4 text-brand-600" />
             {remainingForFreeDelivery === 0
-              ? '🎉 Congratulations! You have unlocked FREE Express Delivery!'
+              ? '🎉 ' + t('cart.deliveryNote', 'FREE Express Delivery unlocked!')
               : `Add ₹${remainingForFreeDelivery} more to enjoy FREE Delivery!`}
           </span>
           <span className="text-stone-500">{Math.round(freeDeliveryProgress)}%</span>
@@ -210,7 +212,7 @@ const Cart = () => {
                 <div className="flex items-center gap-2 bg-stone-100 rounded-xl p-1 border border-stone-200">
                   <button
                     onClick={() => updateQuantity(item.food._id, item.quantity - 1)}
-                    className="w-7 h-7 rounded-lg bg-white hover:bg-stone-200 shadow-sm flex items-center justify-center text-stone-800 transition-colors"
+                    className="w-7 h-7 rounded-lg bg-white hover:bg-stone-200 shadow-sm flex items-center justify-center text-stone-800 transition-colors cursor-pointer"
                     aria-label="Decrease quantity"
                   >
                     <Minus className="w-3.5 h-3.5" />
@@ -218,7 +220,7 @@ const Cart = () => {
                   <span className="text-xs font-bold w-4 text-center">{item.quantity}</span>
                   <button
                     onClick={() => updateQuantity(item.food._id, item.quantity + 1)}
-                    className="w-7 h-7 rounded-lg bg-white hover:bg-stone-200 shadow-sm flex items-center justify-center text-stone-800 transition-colors"
+                    className="w-7 h-7 rounded-lg bg-white hover:bg-stone-200 shadow-sm flex items-center justify-center text-stone-800 transition-colors cursor-pointer"
                     aria-label="Increase quantity"
                   >
                     <Plus className="w-3.5 h-3.5" />
@@ -233,7 +235,7 @@ const Cart = () => {
 
                 <button
                   onClick={() => removeFromCart(item.food._id)}
-                  className="text-stone-400 hover:text-rose-500 transition-colors p-1"
+                  className="text-stone-400 hover:text-rose-500 transition-colors p-1 cursor-pointer"
                   aria-label="Remove item"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -248,7 +250,7 @@ const Cart = () => {
               className="inline-flex items-center gap-2 text-xs font-bold text-brand-600 hover:text-brand-700"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Add More Delicacies from Menu</span>
+              <span>{t('cart.browseMenuBtn', 'Add More Delicacies from Menu')}</span>
             </Link>
           </div>
         </div>
@@ -259,7 +261,7 @@ const Cart = () => {
           <div className="p-5 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
             <h4 className="text-sm font-bold text-stone-900 flex items-center gap-2">
               <Tag className="w-4 h-4 text-brand-600" />
-              <span>Apply Discount Coupon</span>
+              <span>{t('cart.haveCoupon', 'Apply Discount Coupon')}</span>
             </h4>
 
             {appliedCoupon ? (
@@ -267,15 +269,15 @@ const Cart = () => {
                 <div className="space-y-0.5">
                   <span className="font-bold text-emerald-800 flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                    Coupon '{appliedCoupon.code}' Applied!
+                    {t('cart.couponApplied', "Coupon Applied!")} ({appliedCoupon.code})
                   </span>
                   <p className="text-emerald-700 text-[11px]">
-                    You saved ₹{discountAmount} on this order
+                    {t('cart.savingsText', { amount: discountAmount })}
                   </p>
                 </div>
                 <button
                   onClick={removeCoupon}
-                  className="text-stone-400 hover:text-rose-600 p-1"
+                  className="text-stone-400 hover:text-rose-600 p-1 cursor-pointer"
                   aria-label="Remove coupon"
                 >
                   <X className="w-4 h-4" />
@@ -285,7 +287,7 @@ const Cart = () => {
               <form onSubmit={handleApplyCoupon} className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="Enter coupon code"
+                  placeholder={t('cart.couponPlaceholder', 'Enter coupon code')}
                   value={couponCodeInput}
                   onChange={(e) => setCouponCodeInput(e.target.value.toUpperCase())}
                   className="flex-1 px-3 py-2 rounded-xl bg-stone-50 border border-stone-200 text-xs uppercase font-bold tracking-wider focus:outline-none focus:border-brand-500"
@@ -293,9 +295,9 @@ const Cart = () => {
                 <button
                   type="submit"
                   disabled={validatingCoupon || !couponCodeInput.trim()}
-                  className="px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 disabled:opacity-50 text-white text-xs font-bold transition-colors"
+                  className="px-4 py-2 rounded-xl bg-stone-900 hover:bg-stone-800 disabled:opacity-50 text-white text-xs font-bold transition-colors cursor-pointer"
                 >
-                  {validatingCoupon ? '...' : 'Apply'}
+                  {validatingCoupon ? '...' : t('cart.applyCoupon', 'Apply')}
                 </button>
               </form>
             )}
@@ -320,9 +322,9 @@ const Cart = () => {
                       </div>
                       <button
                         onClick={() => handleQuickApply(c.code)}
-                        className="px-2.5 py-1 rounded-lg bg-brand-50 text-brand-700 font-bold hover:bg-brand-100 transition-colors"
+                        className="px-2.5 py-1 rounded-lg bg-brand-50 text-brand-700 font-bold hover:bg-brand-100 transition-colors cursor-pointer"
                       >
-                        Apply
+                        {t('cart.applyCoupon', 'Apply')}
                       </button>
                     </div>
                   ))}
@@ -334,29 +336,29 @@ const Cart = () => {
           {/* Bill Breakdown Box */}
           <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-md space-y-4">
             <h4 className="text-base font-serif font-bold text-stone-900 border-b border-stone-100 pb-3">
-              Bill Summary
+              {t('cart.orderSummary', 'Bill Summary')}
             </h4>
 
             <div className="space-y-2.5 text-xs text-stone-600">
               <div className="flex justify-between">
-                <span>Subtotal</span>
+                <span>{t('common.subtotal', 'Subtotal')}</span>
                 <span className="font-bold text-stone-900 font-sans">₹{subtotal}</span>
               </div>
 
               {discountAmount > 0 && (
                 <div className="flex justify-between text-emerald-600 font-semibold">
-                  <span>Coupon Savings</span>
+                  <span>{t('common.discount', 'Coupon Savings')}</span>
                   <span>-₹{discountAmount}</span>
                 </div>
               )}
 
               <div className="flex justify-between">
-                <span>GST (5%)</span>
+                <span>{t('common.tax', 'GST (5%)')}</span>
                 <span className="font-bold text-stone-900 font-sans">₹{tax}</span>
               </div>
 
               <div className="flex justify-between">
-                <span>Delivery Charge</span>
+                <span>{t('common.deliveryFee', 'Delivery Charge')}</span>
                 <span>
                   {deliveryFee === 0 ? (
                     <span className="text-emerald-600 font-bold">FREE</span>
@@ -367,7 +369,7 @@ const Cart = () => {
               </div>
 
               <div className="pt-3 border-t border-stone-200 flex justify-between items-baseline">
-                <span className="text-sm font-bold text-stone-900">Grand Total</span>
+                <span className="text-sm font-bold text-stone-900">{t('common.grandTotal', 'Grand Total')}</span>
                 <span className="text-2xl font-bold text-brand-600 font-sans">
                   ₹{grandTotal}
                 </span>
@@ -376,15 +378,15 @@ const Cart = () => {
 
             <button
               onClick={() => navigate('/checkout')}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 active:scale-95 text-white font-bold text-sm shadow-lg shadow-brand-500/25 hover:shadow-glow transition-all flex items-center justify-center gap-2"
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 active:scale-95 text-white font-bold text-sm shadow-lg shadow-brand-500/25 hover:shadow-glow transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
-              <span>Proceed to Checkout</span>
+              <span>{t('cart.checkoutBtn', 'Proceed to Checkout')}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
 
             <div className="flex items-center justify-center gap-1.5 text-[11px] text-stone-400 pt-1">
               <ShieldCheck className="w-4 h-4 text-emerald-500" />
-              <span>Safe & Secure 256-Bit Encrypted Checkout</span>
+              <span>{t('checkout.securePaymentNotice', 'Safe & Secure 256-Bit Encrypted Checkout')}</span>
             </div>
           </div>
         </div>

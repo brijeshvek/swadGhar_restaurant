@@ -21,10 +21,12 @@ import {
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
+import { useTranslation } from '../../context/LanguageContext';
 
 const AdminFranchises = () => {
   const { user, isAdmin } = useAuth();
   const { showSuccess, showError } = useNotification();
+  const { t } = useTranslation();
 
   const [franchises, setFranchises] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -175,13 +177,13 @@ const AdminFranchises = () => {
           <div className="flex items-center gap-2">
             <Store className="w-6 h-6 text-amber-500" />
             <h1 className="text-2xl font-serif font-bold text-white">
-              {isAdmin ? '5 Restaurant Franchises & Staff' : `${selectedBranch?.city || 'Branch'} Staff & Operations`}
+              {isAdmin ? t('admin.activeFranchises', '5 Restaurant Franchises & Staff') : `${selectedBranch?.city || 'Branch'} ${t('admin.staffStrength', 'Staff & Operations')}`}
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-stone-400 mt-1">
             {isAdmin
-              ? 'Manage branch managers, login credentials, and view complete staff team rosters across all 5 locations'
-              : `Logged in as Branch Manager (${user?.name}). Manage your branch team and staff details.`}
+              ? t('admin.franchiseSubtitle', 'Manage branch managers, login credentials, and view complete staff team rosters across all 5 locations')
+              : `${t('admin.branchManagerSubtitle', 'Logged in as Branch Manager')}: (${user?.name}). ${t('admin.manageStaffSub', 'Manage your branch team and staff details.')}`}
           </p>
         </div>
 
@@ -189,7 +191,7 @@ const AdminFranchises = () => {
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Superadmin Access</span>
+              <span>{t('admin.superAdminHq', 'Superadmin Access')}</span>
             </span>
           </div>
         )}
@@ -209,7 +211,7 @@ const AdminFranchises = () => {
                 <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Search franchise or city..."
+                  placeholder={t('admin.searchFranchisePlaceholder', 'Search franchise or city...')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-stone-950 border border-stone-800 text-xs text-stone-200 focus:outline-none focus:border-amber-500"

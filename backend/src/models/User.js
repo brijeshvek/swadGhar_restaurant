@@ -26,22 +26,25 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: [true, 'Please provide an email'],
-    unique: true,
     lowercase: true,
     trim: true,
+    sparse: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email'],
     index: true,
   },
   password: {
     type: String,
-    required: [true, 'Please provide a password'],
+    required: function () {
+      return !this.authProvider || this.authProvider === 'local';
+    },
     minlength: [6, 'Password must be at least 6 characters'],
     select: false, // Don't return password by default in queries
   },
   phone: {
     type: String,
     trim: true,
+    sparse: true,
+    index: true,
   },
   role: {
     type: String,
@@ -49,6 +52,23 @@ const userSchema = new mongoose.Schema({
     default: 'customer',
     index: true,
   },
+  authProvider: {
+    type: String,
+    enum: ['local', 'google', 'phone', 'facebook', 'github'],
+    default: 'local',
+  },
+  firebaseUid: {
+    type: String,
+    sparse: true,
+  },
+  isEmailVerified: {
+    type: Boolean,
+    default: false,
+  },
+  emailVerificationToken: String,
+  emailVerificationExpires: Date,
+  phoneOtp: String,
+  phoneOtpExpires: Date,
   avatar: {
     type: String,
     default: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',

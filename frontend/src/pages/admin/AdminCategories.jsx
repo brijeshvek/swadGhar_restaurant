@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import api from '../../services/api';
 import { useNotification } from '../../context/NotificationContext';
+import { useTranslation } from '../../context/LanguageContext';
 import { AnimatedContent, SpotlightCard } from '../../components/animations';
 import { convertFileToBase64 } from '../../utils/imageUtils';
 
@@ -46,6 +47,7 @@ const PRESET_IMAGES = [
 ];
 
 const AdminCategories = () => {
+  const { t } = useTranslation();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -193,22 +195,22 @@ const AdminCategories = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white flex items-center gap-3">
-            <span>Menu Categories</span>
+            <span>{t('admin.categories', 'Menu Categories')}</span>
             <span className="px-3 py-0.5 rounded-full bg-brand-500/20 text-brand-400 text-xs font-sans font-bold border border-brand-500/30">
-              {categories.length} Total
+              {categories.length} {t('common.total', 'Total')}
             </span>
           </h1>
           <p className="text-xs sm:text-sm text-stone-400">
-            Organize customer dishes into uniform culinary sections with custom images and sort orders
+            {t('admin.categoriesSubtitle', 'Organize customer dishes into uniform culinary sections with custom images and sort orders')}
           </p>
         </div>
 
         <button
           onClick={handleOpenAdd}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 text-white font-bold text-xs shadow-lg shadow-brand-500/20 hover:shadow-glow transition-all active:scale-95"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 text-white font-bold text-xs shadow-lg shadow-brand-500/20 hover:shadow-glow transition-all active:scale-95 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>Add New Category</span>
+          <span>{t('admin.addNewCategory', 'Add New Category')}</span>
         </button>
       </div>
 
@@ -222,9 +224,9 @@ const AdminCategories = () => {
       ) : categories.length === 0 ? (
         <div className="py-16 text-center bg-stone-950 rounded-3xl border border-stone-800 space-y-4">
           <FolderTree className="w-12 h-12 text-stone-600 mx-auto" />
-          <h3 className="text-lg font-bold text-white">No Categories Created Yet</h3>
+          <h3 className="text-lg font-bold text-white">{t('admin.noCategoriesFound', 'No Categories Created Yet')}</h3>
           <p className="text-xs text-stone-400 max-w-sm mx-auto">
-            Click the "Add New Category" button above to create your first food category.
+            {t('admin.noCategoriesSub', 'Click the "Add New Category" button above to create your first food category.')}
           </p>
         </div>
       ) : (

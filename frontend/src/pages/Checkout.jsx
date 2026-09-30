@@ -20,10 +20,12 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useNotification } from '../context/NotificationContext';
+import { useTranslation } from '../context/LanguageContext';
 import api from '../services/api';
 
 const Checkout = () => {
   const { user, isAuthenticated, refreshUser } = useAuth();
+  const { t } = useTranslation();
   const {
     cartItems,
     subtotal,
@@ -99,6 +101,7 @@ const Checkout = () => {
   };
 
   const populateFieldsFromAddress = (addr) => {
+    if (!addr) return;
     setFullName(addr.fullName || user?.name || '');
     setPhone(addr.phone || user?.phone || '');
     setHouseNo(addr.houseNo || '');
@@ -114,7 +117,6 @@ const Checkout = () => {
   const handleAddressSelect = (addr) => {
     setSelectedAddressId(addr._id);
     populateFieldsFromAddress(addr);
-    showInfo(`Selected ${addr.label || 'Saved'} Address`);
   };
 
   const handleSelectNewAddress = () => {
@@ -130,91 +132,74 @@ const Checkout = () => {
     e.preventDefault();
 
     if (cartItems.length === 0) {
-      showError('Your plate is empty.');
+      showError('Your cart is empty.');
       navigate('/menu');
       return;
     }
 
-    if (!isAuthenticated) {
-      showInfo('Please sign in or register to place your order.');
-      navigate('/login', { state: { from: { pathname: '/checkout' } } });
+    if (!fullName.trim() || !phone.trim()) {
+      showError('Please fill in your name and phone number.');
       return;
     }
 
-    if (orderType === 'delivery') {
-      if (!fullName || !phone || !street || !city || !pincode) {
-        showError('Please complete all required delivery address fields.');
-        return;
-      }
+    if (orderType === 'delivery' && (!street.trim() || !city.trim() || !pincode.trim())) {
+      showError('Please provide a complete delivery address.');
+      return;
     }
 
     setProcessing(true);
 
     try {
-      // 1. Send Order to Backend
+      // 1. Create order on backend
       const orderPayload = {
+        orderType,
+        paymentMethod,
         items: cartItems.map((item) => ({
           food: item.food._id,
           quantity: item.quantity,
+          price: item.price,
         })),
-        orderType,
         deliveryAddress:
           orderType === 'delivery'
             ? {
-                fullName,
-                phone,
-                email,
-                houseNo,
-                street,
-                area,
-                city,
-                state,
-                pincode,
-                landmark,
-                deliveryInstructions,
+                fullName: fullName.trim(),
+                phone: phone.trim(),
+                houseNo: houseNo.trim(),
+                street: street.trim(),
+                area: area.trim(),
+                city: city.trim(),
+                state: state.trim(),
+                pincode: pincode.trim(),
+                landmark: landmark.trim(),
+                deliveryInstructions: deliveryInstructions.trim(),
               }
             : undefined,
-        saveAddress: selectedAddressId === 'new' ? saveThisAddress : false,
-        couponCode: appliedCoupon ? appliedCoupon.code : undefined,
-        paymentMethod,
-        specialInstructions,
+        specialInstructions: specialInstructions.trim(),
+        appliedCoupon: appliedCoupon ? appliedCoupon.code : undefined,
+        saveAddress: selectedAddressId === 'new' && saveThisAddress && orderType === 'delivery',
+        addressLabel,
       };
 
-      const orderRes = await api.post('/orders', orderPayload);
-      const createdOrder = orderRes.data;
+      const res = await api.post('/orders', orderPayload);
+      const createdOrder = res.data;
 
-      // 2. Handle Razorpay Online Payment Flow
+      // 2. Handle Online Payment (Razorpay)
       if (paymentMethod === 'razorpay') {
+        const targetOrderId = createdOrder._id || createdOrder.order?._id;
         try {
-          const targetOrderId = createdOrder?._id || createdOrder?.order?._id;
-          const targetOrderNumber = createdOrder?.orderNumber || createdOrder?.order?.orderNumber;
-
-          // Dynamically ensure Razorpay SDK is loaded
-          const isRzpLoaded = window.Razorpay || await new Promise((resolve) => {
-            const script = document.createElement('script');
-            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-            script.onload = () => resolve(true);
-            script.onerror = () => resolve(false);
-            document.body.appendChild(script);
-          });
-
-          const rzpInitRes = await api.post('/payments/razorpay/create-order', {
+          const rzpRes = await api.post('/payments/razorpay/create-order', {
             orderId: targetOrderId,
           });
 
-          const rzpData = rzpInitRes?.data || rzpInitRes;
-          const rzpKey = rzpData?.key || 'rzp_test_Td5GYtIrYigZH7';
-          const rzpOrderId = rzpData?.orderId || rzpData?.id;
+          const { rzpOrderId, amount, currency, keyId } = rzpRes.data;
 
-          // Check if Razorpay SDK is available and orderId is generated
-          if (window.Razorpay && rzpOrderId && !rzpOrderId.startsWith('order_sim_')) {
+          if (window.Razorpay) {
             const options = {
-              key: rzpKey,
-              amount: rzpData.amount,
-              currency: rzpData.currency || 'INR',
+              key: keyId || 'rzp_test_placeholder',
+              amount: amount,
+              currency: currency || 'INR',
               name: 'SwadGhar Restaurant',
-              description: `Order #${targetOrderNumber}`,
-              image: '/logo.png',
+              description: `Royal Feast Order #${createdOrder.orderNumber}`,
               order_id: rzpOrderId,
               handler: async function (response) {
                 try {
@@ -224,27 +209,21 @@ const Checkout = () => {
                     razorpay_payment_id: response.razorpay_payment_id,
                     razorpay_signature: response.razorpay_signature,
                   });
+
                   clearCart();
-                  showSuccess('Payment Successful! Order Confirmed.');
-                  navigate(`/order-success/${targetOrderNumber}`);
+                  showSuccess('Payment Successful! Your royal order is being prepared.');
+                  navigate(`/order-success/${createdOrder.orderNumber}`);
                 } catch (verifyErr) {
-                  console.error('Razorpay verification error:', verifyErr);
-                  showError('Payment verification failed. Please check with support.');
+                  showError('Payment verification failed. Please contact restaurant.');
                 }
               },
               prefill: {
-                name: fullName || user?.name || '',
-                email: email || user?.email || '',
-                contact: phone || user?.phone || '',
+                name: fullName,
+                email: email,
+                contact: phone,
               },
               theme: {
-                color: '#ea580c',
-              },
-              modal: {
-                ondismiss: function () {
-                  setProcessing(false);
-                  showInfo('Payment window closed. You can retry payment anytime.');
-                },
+                color: '#d97706',
               },
             };
 
@@ -257,7 +236,7 @@ const Checkout = () => {
             setProcessing(false);
             return;
           } else {
-            // Simulated / Sandbox fallback
+            // Simulated fallback
             await api.post('/payments/razorpay/verify', {
               orderId: targetOrderId,
               razorpay_order_id: rzpOrderId || `order_sim_${Date.now()}`,
@@ -270,12 +249,11 @@ const Checkout = () => {
         }
       }
 
-      // Refresh user to sync any new saved addresses
       if (refreshUser) refreshUser();
 
       // 3. Clear Cart & Navigate
       clearCart();
-      showSuccess('Order Placed Successfully! SMS notification sent to your phone.');
+      showSuccess(t('checkout.orderSuccess', 'Order Placed Successfully!'));
       navigate(`/order-success/${createdOrder.orderNumber}`);
     } catch (err) {
       showError(err.response?.data?.message || err.message || 'Failed to place order. Please try again.');
@@ -292,10 +270,10 @@ const Checkout = () => {
           className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-500 hover:text-brand-600 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Return to Cart</span>
+          <span>{t('cart.title', 'Return to Cart')}</span>
         </Link>
         <h1 className="text-3xl font-serif font-bold text-stone-900 mt-2">
-          Secure Order Checkout
+          {t('checkout.title', 'Secure Order Checkout')}
         </h1>
       </div>
 
@@ -320,7 +298,7 @@ const Checkout = () => {
                     key={type.id}
                     type="button"
                     onClick={() => setOrderType(type.id)}
-                    className={`p-4 rounded-2xl border text-left transition-all ${
+                    className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
                       orderType === type.id
                         ? 'bg-brand-500/10 border-brand-500 text-stone-900 ring-2 ring-brand-500/20 shadow-sm'
                         : 'bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100'
@@ -345,7 +323,7 @@ const Checkout = () => {
               <div className="flex items-center justify-between border-b border-stone-100 pb-3">
                 <h3 className="text-base font-serif font-bold text-stone-900 flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-brand-600" />
-                  <span>2. Delivery Address</span>
+                  <span>{t('checkout.deliveryAddressTitle', '2. Delivery Address')}</span>
                 </h3>
                 <Link
                   to="/profile"
@@ -426,7 +404,7 @@ const Checkout = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-stone-700">Recipient Name *</label>
+                    <label className="text-xs font-bold text-stone-700">{t('checkout.fullName', 'Recipient Name')} *</label>
                     <input
                       type="text"
                       required
@@ -438,7 +416,7 @@ const Checkout = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-stone-700">Recipient Phone (For SMS updates) *</label>
+                    <label className="text-xs font-bold text-stone-700">{t('checkout.phone', 'Recipient Phone')} *</label>
                     <input
                       type="tel"
                       required
@@ -461,7 +439,7 @@ const Checkout = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-stone-700">Street / Society Address *</label>
+                    <label className="text-xs font-bold text-stone-700">{t('checkout.streetAddress', 'Street Address')} *</label>
                     <input
                       type="text"
                       required
@@ -473,7 +451,7 @@ const Checkout = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-stone-700">Area / Sector</label>
+                    <label className="text-xs font-bold text-stone-700">{t('checkout.landmark', 'Area / Sector')}</label>
                     <input
                       type="text"
                       value={area}
@@ -484,29 +462,19 @@ const Checkout = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-stone-700">Landmark (Optional)</label>
-                    <input
-                      type="text"
-                      value={landmark}
-                      onChange={(e) => setLandmark(e.target.value)}
-                      placeholder="Opposite City Mall / Near Metro Station"
-                      className="w-full px-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-stone-700">City *</label>
+                    <label className="text-xs font-bold text-stone-700">{t('checkout.city', 'City')} *</label>
                     <input
                       type="text"
                       required
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
+                      placeholder="Ahmedabad"
                       className="w-full px-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-stone-700">Pincode *</label>
+                    <label className="text-xs font-bold text-stone-700">{t('checkout.pincode', 'Pincode')} *</label>
                     <input
                       type="text"
                       required
@@ -518,7 +486,7 @@ const Checkout = () => {
                   </div>
 
                   <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-xs font-bold text-stone-700">Delivery Instructions (Optional)</label>
+                    <label className="text-xs font-bold text-stone-700">{t('checkout.deliveryInstructions', 'Delivery Instructions')}</label>
                     <input
                       type="text"
                       value={deliveryInstructions}
@@ -527,39 +495,6 @@ const Checkout = () => {
                       className="w-full px-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500"
                     />
                   </div>
-
-                  {/* Save address checkbox when entering a new address */}
-                  {selectedAddressId === 'new' && (
-                    <div className="sm:col-span-2 p-3.5 rounded-xl bg-amber-50/60 border border-amber-200/60 flex items-center justify-between">
-                      <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-stone-800">
-                        <input
-                          type="checkbox"
-                          checked={saveThisAddress}
-                          onChange={(e) => setSaveThisAddress(e.target.checked)}
-                          className="w-4 h-4 rounded text-brand-600 focus:ring-brand-500 accent-brand-600"
-                        />
-                        <span>Save this address in my address book for future orders</span>
-                      </label>
-                      {saveThisAddress && (
-                        <div className="flex items-center gap-1.5">
-                          {['Home', 'Work', 'Other'].map((lbl) => (
-                            <button
-                              key={lbl}
-                              type="button"
-                              onClick={() => setAddressLabel(lbl)}
-                              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
-                                addressLabel === lbl
-                                  ? 'bg-brand-600 text-white shadow-xs'
-                                  : 'bg-white text-stone-600 border border-stone-200'
-                              }`}
-                            >
-                              {lbl}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -573,7 +508,7 @@ const Checkout = () => {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-stone-700">Full Name</label>
+                  <label className="text-xs font-bold text-stone-700">{t('checkout.fullName', 'Full Name')}</label>
                   <input
                     type="text"
                     required
@@ -584,7 +519,7 @@ const Checkout = () => {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-stone-700">Phone Number (For SMS)</label>
+                  <label className="text-xs font-bold text-stone-700">{t('checkout.phone', 'Phone Number')}</label>
                   <input
                     type="tel"
                     required
@@ -598,7 +533,7 @@ const Checkout = () => {
             </div>
           )}
 
-          {/* Cooking Instructions */}
+          {/* 3. Special Requests */}
           <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-3">
             <h3 className="text-base font-serif font-bold text-stone-900">
               3. Special Cooking Requests
@@ -615,14 +550,14 @@ const Checkout = () => {
           {/* 4. Payment Method */}
           <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
             <h3 className="text-base font-serif font-bold text-stone-900">
-              4. Select Payment Mode
+              {t('checkout.paymentTitle', '4. Select Payment Mode')}
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
                 type="button"
                 onClick={() => setPaymentMethod('cod')}
-                className={`p-4 rounded-2xl border text-left transition-all flex items-start gap-3 ${
+                className={`p-4 rounded-2xl border text-left transition-all flex items-start gap-3 cursor-pointer ${
                   paymentMethod === 'cod'
                     ? 'bg-brand-500/10 border-brand-500 text-stone-900 ring-2 ring-brand-500/20'
                     : 'bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100'
@@ -631,7 +566,7 @@ const Checkout = () => {
                 <Banknote className="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold text-xs sm:text-sm block">
-                    Cash on Delivery (COD)
+                    {t('checkout.payCOD', 'Cash on Delivery (COD)')}
                   </span>
                   <span className="text-[11px] text-stone-400">
                     Pay with cash or UPI on delivery / pickup
@@ -642,7 +577,7 @@ const Checkout = () => {
               <button
                 type="button"
                 onClick={() => setPaymentMethod('razorpay')}
-                className={`p-4 rounded-2xl border text-left transition-all flex items-start gap-3 ${
+                className={`p-4 rounded-2xl border text-left transition-all flex items-start gap-3 cursor-pointer ${
                   paymentMethod === 'razorpay'
                     ? 'bg-brand-500/10 border-brand-500 text-stone-900 ring-2 ring-brand-500/20'
                     : 'bg-stone-50 border-stone-200 text-stone-600 hover:bg-stone-100'
@@ -651,10 +586,10 @@ const Checkout = () => {
                 <CreditCard className="w-5 h-5 text-brand-600 shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold text-xs sm:text-sm block">
-                    Online Payment (Razorpay)
+                    {t('checkout.payOnline', 'Online Payment (Razorpay)')}
                   </span>
                   <span className="text-[11px] text-stone-400">
-                    UPI, Cards, NetBanking, Paytm & Wallets
+                    UPI, Cards, NetBanking & Wallets
                   </span>
                 </div>
               </button>
@@ -666,9 +601,9 @@ const Checkout = () => {
         <div className="space-y-6">
           <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-md space-y-4 sticky top-24">
             <h4 className="text-base font-serif font-bold text-stone-900 border-b border-stone-100 pb-3 flex items-center justify-between">
-              <span>Order Summary</span>
+              <span>{t('cart.orderSummary', 'Order Summary')}</span>
               <span className="text-xs font-normal text-stone-500">
-                {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
+                {cartItems.length} {t('common.items', 'items')}
               </span>
             </h4>
 
@@ -692,24 +627,24 @@ const Checkout = () => {
             {/* Pricing Summary */}
             <div className="pt-3 border-t border-stone-100 space-y-2 text-xs text-stone-600">
               <div className="flex justify-between">
-                <span>Subtotal</span>
+                <span>{t('common.subtotal', 'Subtotal')}</span>
                 <span className="font-bold text-stone-900 font-sans">₹{subtotal}</span>
               </div>
 
               {discountAmount > 0 && (
                 <div className="flex justify-between text-emerald-600 font-semibold">
-                  <span>Coupon Savings ({appliedCoupon?.code})</span>
+                  <span>{t('common.discount', 'Coupon Savings')}</span>
                   <span>-₹{discountAmount}</span>
                 </div>
               )}
 
               <div className="flex justify-between">
-                <span>GST (5% SGST + CGST)</span>
+                <span>{t('common.tax', 'GST (5%)')}</span>
                 <span className="font-bold text-stone-900 font-sans">₹{tax}</span>
               </div>
 
               <div className="flex justify-between">
-                <span>Delivery Fee</span>
+                <span>{t('common.deliveryFee', 'Delivery Fee')}</span>
                 <span>
                   {orderType !== 'delivery' || deliveryFee === 0 ? (
                     <span className="text-emerald-600 font-bold">FREE</span>
@@ -720,7 +655,7 @@ const Checkout = () => {
               </div>
 
               <div className="pt-3 border-t border-stone-200 flex justify-between items-baseline">
-                <span className="text-sm font-bold text-stone-900">Final Payable</span>
+                <span className="text-sm font-bold text-stone-900">{t('common.grandTotal', 'Final Payable')}</span>
                 <span className="text-2xl font-bold text-brand-600 font-sans">
                   ₹{orderType !== 'delivery' ? subtotal - discountAmount + tax : grandTotal}
                 </span>
@@ -730,7 +665,7 @@ const Checkout = () => {
             <div className="p-3 rounded-xl bg-stone-50 border border-stone-100 text-[11px] text-stone-500 space-y-1">
               <div className="flex items-center gap-1.5 font-semibold text-stone-700">
                 <Sparkles className="w-3.5 h-3.5 text-brand-600" />
-                <span>Invoice & SMS Confirmation</span>
+                <span>GST Tax Invoice & Live Tracking</span>
               </div>
               <p>You will receive real-time SMS updates and an itemized digital GST invoice upon order placement.</p>
             </div>
@@ -738,7 +673,7 @@ const Checkout = () => {
             <button
               type="submit"
               disabled={processing}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 active:scale-95 text-white font-bold text-sm shadow-lg shadow-brand-500/25 hover:shadow-glow transition-all flex items-center justify-center gap-2"
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 active:scale-95 text-white font-bold text-sm shadow-lg shadow-brand-500/25 hover:shadow-glow transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               {processing ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -746,7 +681,7 @@ const Checkout = () => {
                 <>
                   <Lock className="w-4 h-4" />
                   <span>
-                    Place Order • ₹
+                    {t('checkout.placeOrderBtn', 'Place Order')} • ₹
                     {orderType !== 'delivery'
                       ? subtotal - discountAmount + tax
                       : grandTotal}

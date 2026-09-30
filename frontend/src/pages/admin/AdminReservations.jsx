@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Calendar, Check, X, Phone, Users, Clock, AlertCircle } from 'lucide-react';
 import api from '../../services/api';
 import { useNotification } from '../../context/NotificationContext';
+import { useTranslation } from '../../context/LanguageContext';
 
 const AdminReservations = () => {
+  const { t } = useTranslation();
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -45,26 +47,32 @@ const AdminReservations = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white">
-            Table Reservations Desk ({reservations.length})
+            {t('navigation.reservations', 'Table Bookings')} ({reservations.length})
           </h1>
           <p className="text-xs sm:text-sm text-stone-400">
-            Confirm seating slots, allocate dining table numbers, and manage party requests
+            {t('admin.reservationsSub', 'Confirm seating slots, allocate dining table numbers, and manage party requests')}
           </p>
         </div>
 
         {/* Filter Pills */}
         <div className="flex gap-2">
-          {['all', 'pending', 'confirmed', 'completed', 'cancelled'].map((tab) => (
+          {[
+            { id: 'all', label: t('common.all', 'All') },
+            { id: 'pending', label: t('admin.pendingOrders', 'Pending') },
+            { id: 'confirmed', label: t('admin.confirmed', 'Confirmed') },
+            { id: 'completed', label: t('admin.completed', 'Completed') },
+            { id: 'cancelled', label: t('admin.cancelled', 'Cancelled') },
+          ].map((tab) => (
             <button
-              key={tab}
-              onClick={() => setStatusFilter(tab)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold capitalize transition-all ${
-                statusFilter === tab
+              key={tab.id}
+              onClick={() => setStatusFilter(tab.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold capitalize transition-all cursor-pointer ${
+                statusFilter === tab.id
                   ? 'bg-brand-600 text-white shadow-md'
                   : 'bg-stone-950 text-stone-400 hover:bg-stone-800 border border-stone-800'
               }`}
             >
-              {tab}
+              {tab.label}
             </button>
           ))}
         </div>
@@ -76,12 +84,12 @@ const AdminReservations = () => {
           <table className="w-full text-left text-xs text-stone-300">
             <thead className="bg-stone-900 border-b border-stone-800 text-[11px] font-bold uppercase tracking-wider text-stone-400">
               <tr>
-                <th className="py-3.5 px-4">Guest</th>
-                <th className="py-3.5 px-4">Booking Date & Time</th>
-                <th className="py-3.5 px-4">Party Size</th>
-                <th className="py-3.5 px-4">Special Requests</th>
-                <th className="py-3.5 px-4">Status & Table</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+                <th className="py-3.5 px-4">{t('reservations.guest', 'Guest')}</th>
+                <th className="py-3.5 px-4">{t('reservations.date', 'Booking Date & Time')}</th>
+                <th className="py-3.5 px-4">{t('reservations.guests', 'Party Size')}</th>
+                <th className="py-3.5 px-4">{t('reservations.specialRequests', 'Special Requests')}</th>
+                <th className="py-3.5 px-4">{t('admin.status', 'Status & Table')}</th>
+                <th className="py-3.5 px-4 text-right">{t('admin.actions', 'Actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-800/60">
@@ -111,14 +119,14 @@ const AdminReservations = () => {
                   <td className="py-3.5 px-4 font-bold text-white">
                     <span className="flex items-center gap-1">
                       <Users className="w-3.5 h-3.5 text-stone-400" />
-                      {res.guests} Guests
+                      {res.guests} {t('reservations.guests', 'Guests')}
                     </span>
                   </td>
 
                   {/* Special Requests */}
                   <td className="py-3.5 px-4 max-w-xs">
                     <span className="text-stone-400 line-clamp-2 italic">
-                      {res.specialRequest || 'No special requests'}
+                      {res.specialRequest || t('reservations.noSpecialRequests', 'No special requests')}
                     </span>
                   </td>
 
@@ -148,24 +156,24 @@ const AdminReservations = () => {
                       <>
                         <button
                           onClick={() => handleUpdateStatus(res._id, 'confirmed', 'T-04')}
-                          className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] transition-colors"
+                          className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] transition-colors cursor-pointer"
                         >
-                          Confirm
+                          {t('admin.confirm', 'Confirm')}
                         </button>
                         <button
                           onClick={() => handleUpdateStatus(res._id, 'rejected')}
-                          className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-[10px] transition-colors"
+                          className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-[10px] transition-colors cursor-pointer"
                         >
-                          Reject
+                          {t('admin.reject', 'Reject')}
                         </button>
                       </>
                     )}
                     {res.status === 'confirmed' && (
                       <button
                         onClick={() => handleUpdateStatus(res._id, 'completed')}
-                        className="px-2.5 py-1 rounded-lg bg-stone-800 hover:bg-stone-700 text-white font-bold text-[10px] transition-colors"
+                        className="px-2.5 py-1 rounded-lg bg-stone-800 hover:bg-stone-700 text-white font-bold text-[10px] transition-colors cursor-pointer"
                       >
-                        Complete
+                        {t('admin.complete', 'Complete')}
                       </button>
                     )}
                   </td>

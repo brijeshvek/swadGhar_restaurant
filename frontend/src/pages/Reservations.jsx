@@ -14,9 +14,11 @@ import {
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { useTranslation } from '../context/LanguageContext';
 
 const Reservations = () => {
   const { user, isAuthenticated } = useAuth();
+  const { t } = useTranslation();
   const { showSuccess, showError } = useNotification();
 
   const [guests, setGuests] = useState(2);
@@ -66,7 +68,7 @@ const Reservations = () => {
       });
 
       setBookingSuccessData(res.data);
-      showSuccess('Table reservation requested successfully!');
+      showSuccess(t('reservations.bookingSuccessTitle', 'Table reservation requested successfully!'));
       fetchMyReservations();
     } catch (err) {
       showError(err.message || 'Failed to book table. Slot may be occupied.');
@@ -91,13 +93,13 @@ const Reservations = () => {
       {/* Title */}
       <div className="text-center space-y-3 max-w-2xl mx-auto">
         <span className="text-xs font-bold uppercase tracking-widest text-brand-600 block">
-          Fine Dining Table Booking
+          {t('brand.name')} {t('nav.reservations')}
         </span>
         <h1 className="text-3xl sm:text-5xl font-serif font-bold text-stone-900">
-          Reserve Your Table at SwadGhar
+          {t('reservations.title', 'Reserve Your Table at SwadGhar')}
         </h1>
         <p className="text-stone-500 text-sm sm:text-base">
-          Celebrate intimate dinners, family gatherings, and corporate luncheons with authentic royal hospitality.
+          {t('reservations.subtitle', 'Celebrate intimate dinners, family gatherings, and celebrations with authentic royal hospitality.')}
         </p>
       </div>
 
@@ -109,7 +111,7 @@ const Reservations = () => {
             <div className="space-y-2">
               <label className="text-xs font-bold text-stone-700 flex items-center gap-1.5">
                 <Users className="w-4 h-4 text-brand-600" />
-                <span>Number of Guests</span>
+                <span>{t('reservations.guestCount', 'Number of Guests')}</span>
               </label>
               <div className="flex flex-wrap gap-2">
                 {[1, 2, 3, 4, 5, 6, 8, 10, 12, 16].map((num) => (
@@ -117,7 +119,7 @@ const Reservations = () => {
                     key={num}
                     type="button"
                     onClick={() => setGuests(num)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       guests === num
                         ? 'bg-brand-600 text-white shadow-md shadow-brand-500/20'
                         : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
@@ -134,7 +136,7 @@ const Reservations = () => {
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-stone-700 flex items-center gap-1.5">
                   <CalendarIcon className="w-4 h-4 text-brand-600" />
-                  <span>Reservation Date</span>
+                  <span>{t('reservations.reservationDate', 'Reservation Date')}</span>
                 </label>
                 <input
                   type="date"
@@ -149,12 +151,12 @@ const Reservations = () => {
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-stone-700 flex items-center gap-1.5">
                   <Clock className="w-4 h-4 text-brand-600" />
-                  <span>Preferred Seating Time</span>
+                  <span>{t('reservations.reservationTime', 'Preferred Seating Time')}</span>
                 </label>
                 <select
                   value={timeSlot}
                   onChange={(e) => setTimeSlot(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500 font-medium"
+                  className="w-full px-4 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs sm:text-sm focus:outline-none focus:border-brand-500 font-medium cursor-pointer"
                 >
                   <optgroup label="Lunch Hours">
                     {lunchSlots.map((slot) => (
@@ -173,7 +175,7 @@ const Reservations = () => {
             {/* Contact Details */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-stone-700">Contact Name</label>
+                <label className="text-xs font-bold text-stone-700">{t('reservations.guestName', 'Contact Name')}</label>
                 <input
                   type="text"
                   required
@@ -185,7 +187,7 @@ const Reservations = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-stone-700">Phone Number</label>
+                <label className="text-xs font-bold text-stone-700">{t('reservations.guestPhone', 'Phone Number')}</label>
                 <input
                   type="tel"
                   required
@@ -197,7 +199,7 @@ const Reservations = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-stone-700">Email Address</label>
+                <label className="text-xs font-bold text-stone-700">{t('reservations.guestEmail', 'Email Address')}</label>
                 <input
                   type="email"
                   required
@@ -211,7 +213,7 @@ const Reservations = () => {
 
             {/* Special Request */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-stone-700">Seating & Occasion Request (Optional)</label>
+              <label className="text-xs font-bold text-stone-700">{t('reservations.specialRequests', 'Seating & Occasion Request')}</label>
               <textarea
                 rows={2}
                 value={specialRequest}
@@ -224,14 +226,14 @@ const Reservations = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 active:scale-95 text-white font-bold text-sm sm:text-base shadow-lg shadow-brand-500/25 hover:shadow-glow transition-all flex items-center justify-center gap-2"
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 active:scale-95 text-white font-bold text-sm sm:text-base shadow-lg shadow-brand-500/25 hover:shadow-glow transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               {submitting ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
                 <>
                   <UtensilsCrossed className="w-5 h-5" />
-                  <span>Confirm Table Reservation Request</span>
+                  <span>{t('reservations.bookTableBtn', 'Confirm Royal Table Booking')}</span>
                 </>
               )}
             </button>
@@ -244,25 +246,25 @@ const Reservations = () => {
           <div className="p-6 rounded-3xl bg-stone-900 text-stone-200 border border-stone-800 shadow-md space-y-4">
             <h3 className="text-base font-serif font-bold text-white flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>Dining Guidelines</span>
+              <span>{t('reservations.reservationPolicyTitle', 'Dining Guidelines')}</span>
             </h3>
             <ul className="space-y-2.5 text-xs text-stone-400">
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Zero reservation or cancellation fees.</span>
+                <span>{t('reservations.policyPoint1', 'Tables will be held for up to 15 minutes past booked slot.')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Tables are held for up to 15 minutes past your booked slot.</span>
+                <span>{t('reservations.policyPoint2', '100% Pure Vegetarian heritage dining environment.')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>Special banquet setup available for parties above 15 guests.</span>
+                <span>{t('reservations.policyPoint3', 'For large parties above 15 guests, manager will confirm arrangements.')}</span>
               </li>
             </ul>
           </div>
 
-          {/* User Active Bookings (If logged in) */}
+          {/* User Active Bookings */}
           {isAuthenticated && (
             <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
               <h3 className="text-base font-serif font-bold text-stone-900">
@@ -300,9 +302,9 @@ const Reservations = () => {
                       {res.status === 'pending' && (
                         <button
                           onClick={() => handleCancelBooking(res._id)}
-                          className="text-rose-600 hover:text-rose-800 font-semibold text-[11px]"
+                          className="text-rose-600 hover:text-rose-800 font-semibold text-[11px] cursor-pointer"
                         >
-                          Cancel Booking
+                          {t('common.cancel', 'Cancel Booking')}
                         </button>
                       )}
                     </div>
@@ -310,7 +312,7 @@ const Reservations = () => {
                 </div>
               ) : (
                 <p className="text-xs text-stone-400">
-                  No upcoming table reservations found for this account.
+                  {t('common.noData', 'No upcoming table reservations found for this account.')}
                 </p>
               )}
             </div>
@@ -328,25 +330,24 @@ const Reservations = () => {
 
             <div className="space-y-2">
               <h3 className="text-2xl font-serif font-bold text-stone-900">
-                Reservation Confirmed!
+                {t('reservations.bookingSuccessTitle', 'Table Reserved Successfully!')}
               </h3>
               <p className="text-xs text-stone-500">
-                We have registered your table request for {bookingSuccessData.guests} guests on{' '}
-                {new Date(bookingSuccessData.date).toLocaleDateString()} at {bookingSuccessData.timeSlot}.
+                {t('reservations.bookingSuccessDesc', 'Your table reservation request has been confirmed.')}
               </p>
             </div>
 
             <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200 text-left text-xs space-y-1">
-              <p><strong>Guest Name:</strong> {bookingSuccessData.customerName}</p>
-              <p><strong>Contact:</strong> {bookingSuccessData.phone}</p>
-              <p><strong>Status:</strong> <span className="text-amber-600 font-bold uppercase">{bookingSuccessData.status}</span></p>
+              <p><strong>{t('reservations.guestName', 'Guest Name')}:</strong> {bookingSuccessData.customerName}</p>
+              <p><strong>{t('reservations.guestPhone', 'Contact')}:</strong> {bookingSuccessData.phone}</p>
+              <p><strong>{t('common.status', 'Status')}:</strong> <span className="text-amber-600 font-bold uppercase">{bookingSuccessData.status}</span></p>
             </div>
 
             <button
               onClick={() => setBookingSuccessData(null)}
-              className="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-md transition-colors"
+              className="w-full py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-md transition-colors cursor-pointer"
             >
-              Done & Return
+              {t('common.close', 'Done & Return')}
             </button>
           </div>
         </div>

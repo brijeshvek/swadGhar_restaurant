@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Star, Trash2, CheckCircle2, MessageSquare } from 'lucide-react';
 import api from '../../services/api';
 import { useNotification } from '../../context/NotificationContext';
+import { useTranslation } from '../../context/LanguageContext';
 
 const AdminReviews = () => {
+  const { t } = useTranslation();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const { showSuccess, showError } = useNotification();
@@ -40,10 +42,10 @@ const AdminReviews = () => {
     <div className="space-y-6 animate-fade-in text-stone-100">
       <div>
         <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white">
-          Customer Reviews Moderation ({reviews.length})
+          {t('admin.customerReviews', 'Customer Reviews Moderation')} ({reviews.length})
         </h1>
         <p className="text-xs sm:text-sm text-stone-400">
-          Monitor diner ratings, feedback on delicacies, and moderate public comments
+          {t('admin.customerReviewsSub', 'Monitor diner ratings, feedback on delicacies, and moderate public comments')}
         </p>
       </div>
 
@@ -97,8 +99,8 @@ const AdminReviews = () => {
 
               <button
                 onClick={() => handleDeleteReview(rev._id)}
-                className="p-1.5 rounded-lg bg-stone-900 hover:bg-rose-900/40 text-stone-400 hover:text-rose-400 transition-colors"
-                title="Delete Review"
+                className="p-1.5 rounded-lg bg-stone-900 hover:bg-rose-900/40 text-stone-400 hover:text-rose-400 transition-colors cursor-pointer"
+                title={t('admin.deleteReview', 'Delete Review')}
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>

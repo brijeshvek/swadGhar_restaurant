@@ -22,9 +22,11 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 import { useNotification } from '../context/NotificationContext';
+import { useTranslation } from '../context/LanguageContext';
 import { BlurText, AnimatedContent, SpotlightCard, CountUp } from '../components/animations';
 
 const Franchise = () => {
+  const { t } = useTranslation();
   const [franchises, setFranchises] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCity, setSelectedCity] = useState('all');
@@ -111,29 +113,29 @@ const Franchise = () => {
         <div className="relative z-10 max-w-2xl space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold border border-amber-500/30">
             <Store className="w-3.5 h-3.5" />
-            <span>5 Active Branches • 50+ Professional Culinary & Floor Staff</span>
+            <span>{t('admin.networkOverview', '5 Active Branches • 50+ Professional Staff')}</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-white leading-tight">
-            SwadGhar <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-brand-500">Restaurant Franchises</span>
+            {t('franchise.title', 'Partner with SwadGhar Heritage Restaurant')}
           </h1>
 
           <p className="text-stone-300 text-sm sm:text-base leading-relaxed">
-            Experience our 25-year culinary legacy of authentic Gujarati thalis and royal Punjabi curries. Visit one of our 5 premier locations, meet our dedicated branch teams, or partner with us to bring SwadGhar to your city.
+            {t('franchise.subtitle', 'Join India’s fastest-growing authentic traditional & pure veg dining franchise network with proven high ROI and heritage goodwill.')}
           </p>
 
           <div className="flex flex-wrap items-center gap-4 pt-2">
             <a
               href="#branches"
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 text-white font-bold text-sm shadow-lg shadow-brand-500/25 transition-all"
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 text-white font-bold text-sm shadow-lg shadow-brand-500/25 transition-all cursor-pointer"
             >
-              Explore Our 5 Branches
+              {t('common.explore', 'Explore Our 5 Branches')}
             </a>
             <a
               href="#partner"
-              className="px-6 py-3 rounded-xl bg-stone-900/90 hover:bg-stone-800 border border-stone-700 text-stone-200 hover:text-white font-semibold text-sm transition-all"
+              className="px-6 py-3 rounded-xl bg-stone-900/90 hover:bg-stone-800 border border-stone-700 text-stone-200 hover:text-white font-semibold text-sm transition-all cursor-pointer"
             >
-              Franchise Partnership Form
+              {t('franchise.formTitle', 'Franchise Partnership Form')}
             </a>
           </div>
         </div>
@@ -146,9 +148,9 @@ const Franchise = () => {
             <Building2 className="w-5 h-5" />
           </div>
           <h3 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900">
-            <CountUp to={5} duration={1} suffix=" Outlets" />
+            <CountUp to={5} duration={1} suffix={` ${t('admin.activeFranchises', 'Outlets')}`} />
           </h3>
-          <p className="text-xs text-stone-500 font-medium">Operating Franchise Branches</p>
+          <p className="text-xs text-stone-500 font-medium">{t('admin.activeFranchises', 'Operating Franchise Branches')}</p>
         </div>
 
         <div className="p-6 rounded-3xl bg-white border border-stone-200/80 shadow-sm space-y-2">
@@ -156,9 +158,9 @@ const Franchise = () => {
             <Users className="w-5 h-5" />
           </div>
           <h3 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900">
-            <CountUp to={50} duration={1.5} suffix=" Staff" />
+            <CountUp to={50} duration={1.5} suffix={` ${t('admin.staffStrength', 'Staff')}`} />
           </h3>
-          <p className="text-xs text-stone-500 font-medium">10 Trained Staff per Branch</p>
+          <p className="text-xs text-stone-500 font-medium">{t('admin.teamSize', '10 Trained Staff per Branch')}</p>
         </div>
 
         <div className="p-6 rounded-3xl bg-white border border-stone-200/80 shadow-sm space-y-2">
@@ -168,7 +170,7 @@ const Franchise = () => {
           <h3 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900">
             <CountUp to={100} duration={1.5} suffix="%" />
           </h3>
-          <p className="text-xs text-stone-500 font-medium">Authentic Ghee & Quality Spices</p>
+          <p className="text-xs text-stone-500 font-medium">{t('about.valuePurity', 'Authentic Ghee & Quality Spices')}</p>
         </div>
 
         <div className="p-6 rounded-3xl bg-white border border-stone-200/80 shadow-sm space-y-2">
@@ -178,7 +180,7 @@ const Franchise = () => {
           <h3 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900">
             <CountUp to={35} duration={1.5} suffix="% ROI" />
           </h3>
-          <p className="text-xs text-stone-500 font-medium">Average Annual Franchise ROI</p>
+          <p className="text-xs text-stone-500 font-medium">{t('franchise.point1Title', 'Average Annual Franchise ROI')}</p>
         </div>
       </section>
 
@@ -187,27 +189,27 @@ const Franchise = () => {
         <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
           <div>
             <span className="text-xs font-bold uppercase tracking-widest text-brand-600 block">
-              Flagship & Regional Outlets
+              {t('home.heroBadge', 'Flagship & Regional Outlets')}
             </span>
             <h2 className="text-3xl sm:text-4xl font-serif font-bold text-stone-900">
-              Our 5 Official Branches
+              {t('admin.activeFranchises', 'Our 5 Official Branches')}
             </h2>
           </div>
 
           {/* City Filter Tabs */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-stone-500 font-semibold">City:</span>
+            <span className="text-xs text-stone-500 font-semibold">{t('checkout.city', 'City')}:</span>
             {cities.map((city) => (
               <button
                 key={city}
                 onClick={() => setSelectedCity(city)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold capitalize transition-all ${
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold capitalize transition-all cursor-pointer ${
                   selectedCity === city
                     ? 'bg-brand-600 text-white shadow-md shadow-brand-500/20'
                     : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
                 }`}
               >
-                {city === 'all' ? `All Cities (${franchises.length})` : city}
+                {city === 'all' ? `${t('common.all', 'All Cities')} (${franchises.length})` : city}
               </button>
             ))}
           </div>
@@ -310,13 +312,13 @@ const Franchise = () => {
                       to="/reservations"
                       className="flex-1 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs text-center transition-colors shadow-md shadow-brand-500/20"
                     >
-                      Book Table Here
+                      {t('home.bookTableBtn', 'Book Table Here')}
                     </Link>
                     <Link
                       to="/menu"
                       className="px-4 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 font-bold text-xs transition-colors"
                     >
-                      View Menu
+                      {t('nav.menu', 'View Menu')}
                     </Link>
                     <a
                       href={branch.googleMapsUrl}
@@ -350,10 +352,10 @@ const Franchise = () => {
               <div className="space-y-1">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold border border-amber-500/30">
                   <Users className="w-3.5 h-3.5" />
-                  <span>10 Staff Members</span>
+                  <span>{t('admin.staffStrength', '10 Staff Members')}</span>
                 </div>
                 <h3 className="text-xl sm:text-2xl font-serif font-bold text-white">
-                  {selectedBranchForStaff.name} – Staff Team
+                  {selectedBranchForStaff.name} – {t('admin.staffStrength', 'Staff Team')}
                 </h3>
                 <p className="text-xs text-stone-400">
                   {selectedBranchForStaff.address}
@@ -362,7 +364,7 @@ const Franchise = () => {
 
               <button
                 onClick={() => setSelectedBranchForStaff(null)}
-                className="text-stone-400 hover:text-white p-2 rounded-xl hover:bg-stone-800 transition-colors"
+                className="text-stone-400 hover:text-white p-2 rounded-xl hover:bg-stone-800 transition-colors cursor-pointer"
               >
                 ✕
               </button>
@@ -405,9 +407,6 @@ const Franchise = () => {
                         <Phone className="w-3 h-3 text-emerald-500" />
                         <span className="text-stone-300">{member.phone}</span>
                       </span>
-                      <span className="text-stone-500">
-                        Exp: <strong className="text-stone-300">{member.experience}</strong> • Shift: <strong className="text-stone-300">{member.shift}</strong>
-                      </span>
                     </div>
                   </div>
                 </div>
@@ -418,9 +417,9 @@ const Franchise = () => {
             <div className="pt-4 border-t border-stone-800 flex justify-end">
               <button
                 onClick={() => setSelectedBranchForStaff(null)}
-                className="px-6 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-white font-bold text-xs transition-colors"
+                className="px-6 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-white font-bold text-xs transition-colors cursor-pointer"
               >
-                Close
+                {t('common.close', 'Close')}
               </button>
             </div>
           </div>
@@ -432,20 +431,20 @@ const Franchise = () => {
         <div className="max-w-3xl space-y-3">
           <span className="text-xs font-bold uppercase tracking-widest text-amber-400 block flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5" />
-            Expansion Opportunities
+            {t('franchise.whyPartnerTitle', 'Expansion Opportunities')}
           </span>
           <h2 className="text-3xl sm:text-5xl font-serif font-bold text-white">
-            Open a SwadGhar Franchise in Your City
+            {t('franchise.title', 'Open a SwadGhar Franchise in Your City')}
           </h2>
           <p className="text-stone-300 text-sm sm:text-base leading-relaxed">
-            Join India’s most beloved Gujarati & Punjabi culinary brand. We provide end-to-end support including chef training, authentic spice supply, interior architecture, and digital point-of-sale systems.
+            {t('franchise.point3Desc', 'Join India’s most beloved culinary brand. We provide end-to-end support including master chef training, authentic spice supply, interior architecture, and digital point-of-sale systems.')}
           </p>
         </div>
 
         <form onSubmit={handleInquirySubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 pt-4">
           {/* Full Name */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-stone-300">Your Full Name *</label>
+            <label className="text-xs font-semibold text-stone-300">{t('franchise.applicantName', 'Your Full Name')} *</label>
             <input
               type="text"
               required
@@ -458,7 +457,7 @@ const Franchise = () => {
 
           {/* Phone */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-stone-300">Contact Phone Number *</label>
+            <label className="text-xs font-semibold text-stone-300">{t('franchise.applicantPhone', 'Contact Phone Number')} *</label>
             <input
               type="tel"
               required
@@ -471,7 +470,7 @@ const Franchise = () => {
 
           {/* Email */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-stone-300">Email Address</label>
+            <label className="text-xs font-semibold text-stone-300">{t('franchise.applicantEmail', 'Email Address')}</label>
             <input
               type="email"
               value={inquiryData.email}
@@ -483,7 +482,7 @@ const Franchise = () => {
 
           {/* Proposed City */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-stone-300">Proposed City / Location *</label>
+            <label className="text-xs font-semibold text-stone-300">{t('franchise.proposedCity', 'Proposed City / Location')} *</label>
             <input
               type="text"
               required
@@ -496,7 +495,7 @@ const Franchise = () => {
 
           {/* Investment Budget */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-stone-300">Investment Budget Capacity</label>
+            <label className="text-xs font-semibold text-stone-300">{t('franchise.investmentBudget', 'Investment Budget Capacity')}</label>
             <select
               value={inquiryData.investmentBudget}
               onChange={(e) => setInquiryData({ ...inquiryData, investmentBudget: e.target.value })}
@@ -511,7 +510,7 @@ const Franchise = () => {
 
           {/* Experience */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-stone-300">Prior Business Experience</label>
+            <label className="text-xs font-semibold text-stone-300">{t('franchise.priorExperience', 'Prior Business Experience')}</label>
             <select
               value={inquiryData.experience}
               onChange={(e) => setInquiryData({ ...inquiryData, experience: e.target.value })}
@@ -526,7 +525,7 @@ const Franchise = () => {
 
           {/* Additional Notes */}
           <div className="sm:col-span-2 space-y-1.5">
-            <label className="text-xs font-semibold text-stone-300">Message / Commercial Space Details (Optional)</label>
+            <label className="text-xs font-semibold text-stone-300">{t('franchise.additionalNotes', 'Message / Commercial Space Details (Optional)')}</label>
             <textarea
               rows={3}
               value={inquiryData.message}
@@ -541,17 +540,17 @@ const Franchise = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-amber-500 to-brand-600 hover:from-amber-400 hover:to-brand-500 text-white font-bold text-sm shadow-xl shadow-amber-500/20 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-amber-500 to-brand-600 hover:from-amber-400 hover:to-brand-500 text-white font-bold text-sm shadow-xl shadow-amber-500/20 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 cursor-pointer"
             >
               {submitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Submitting Application...</span>
+                  <span>{t('common.submitting', 'Submitting Application...')}</span>
                 </>
               ) : (
                 <>
                   <Send className="w-4 h-4" />
-                  <span>Submit Franchise Application</span>
+                  <span>{t('franchise.submitInquiryBtn', 'Submit Franchise Application')}</span>
                 </>
               )}
             </button>

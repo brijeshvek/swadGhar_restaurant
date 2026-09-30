@@ -53,6 +53,55 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
+  const loginWithFirebaseSocial = async ({ email, name, avatar, provider, firebaseUid }) => {
+    const response = await api.post('/auth/firebase-login', {
+      email,
+      name,
+      avatar,
+      provider: provider || 'google',
+      firebaseUid
+    });
+    const userData = response?.data || response;
+
+    if (userData?.token) {
+      localStorage.setItem('swadghar_token', userData.token);
+      localStorage.setItem('swadghar_user', JSON.stringify(userData));
+      setUser(userData);
+    }
+    return userData;
+  };
+
+  const sendPhoneOtp = async (phone, mode = 'login') => {
+    const response = await api.post('/auth/send-phone-otp', { phone, mode });
+    return response?.data || response;
+  };
+
+  const verifyPhoneOtp = async (phone, otp, name = '', mode = 'login') => {
+    const response = await api.post('/auth/verify-phone-otp', { phone, otp, name, mode });
+    const userData = response?.data || response;
+
+    if (userData?.token) {
+      localStorage.setItem('swadghar_token', userData.token);
+      localStorage.setItem('swadghar_user', JSON.stringify(userData));
+      setUser(userData);
+    }
+    return userData;
+  };
+
+  const sendEmailVerification = async (email) => {
+    const response = await api.post('/auth/send-email-verification', { email });
+    return response?.data || response;
+  };
+
+  const verifyEmail = async ({ token, email, otp }) => {
+    const response = await api.post('/auth/verify-email', { token, email, otp });
+    const userData = response?.data?.user || response?.data || response?.user || response;
+    if (userData && (userData.token || userData.email || userData.name)) {
+      updateUserData(userData);
+    }
+    return response?.data || response;
+  };
+
   const logout = () => {
     localStorage.removeItem('swadghar_token');
     localStorage.removeItem('swadghar_user');
@@ -74,6 +123,11 @@ export const AuthProvider = ({ children }) => {
         isStaff: user?.role === 'staff' || user?.role === 'admin',
         login,
         register,
+        loginWithFirebaseSocial,
+        sendPhoneOtp,
+        verifyPhoneOtp,
+        sendEmailVerification,
+        verifyEmail,
         logout,
         updateUserData,
       }}

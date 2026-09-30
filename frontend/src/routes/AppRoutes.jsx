@@ -20,6 +20,7 @@ import Franchise from '../pages/Franchise';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import ForgotPassword from '../pages/ForgotPassword';
+import VerifyEmail from '../pages/VerifyEmail';
 import Profile from '../pages/Profile';
 import OrderInvoice from '../pages/OrderInvoice';
 import NotFound from '../pages/NotFound';
@@ -36,6 +37,7 @@ import AdminCustomers from '../pages/admin/AdminCustomers';
 import AdminReviews from '../pages/admin/AdminReviews';
 import AdminCoupons from '../pages/admin/AdminCoupons';
 import AdminSettings from '../pages/admin/AdminSettings';
+import AdminReports from '../pages/admin/AdminReports';
 
 
 import { useAuth } from '../context/AuthContext';
@@ -86,6 +88,8 @@ const AppRoutes = () => {
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
+        <Route path="verify-email" element={<VerifyEmail />} />
+        <Route path="verify-email/:token" element={<VerifyEmail />} />
 
         {/* Customer Protected Routes */}
         <Route
@@ -153,6 +157,7 @@ const AppRoutes = () => {
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="franchises" element={<AdminFranchises />} />
+        <Route path="reports" element={<AdminReports />} />
         <Route path="orders" element={<AdminOrders />} />
 
         <Route path="inquiries" element={<AdminInquiries />} />

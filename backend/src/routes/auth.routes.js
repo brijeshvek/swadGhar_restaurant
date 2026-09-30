@@ -13,6 +13,11 @@ const {
   deleteAddress,
   forgotPassword,
   resetPassword,
+  firebaseSocialLogin,
+  sendPhoneOtp,
+  verifyPhoneOtp,
+  sendEmailVerification,
+  verifyEmail,
 } = require('../controllers/auth.controller');
 const { protect } = require('../middleware/auth.middleware');
 
@@ -21,6 +26,16 @@ router.post('/register', register);
 router.post('/login', login);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
+
+// Firebase Social Login & Phone OTP Login
+router.post('/firebase-login', firebaseSocialLogin);
+router.post('/send-phone-otp', sendPhoneOtp);
+router.post('/verify-phone-otp', verifyPhoneOtp);
+
+// Email Verification
+router.post('/send-email-verification', sendEmailVerification);
+router.post('/verify-email', verifyEmail);
+router.get('/verify-email/:token', verifyEmail);
 
 // Protected routes
 router.get('/me', protect, getMe);

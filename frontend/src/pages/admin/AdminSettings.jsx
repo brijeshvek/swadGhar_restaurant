@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Settings, Save, Store, DollarSign, Clock, ShieldCheck } from 'lucide-react';
 import api from '../../services/api';
 import { useNotification } from '../../context/NotificationContext';
+import { useTranslation } from '../../context/LanguageContext';
 
 const AdminSettings = () => {
+  const { t } = useTranslation();
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -31,7 +33,7 @@ const AdminSettings = () => {
     try {
       const res = await api.put('/settings', settings);
       setSettings(res.data);
-      showSuccess('Restaurant settings updated successfully!');
+      showSuccess(t('admin.settingsSaved', 'Restaurant settings updated successfully!'));
     } catch (err) {
       showError(err.message || 'Failed to update settings.');
     } finally {
@@ -51,10 +53,10 @@ const AdminSettings = () => {
     <div className="max-w-4xl space-y-8 animate-fade-in text-stone-100">
       <div>
         <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white">
-          Restaurant Settings & Policies
+          {t('admin.settings', 'Restaurant Settings & Policies')}
         </h1>
         <p className="text-xs sm:text-sm text-stone-400">
-          Configure financial GST rates, delivery fees, business timings, and store availability
+          {t('admin.settingsSubtitle', 'Configure financial GST rates, delivery fees, business timings, and store availability')}
         </p>
       </div>
 
@@ -63,12 +65,12 @@ const AdminSettings = () => {
         <div className="p-6 rounded-3xl bg-stone-950 border border-stone-800 space-y-4 shadow-lg">
           <h3 className="text-sm font-serif font-bold text-white flex items-center gap-2">
             <Store className="w-4 h-4 text-brand-500" />
-            <span>Store Profile & Contact</span>
+            <span>{t('admin.storeProfile', 'Store Profile & Contact')}</span>
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="font-bold text-stone-300">Restaurant Name</label>
+              <label className="font-bold text-stone-300">{t('admin.restaurantName', 'Restaurant Name')}</label>
               <input
                 type="text"
                 value={settings.restaurantName || ''}
@@ -78,7 +80,7 @@ const AdminSettings = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-bold text-stone-300">Tagline</label>
+              <label className="font-bold text-stone-300">{t('admin.tagline', 'Tagline')}</label>
               <input
                 type="text"
                 value={settings.tagline || ''}
@@ -88,7 +90,7 @@ const AdminSettings = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-bold text-stone-300">Direct Phone</label>
+              <label className="font-bold text-stone-300">{t('checkout.phone', 'Direct Phone')}</label>
               <input
                 type="text"
                 value={settings.phone || ''}
@@ -98,7 +100,7 @@ const AdminSettings = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-bold text-stone-300">Contact Email</label>
+              <label className="font-bold text-stone-300">{t('checkout.email', 'Contact Email')}</label>
               <input
                 type="email"
                 value={settings.email || ''}
@@ -108,7 +110,7 @@ const AdminSettings = () => {
             </div>
 
             <div className="space-y-1.5 sm:col-span-2">
-              <label className="font-bold text-stone-300">Street Address</label>
+              <label className="font-bold text-stone-300">{t('checkout.streetAddress', 'Street Address')}</label>
               <input
                 type="text"
                 value={settings.address?.street || ''}
@@ -128,12 +130,12 @@ const AdminSettings = () => {
         <div className="p-6 rounded-3xl bg-stone-950 border border-stone-800 space-y-4 shadow-lg">
           <h3 className="text-sm font-serif font-bold text-white flex items-center gap-2">
             <DollarSign className="w-4 h-4 text-emerald-500" />
-            <span>Financials, Taxes & Delivery</span>
+            <span>{t('admin.financialsAndTaxes', 'Financials, Taxes & Delivery')}</span>
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
-              <label className="font-bold text-stone-300">GST Rate (%)</label>
+              <label className="font-bold text-stone-300">{t('admin.gstRate', 'GST Rate (%)')}</label>
               <input
                 type="number"
                 value={settings.financial?.taxRatePercentage || 5}
@@ -151,7 +153,7 @@ const AdminSettings = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-bold text-stone-300">Flat Delivery Fee (₹)</label>
+              <label className="font-bold text-stone-300">{t('admin.flatDeliveryFee', 'Flat Delivery Fee (₹)')}</label>
               <input
                 type="number"
                 value={settings.financial?.deliveryFee || 40}
@@ -169,7 +171,7 @@ const AdminSettings = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-bold text-stone-300">Free Delivery Threshold (₹)</label>
+              <label className="font-bold text-stone-300">{t('admin.freeDeliveryThreshold', 'Free Delivery Threshold (₹)')}</label>
               <input
                 type="number"
                 value={settings.financial?.freeDeliveryThreshold || 499}
@@ -192,7 +194,7 @@ const AdminSettings = () => {
         <div className="p-6 rounded-3xl bg-stone-950 border border-stone-800 space-y-4 shadow-lg">
           <h3 className="text-sm font-serif font-bold text-white flex items-center gap-2">
             <Clock className="w-4 h-4 text-amber-500" />
-            <span>Service Toggles</span>
+            <span>{t('admin.serviceToggles', 'Service Toggles')}</span>
           </h3>
 
           <div className="flex flex-col sm:flex-row gap-6">
@@ -204,8 +206,8 @@ const AdminSettings = () => {
                 className="w-4 h-4 rounded bg-stone-900 border-stone-800 text-brand-600 focus:ring-0"
               />
               <div>
-                <span className="font-bold text-white block">Online Food Ordering Open</span>
-                <span className="text-[10px] text-stone-400">Allows customers to add to cart & checkout</span>
+                <span className="font-bold text-white block">{t('admin.onlineOrderingOpen', 'Online Food Ordering Open')}</span>
+                <span className="text-[10px] text-stone-400">{t('admin.onlineOrderingOpenSub', 'Allows customers to add to cart & checkout')}</span>
               </div>
             </label>
 
@@ -217,8 +219,8 @@ const AdminSettings = () => {
                 className="w-4 h-4 rounded bg-stone-900 border-stone-800 text-brand-600 focus:ring-0"
               />
               <div>
-                <span className="font-bold text-white block">Table Reservations Open</span>
-                <span className="text-[10px] text-stone-400">Accepts dine-in seating requests</span>
+                <span className="font-bold text-white block">{t('admin.tableReservationsOpen', 'Table Reservations Open')}</span>
+                <span className="text-[10px] text-stone-400">{t('admin.tableReservationsOpenSub', 'Accepts dine-in seating requests')}</span>
               </div>
             </label>
           </div>
@@ -227,10 +229,10 @@ const AdminSettings = () => {
         <button
           type="submit"
           disabled={saving}
-          className="px-8 py-3.5 rounded-2xl bg-brand-600 hover:bg-brand-500 active:scale-95 text-white font-bold shadow-lg shadow-brand-500/25 transition-all flex items-center gap-2"
+          className="px-8 py-3.5 rounded-2xl bg-brand-600 hover:bg-brand-500 active:scale-95 text-white font-bold shadow-lg shadow-brand-500/25 transition-all flex items-center gap-2 cursor-pointer"
         >
           <Save className="w-4 h-4" />
-          <span>{saving ? 'Saving...' : 'Save Global Restaurant Settings'}</span>
+          <span>{saving ? t('common.saving', 'Saving...') : t('admin.saveGlobalSettings', 'Save Global Restaurant Settings')}</span>
         </button>
       </form>
     </div>

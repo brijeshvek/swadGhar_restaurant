@@ -21,8 +21,10 @@ import {
 } from 'lucide-react';
 import api from '../../services/api';
 import { useNotification } from '../../context/NotificationContext';
+import { useTranslation } from '../../context/LanguageContext';
 
 const AdminInquiries = () => {
+  const { t } = useTranslation();
   const [inquiries, setInquiries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all'); // 'all', 'new', 'in_progress', 'resolved'
@@ -159,37 +161,37 @@ const AdminInquiries = () => {
         <div>
           <h1 className="text-2xl font-serif font-bold text-white flex items-center gap-2.5">
             <MessageSquare className="w-6 h-6 text-amber-500" />
-            <span>Customer Inquiries & Leads</span>
+            <span>{t('admin.customerInquiries', 'Customer Inquiries & Leads')}</span>
           </h1>
           <p className="text-xs text-stone-400 mt-1">
-            Manage inquiries, banquet requests, catering, and customer messages submitted for your restaurant.
+            {t('admin.customerInquiriesSub', 'Manage inquiries, banquet requests, catering, and customer messages submitted for your restaurant.')}
           </p>
         </div>
         <button
           onClick={fetchInquiries}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-semibold border border-stone-700 transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-semibold border border-stone-700 transition-colors cursor-pointer"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          <span>Refresh</span>
+          <span>{loading ? t('common.updating', 'Updating...') : t('admin.refreshMetrics', 'Refresh')}</span>
         </button>
       </div>
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-stone-950 border border-stone-800/80">
-          <p className="text-xs text-stone-400 font-medium">Total Inquiries</p>
+          <p className="text-xs text-stone-400 font-medium">{t('admin.totalInquiries', 'Total Inquiries')}</p>
           <p className="text-2xl font-bold font-sans text-white mt-1">{totalCount}</p>
         </div>
         <div className="p-4 rounded-2xl bg-stone-950 border border-sky-500/20 bg-sky-950/10">
-          <p className="text-xs text-sky-400 font-medium">New Unread</p>
+          <p className="text-xs text-sky-400 font-medium">{t('admin.newUnread', 'New Unread')}</p>
           <p className="text-2xl font-bold font-sans text-sky-300 mt-1">{newCount}</p>
         </div>
         <div className="p-4 rounded-2xl bg-stone-950 border border-amber-500/20 bg-amber-950/10">
-          <p className="text-xs text-amber-400 font-medium">In Progress</p>
+          <p className="text-xs text-amber-400 font-medium">{t('admin.inProgress', 'In Progress')}</p>
           <p className="text-2xl font-bold font-sans text-amber-300 mt-1">{inProgressCount}</p>
         </div>
         <div className="p-4 rounded-2xl bg-stone-950 border border-emerald-500/20 bg-emerald-950/10">
-          <p className="text-xs text-emerald-400 font-medium">Resolved</p>
+          <p className="text-xs text-emerald-400 font-medium">{t('admin.resolved', 'Resolved')}</p>
           <p className="text-2xl font-bold font-sans text-emerald-300 mt-1">{resolvedCount}</p>
         </div>
       </div>
@@ -198,15 +200,15 @@ const AdminInquiries = () => {
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
         <div className="flex gap-1.5 p-1 bg-stone-950 rounded-xl border border-stone-800 self-start">
           {[
-            { id: 'all', label: `All (${totalCount})` },
-            { id: 'new', label: `New (${newCount})` },
-            { id: 'in_progress', label: `In Progress (${inProgressCount})` },
-            { id: 'resolved', label: `Resolved (${resolvedCount})` },
+            { id: 'all', label: `${t('common.all', 'All')} (${totalCount})` },
+            { id: 'new', label: `${t('admin.newLead', 'New')} (${newCount})` },
+            { id: 'in_progress', label: `${t('admin.inProgress', 'In Progress')} (${inProgressCount})` },
+            { id: 'resolved', label: `${t('admin.resolved', 'Resolved')} (${resolvedCount})` },
           ].map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                 activeTab === tab.id
                   ? 'bg-amber-500 text-stone-950 shadow-xs'
                   : 'text-stone-400 hover:text-stone-200'

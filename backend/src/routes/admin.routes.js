@@ -2,12 +2,14 @@ const express = require('express');
 const router = express.Router();
 const {
   getDashboardStats,
+  getReportsAnalytics,
   getAllCustomers,
   toggleCustomerBlock,
 } = require('../controllers/admin.controller');
 const { protect, authorize } = require('../middleware/auth.middleware');
 
 router.get('/dashboard-stats', protect, authorize('admin', 'staff'), getDashboardStats);
+router.get('/reports', protect, authorize('admin', 'staff'), getReportsAnalytics);
 router.get('/customers', protect, authorize('admin'), getAllCustomers);
 router.patch('/customers/:id/toggle-block', protect, authorize('admin'), toggleCustomerBlock);
 

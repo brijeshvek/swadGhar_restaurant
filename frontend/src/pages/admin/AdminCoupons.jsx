@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Tag, Plus, Trash2, X, Calendar, Percent } from 'lucide-react';
 import api from '../../services/api';
 import { useNotification } from '../../context/NotificationContext';
+import { useTranslation } from '../../context/LanguageContext';
 
 const AdminCoupons = () => {
+  const { t } = useTranslation();
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -65,19 +67,19 @@ const AdminCoupons = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white">
-            Coupons & Promotional Offers ({coupons.length})
+            {t('admin.coupons', 'Coupons & Promotional Offers')} ({coupons.length})
           </h1>
           <p className="text-xs sm:text-sm text-stone-400">
-            Launch discount campaigns, set minimum basket sizes, and track coupon redemption
+            {t('admin.couponsSubtitle', 'Launch discount campaigns, set minimum basket sizes, and track coupon redemption')}
           </p>
         </div>
 
         <button
           onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-md transition-all"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>Create Coupon Code</span>
+          <span>{t('admin.createCouponCode', 'Create Coupon Code')}</span>
         </button>
       </div>
 
@@ -101,17 +103,17 @@ const AdminCoupons = () => {
 
               <div className="p-3 rounded-2xl bg-stone-900 border border-stone-800/80 space-y-1 text-[11px] text-stone-400">
                 <div className="flex justify-between">
-                  <span>Min Order:</span>
+                  <span>{t('admin.minOrder', 'Min Order')}:</span>
                   <span className="text-white font-bold">₹{c.minOrderAmount}</span>
                 </div>
                 {c.discountType === 'percentage' && (
                   <div className="flex justify-between">
-                    <span>Max Discount Cap:</span>
+                    <span>{t('admin.maxDiscountCap', 'Max Discount Cap')}:</span>
                     <span className="text-white font-bold">₹{c.maxDiscount}</span>
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span>Redemptions:</span>
+                  <span>{t('admin.redemptions', 'Redemptions')}:</span>
                   <span className="text-amber-400 font-bold">{c.usedCount || 0} / {c.usageLimit}</span>
                 </div>
               </div>
@@ -120,12 +122,12 @@ const AdminCoupons = () => {
             <div className="pt-3 border-t border-stone-800/80 flex items-center justify-between text-[11px]">
               <span className="text-stone-500 flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5" />
-                Exp: {new Date(c.expiryDate).toLocaleDateString()}
+                {t('admin.expiry', 'Exp')}: {new Date(c.expiryDate).toLocaleDateString()}
               </span>
 
               <button
                 onClick={() => handleDeleteCoupon(c._id, c.code)}
-                className="p-1.5 rounded-lg bg-stone-900 hover:bg-rose-900/40 text-stone-400 hover:text-rose-400 transition-colors"
+                className="p-1.5 rounded-lg bg-stone-900 hover:bg-rose-900/40 text-stone-400 hover:text-rose-400 transition-colors cursor-pointer"
               >
                 <Trash2 className="w-4 h-4" />
               </button>

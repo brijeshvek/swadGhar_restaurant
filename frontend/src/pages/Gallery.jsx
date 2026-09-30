@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useTranslation } from '../context/LanguageContext';
 
 const Gallery = () => {
+  const { t } = useTranslation();
   const [activeFilter, setActiveFilter] = useState('all');
 
   const galleryItems = [
@@ -69,29 +71,29 @@ const Gallery = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8 animate-fade-in">
       <div className="text-center space-y-2 max-w-2xl mx-auto">
         <span className="text-xs font-bold uppercase tracking-widest text-brand-600 block">
-          Visual Memories
+          {t('gallery.filterAll', 'Visual Memories')}
         </span>
         <h1 className="text-3xl sm:text-5xl font-serif font-bold text-stone-900">
-          SwadGhar Photo Gallery
+          {t('gallery.title', 'SwadGhar Photo Gallery')}
         </h1>
         <p className="text-stone-500 text-sm sm:text-base">
-          A glimpse into our golden dining ambience, artisan kitchen craft, and signature culinary creations.
+          {t('gallery.subtitle', 'A glimpse into our golden dining ambience, artisan kitchen craft, and signature culinary creations.')}
         </p>
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex flex-wrap items-center justify-center gap-2">
         {[
-          { id: 'all', label: 'All Photos' },
-          { id: 'food', label: 'Dishes & Food' },
-          { id: 'ambiance', label: 'Ambiance & Seating' },
-          { id: 'kitchen', label: 'Kitchen Craft' },
-          { id: 'beverages', label: 'Beverages' },
+          { id: 'all', label: t('gallery.filterAll', 'All Photos') },
+          { id: 'food', label: t('gallery.filterFood', 'Dishes & Food') },
+          { id: 'ambiance', label: t('gallery.filterAmbience', 'Ambiance & Seating') },
+          { id: 'kitchen', label: t('gallery.filterKitchen', 'Kitchen Craft') },
+          { id: 'beverages', label: t('gallery.filterEvents', 'Beverages & Banquets') },
         ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveFilter(tab.id)}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
               activeFilter === tab.id
                 ? 'bg-brand-600 text-white shadow-md'
                 : 'bg-stone-100 text-stone-700 hover:bg-stone-200'

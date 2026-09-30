@@ -25,6 +25,7 @@ import { FoodDetailsSkeleton } from '../components/common/FoodCardSkeleton';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { useTranslation } from '../context/LanguageContext';
 import {
   BlurText,
   ShinyText,
@@ -41,6 +42,7 @@ const FoodDetails = () => {
   const { isAuthenticated, user } = useAuth();
   const { showSuccess, showError } = useNotification();
   const { addToCart } = useCart();
+  const { t } = useTranslation();
 
   const [food, setFood] = useState(null);
   const [relatedFoods, setRelatedFoods] = useState([]);
@@ -156,18 +158,18 @@ const FoodDetails = () => {
       {/* Breadcrumb Navigation */}
       <nav className="flex items-center gap-2 text-xs sm:text-sm text-stone-500">
         <Link to="/" className="hover:text-brand-600 transition-colors">
-          Home
+          {t('nav.home', 'Home')}
         </Link>
         <span>/</span>
         <Link to="/menu" className="hover:text-brand-600 transition-colors">
-          Menu
+          {t('nav.menu', 'Menu')}
         </Link>
         <span>/</span>
         <Link
           to={`/menu?category=${food.category?.slug || food.category?._id || ''}`}
           className="hover:text-brand-600 transition-colors font-medium text-stone-700"
         >
-          {food.category?.name || 'Category'}
+          {food.category?.name || t('foodDetails.category', 'Category')}
         </Link>
         <span>/</span>
         <span className="text-brand-600 font-semibold truncate max-w-[200px]">{food.name}</span>
@@ -211,13 +213,13 @@ const FoodDetails = () => {
               {food.isPopular && (
                 <span className="px-3 py-1 rounded-xl bg-amber-500/95 backdrop-blur-sm text-white text-xs font-bold shadow-md flex items-center gap-1">
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>Bestseller</span>
+                  <span>{t('menu.sortPopular', 'Bestseller')}</span>
                 </span>
               )}
 
               {hasDiscount && (
                 <span className="px-3 py-1 rounded-xl bg-rose-600/95 backdrop-blur-sm text-white text-xs font-bold shadow-md">
-                  Save ₹{savings}
+                  {t('cart.savingsText', 'Save ₹{{amount}}', { amount: savings })}
                 </span>
               )}
             </div>
@@ -227,7 +229,7 @@ const FoodDetails = () => {
               <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
               <span>{food.rating ? food.rating.toFixed(1) : '4.8'}</span>
               <span className="text-xs text-stone-400 font-normal">
-                ({food.numReviews || 0} reviews)
+                ({food.numReviews || 0} {t('common.reviews', 'reviews')})
               </span>
             </div>
           </TiltedCard>
@@ -236,18 +238,18 @@ const FoodDetails = () => {
           <div className="grid grid-cols-3 gap-3 text-center text-xs">
             <div className="p-3 rounded-2xl bg-stone-50 border border-stone-200/80 flex flex-col items-center justify-center gap-1">
               <Clock className="w-4 h-4 text-brand-600" />
-              <span className="font-bold text-stone-900">{food.preparationTime || 20} mins</span>
-              <span className="text-[10px] text-stone-400">Fresh Cook Time</span>
+              <span className="font-bold text-stone-900">{food.preparationTime || 20} {t('common.min', 'mins')}</span>
+              <span className="text-[10px] text-stone-400">{t('foodDetails.prepTime', 'Fresh Cook Time')}</span>
             </div>
             <div className="p-3 rounded-2xl bg-stone-50 border border-stone-200/80 flex flex-col items-center justify-center gap-1">
               <Flame className="w-4 h-4 text-amber-500" />
-              <span className="font-bold text-stone-900 capitalize">{food.spiceLevel || 'Medium'}</span>
-              <span className="text-[10px] text-stone-400">Spice Heat Level</span>
+              <span className="font-bold text-stone-900 capitalize">{food.spiceLevel || t('menu.medium', 'Medium')}</span>
+              <span className="text-[10px] text-stone-400">{t('menu.spiceLevel', 'Spice Heat Level')}</span>
             </div>
             <div className="p-3 rounded-2xl bg-stone-50 border border-stone-200/80 flex flex-col items-center justify-center gap-1">
               <Leaf className="w-4 h-4 text-emerald-600" />
               <span className="font-bold text-stone-900 uppercase text-[11px]">{food.foodType || 'Veg'}</span>
-              <span className="text-[10px] text-stone-400">Dietary Style</span>
+              <span className="text-[10px] text-stone-400">{t('menu.filterByDiet', 'Dietary Style')}</span>
             </div>
           </div>
         </div>
@@ -258,11 +260,11 @@ const FoodDetails = () => {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold uppercase tracking-widest text-brand-600 bg-brand-50 px-2.5 py-1 rounded-lg border border-brand-200/60">
-                  {food.category?.name || 'Signature Special'}
+                  {food.category?.name || t('menu.chefSpecial', 'Signature Special')}
                 </span>
-                {food.tags?.map((t, idx) => (
+                {food.tags?.map((tTag, idx) => (
                   <span key={idx} className="text-[11px] text-stone-500 font-semibold bg-stone-100 px-2 py-0.5 rounded-md">
-                    #{t}
+                    #{tTag}
                   </span>
                 ))}
               </div>
@@ -281,7 +283,7 @@ const FoodDetails = () => {
           <AnimatedContent delay={0.2}>
             <div className="p-5 rounded-3xl bg-stone-900 text-white shadow-xl flex items-center justify-between">
               <div>
-                <span className="text-xs text-stone-400 font-medium block">Portion Price</span>
+                <span className="text-xs text-stone-400 font-medium block">{t('foodDetails.totalPrice', 'Portion Price')}</span>
                 <div className="flex items-baseline gap-2.5">
                   <span className="text-3xl sm:text-4xl font-bold font-sans text-amber-300">
                     ₹{currentPrice}
@@ -302,49 +304,19 @@ const FoodDetails = () => {
                       : 'bg-rose-950 text-rose-300 border border-rose-500/40'
                   }`}
                 >
-                  {food.isAvailable !== false ? '● Fresh in Kitchen' : '● Sold Out Today'}
+                  {food.isAvailable !== false ? `● ${t('common.active', 'Fresh in Kitchen')}` : `● ${t('menu.outOfStock', 'Sold Out Today')}`}
                 </span>
-                <span className="text-[10px] text-stone-400 block mt-1">Inclusive of all restaurant taxes</span>
+                <span className="text-[10px] text-stone-400 block mt-1">{t('checkout.securePaymentNotice', 'Inclusive of all restaurant taxes')}</span>
               </div>
             </div>
           </AnimatedContent>
-
-          {/* Nutritional Profile Grid */}
-          {food.nutrition && (
-            <AnimatedContent delay={0.3}>
-              <div className="space-y-2 p-4 rounded-2xl bg-stone-50 border border-stone-200/80">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Nutritional Profile (Approx. Per Serving)</span>
-                </h4>
-                <div className="grid grid-cols-4 gap-2.5 text-center">
-                  <div className="p-2.5 rounded-xl bg-white border border-stone-200 shadow-sm">
-                    <span className="block text-sm font-bold text-stone-900">{food.nutrition.calories || 320}</span>
-                    <span className="text-[10px] text-stone-400 uppercase font-semibold">Calories</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-white border border-stone-200 shadow-sm">
-                    <span className="block text-sm font-bold text-stone-900">{food.nutrition.protein || 12}g</span>
-                    <span className="text-[10px] text-stone-400 uppercase font-semibold">Protein</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-white border border-stone-200 shadow-sm">
-                    <span className="block text-sm font-bold text-stone-900">{food.nutrition.carbs || 45}g</span>
-                    <span className="text-[10px] text-stone-400 uppercase font-semibold">Carbs</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-white border border-stone-200 shadow-sm">
-                    <span className="block text-sm font-bold text-stone-900">{food.nutrition.fats || 10}g</span>
-                    <span className="text-[10px] text-stone-400 uppercase font-semibold">Fats</span>
-                  </div>
-                </div>
-              </div>
-            </AnimatedContent>
-          )}
 
           {/* Key Ingredients */}
           {food.ingredients && food.ingredients.length > 0 && (
             <AnimatedContent delay={0.4}>
               <div className="space-y-2">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500">
-                  Key Fresh Ingredients & Aromatics
+                  {t('foodDetails.ingredients', 'Key Fresh Ingredients & Aromatics')}
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {food.ingredients.map((ing, idx) => (
@@ -360,26 +332,12 @@ const FoodDetails = () => {
             </AnimatedContent>
           )}
 
-          {/* Special Instructions Note */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-stone-700">
-              Kitchen Instructions (Optional)
-            </label>
-            <input
-              type="text"
-              value={specialInstructions}
-              onChange={(e) => setSpecialInstructions(e.target.value)}
-              placeholder="e.g. Medium spice, no onions, extra green chutney..."
-              className="w-full px-3.5 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-xs text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-brand-500 transition-all"
-            />
-          </div>
-
           {/* Quantity & Add to Cart CTA */}
           <div className="pt-3 flex items-center gap-4">
             <div className="flex items-center gap-3 bg-stone-100 rounded-2xl p-1.5 border border-stone-200">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-10 h-10 rounded-xl bg-white hover:bg-stone-200 shadow-sm flex items-center justify-center text-stone-800 font-bold transition-colors"
+                className="w-10 h-10 rounded-xl bg-white hover:bg-stone-200 shadow-sm flex items-center justify-center text-stone-800 font-bold transition-colors cursor-pointer"
                 aria-label="Decrease quantity"
               >
                 <Minus className="w-4 h-4" />
@@ -387,7 +345,7 @@ const FoodDetails = () => {
               <span className="text-base font-bold w-6 text-center">{quantity}</span>
               <button
                 onClick={() => setQuantity(quantity + 1)}
-                className="w-10 h-10 rounded-xl bg-white hover:bg-stone-200 shadow-sm flex items-center justify-center text-stone-800 font-bold transition-colors"
+                className="w-10 h-10 rounded-xl bg-white hover:bg-stone-200 shadow-sm flex items-center justify-center text-stone-800 font-bold transition-colors cursor-pointer"
                 aria-label="Increase quantity"
               >
                 <Plus className="w-4 h-4" />
@@ -397,7 +355,7 @@ const FoodDetails = () => {
             <button
               onClick={handleAddToCart}
               disabled={food.isAvailable === false}
-              className={`flex-1 py-4 px-6 rounded-2xl font-bold text-base shadow-lg transition-all flex items-center justify-center gap-2 active:scale-98 ${
+              className={`flex-1 py-4 px-6 rounded-2xl font-bold text-base shadow-lg transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer ${
                 food.isAvailable === false
                   ? 'bg-stone-300 text-stone-500 cursor-not-allowed'
                   : 'bg-gradient-to-r from-brand-600 via-amber-600 to-brand-600 hover:from-brand-500 hover:to-amber-500 text-white shadow-brand-500/25 hover:shadow-glow'
@@ -406,15 +364,15 @@ const FoodDetails = () => {
               {addedAnimation ? (
                 <>
                   <CheckCircle2 className="w-5 h-5 animate-bounce" />
-                  <span>Added to Order Basket!</span>
+                  <span>{t('menu.added', 'Added to Order Basket!')}</span>
                 </>
               ) : (
                 <>
                   <ShoppingBag className="w-5 h-5" />
                   <span>
                     {food.isAvailable !== false
-                      ? `Add to Cart • ₹${currentPrice * quantity}`
-                      : 'Dish Currently Sold Out'}
+                      ? `${t('menu.addToCart', 'Add to Cart')} • ₹${currentPrice * quantity}`
+                      : t('menu.outOfStock', 'Dish Currently Sold Out')}
                   </span>
                 </>
               )}
@@ -428,17 +386,17 @@ const FoodDetails = () => {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h3 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900">
-              Diner Reviews & Ratings
+              {t('foodDetails.customerReviews', 'Diner Reviews & Ratings')}
             </h3>
             <p className="text-xs sm:text-sm text-stone-500">
-              Verified customer feedback on taste, authenticity, and presentation
+              {t('home.testimonialsSubtitle', 'Verified customer feedback on taste, authenticity, and presentation')}
             </p>
           </div>
 
           <div className="flex items-center gap-2 bg-amber-50 px-4 py-2 rounded-2xl border border-amber-200/80 text-amber-900 text-sm font-bold">
             <Star className="w-5 h-5 fill-amber-500 text-amber-500" />
             <span>{food.rating ? food.rating.toFixed(1) : '4.8'} / 5.0</span>
-            <span className="text-xs text-amber-700 font-normal">({food.reviews?.length || 0} reviews)</span>
+            <span className="text-xs text-amber-700 font-normal">({food.reviews?.length || 0} {t('common.reviews', 'reviews')})</span>
           </div>
         </div>
 
@@ -449,18 +407,18 @@ const FoodDetails = () => {
         >
           <h4 className="text-sm font-bold text-stone-900 flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-brand-600" />
-            <span>Share Your Dining Experience</span>
+            <span>{t('foodDetails.writeReview', 'Share Your Dining Experience')}</span>
           </h4>
 
           <div className="space-y-1">
-            <label className="text-xs text-stone-600 font-semibold">Your Rating</label>
+            <label className="text-xs text-stone-600 font-semibold">{t('common.rating', 'Your Rating')}</label>
             <div className="flex items-center gap-1.5">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
                   type="button"
                   onClick={() => setRating(star)}
-                  className="p-1 hover:scale-110 transition-transform"
+                  className="p-1 hover:scale-110 transition-transform cursor-pointer"
                 >
                   <Star
                     className={`w-6 h-6 ${
@@ -474,7 +432,7 @@ const FoodDetails = () => {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs text-stone-600 font-semibold">Your Review Comment</label>
+            <label className="text-xs text-stone-600 font-semibold">{t('foodDetails.writeReview', 'Your Review Comment')}</label>
             <textarea
               rows={3}
               value={comment}
@@ -488,10 +446,10 @@ const FoodDetails = () => {
             <button
               type="submit"
               disabled={submittingReview}
-              className="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-md flex items-center gap-2 transition-all disabled:opacity-50"
+              className="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-md flex items-center gap-2 transition-all disabled:opacity-50 cursor-pointer"
             >
               {submittingReview ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-              <span>Submit Review</span>
+              <span>{t('common.submit', 'Submit Review')}</span>
             </button>
           </div>
         </form>
@@ -539,7 +497,7 @@ const FoodDetails = () => {
           </div>
         ) : (
           <div className="p-8 text-center bg-stone-50 rounded-3xl border border-stone-200/80 text-stone-500 text-sm">
-            No customer reviews yet. Be the first to order and review this dish!
+            {t('common.noData', 'No customer reviews yet. Be the first to order and review this dish!')}
           </div>
         )}
       </div>
@@ -549,10 +507,10 @@ const FoodDetails = () => {
         <div className="pt-12 border-t border-stone-200 space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-2xl font-serif font-bold text-stone-900">
-              You Might Also Relish
+              {t('foodDetails.relatedDishes', 'You Might Also Relish')}
             </h3>
             <Link to="/menu" className="text-xs font-bold text-brand-600 hover:underline">
-              Explore All Menu →
+              {t('common.viewAll', 'Explore All Menu →')}
             </Link>
           </div>
 

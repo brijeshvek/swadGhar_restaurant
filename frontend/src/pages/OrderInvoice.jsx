@@ -19,12 +19,14 @@ import {
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { useTranslation } from '../context/LanguageContext';
 
 const OrderInvoice = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { showError } = useNotification();
+  const { t } = useTranslation();
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -108,26 +110,26 @@ const OrderInvoice = () => {
       <div className="flex flex-wrap items-center justify-between gap-4 print:hidden">
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-500 hover:text-brand-600 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-500 hover:text-brand-600 transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back</span>
+          <span>{t('common.back', 'Back')}</span>
         </button>
 
         <div className="flex items-center gap-3">
           <button
             onClick={handlePrint}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold border border-stone-300 transition-all shadow-xs"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold border border-stone-300 transition-all shadow-xs cursor-pointer"
           >
             <Printer className="w-4 h-4 text-stone-600" />
-            <span>Print Invoice</span>
+            <span>{t('common.print', 'Print Invoice')}</span>
           </button>
           <button
             onClick={handlePrint}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-md shadow-brand-500/20 transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-md shadow-brand-500/20 transition-all cursor-pointer"
           >
             <Download className="w-4 h-4" />
-            <span>Download PDF</span>
+            <span>{t('common.download', 'Download PDF')}</span>
           </button>
         </div>
       </div>
@@ -145,30 +147,30 @@ const OrderInvoice = () => {
                 <Utensils className="w-5 h-5" />
               </div>
               <div>
-                <h1 className="text-2xl font-serif font-bold text-stone-900 tracking-tight">SwadGhar</h1>
-                <p className="text-[10px] uppercase font-bold tracking-widest text-brand-600">Authentic Heritage Dining</p>
+                <h1 className="text-2xl font-serif font-bold text-stone-900 tracking-tight">{t('brand.name', 'SwadGhar')}</h1>
+                <p className="text-[10px] uppercase font-bold tracking-widest text-brand-600">{t('brand.subTagline', 'Authentic Heritage Dining')}</p>
               </div>
             </div>
             <div className="text-xs text-stone-500 space-y-0.5 pt-1">
-              <p>SwadGhar Fine Dine & Hospitality Pvt. Ltd.</p>
-              <p>12, Heritage Boulevard, SG Highway, Ahmedabad, Gujarat - 380015</p>
-              <p>GSTIN: <span className="font-mono font-medium text-stone-700">24AAACS1234F1Z8</span> | FSSAI: <span className="font-mono font-medium text-stone-700">10723001000456</span></p>
-              <p>Phone: +91 79 4000 8888 | Email: billing@swadghar.com</p>
+              <p>{t('brand.fullName', 'SwadGhar Fine Dine & Hospitality Pvt. Ltd.')}</p>
+              <p>{t('contact.hqAddress', '12, Heritage Boulevard, SG Highway, Ahmedabad, Gujarat - 380015')}</p>
+              <p>{t('brand.gstin', 'GSTIN: 24AAACS1234F1Z8')} | {t('brand.fssai', 'FSSAI: 10723001000456')}</p>
+              <p>{t('contact.phoneLabel', 'Phone')}: +91 79 4000 8888 | {t('contact.emailLabel', 'Email')}: billing@swadghar.com</p>
             </div>
           </div>
 
           <div className="sm:text-right space-y-2">
             <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase bg-stone-900 text-white">
-              TAX INVOICE
+              {t('orderSuccess.viewInvoiceBtn', 'TAX INVOICE')}
             </span>
             <div className="space-y-1">
-              <p className="text-xs text-stone-500 font-bold uppercase tracking-wider">Invoice No.</p>
+              <p className="text-xs text-stone-500 font-bold uppercase tracking-wider">{t('orderSuccess.orderId', 'Invoice No.')}</p>
               <p className="text-sm font-mono font-bold text-brand-600">{invoiceNum}</p>
             </div>
             <div className="text-xs text-stone-500 space-y-0.5">
-              <p>Order ID: <span className="font-mono font-semibold text-stone-800">#{order.orderNumber}</span></p>
-              <p>Date: <span className="text-stone-800 font-medium">{orderDate} at {orderTime}</span></p>
-              <p>Dining Mode: <span className="capitalize font-semibold text-stone-800">{order.orderType || 'Delivery'}</span></p>
+              <p>{t('myOrders.orderNum', 'Order ID')}: <span className="font-mono font-semibold text-stone-800">#{order.orderNumber}</span></p>
+              <p>{t('common.date', 'Date')}: <span className="text-stone-800 font-medium">{orderDate} at {orderTime}</span></p>
+              <p>{t('checkout.deliveryInstructions', 'Dining Mode')}: <span className="capitalize font-semibold text-stone-800">{order.orderType || 'Delivery'}</span></p>
             </div>
           </div>
         </div>
@@ -177,7 +179,7 @@ const OrderInvoice = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 border-b border-stone-200 pb-8 text-xs">
           {/* Customer Delivery Information */}
           <div className="space-y-2">
-            <h4 className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">Billed To (Customer)</h4>
+            <h4 className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">{t('checkout.fullName', 'Billed To (Customer)')}</h4>
             <div className="p-4 rounded-2xl bg-stone-50 border border-stone-100 space-y-1 text-stone-700">
               <p className="font-bold text-sm text-stone-900">{order.deliveryAddress?.fullName || order.customer?.name || 'Customer'}</p>
               <p className="flex items-center gap-1.5">
@@ -192,7 +194,7 @@ const OrderInvoice = () => {
               )}
               {order.orderType === 'delivery' && order.deliveryAddress && (
                 <div className="pt-2 border-t border-stone-200 mt-2">
-                  <p className="text-stone-500 font-medium">Delivery Destination:</p>
+                  <p className="text-stone-500 font-medium">{t('orderTracking.deliveryAddress', 'Delivery Destination')}:</p>
                   <p className="text-stone-800">
                     {order.deliveryAddress.houseNo ? `${order.deliveryAddress.houseNo}, ` : ''}
                     {order.deliveryAddress.street || order.deliveryAddress.address || ''}
@@ -202,7 +204,7 @@ const OrderInvoice = () => {
                     {order.deliveryAddress.city}, {order.deliveryAddress.state || 'Gujarat'} - {order.deliveryAddress.pincode}
                   </p>
                   {order.deliveryAddress.landmark && (
-                    <p className="text-stone-500 italic mt-0.5">Landmark: {order.deliveryAddress.landmark}</p>
+                    <p className="text-stone-500 italic mt-0.5">{t('checkout.landmark', 'Landmark')}: {order.deliveryAddress.landmark}</p>
                   )}
                 </div>
               )}
@@ -211,16 +213,16 @@ const OrderInvoice = () => {
 
           {/* Payment Details */}
           <div className="space-y-2">
-            <h4 className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">Payment & Status</h4>
+            <h4 className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">{t('admin.payment', 'Payment & Status')}</h4>
             <div className="p-4 rounded-2xl bg-stone-50 border border-stone-100 space-y-2 text-stone-700">
               <div className="flex justify-between items-center">
-                <span className="text-stone-500">Payment Mode:</span>
+                <span className="text-stone-500">{t('checkout.paymentTitle', 'Payment Mode')}:</span>
                 <span className="font-bold text-stone-900 uppercase">
                   {order.paymentMethod === 'razorpay' ? 'Online (Razorpay)' : 'Cash on Delivery (COD)'}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-stone-500">Payment Status:</span>
+                <span className="text-stone-500">{t('common.status', 'Payment Status')}:</span>
                 <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
                   order.paymentStatus === 'paid'
                     ? 'bg-emerald-100 text-emerald-800'
@@ -231,7 +233,7 @@ const OrderInvoice = () => {
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-stone-500">Order Status:</span>
+                <span className="text-stone-500">{t('common.status', 'Order Status')}:</span>
                 <span className="font-bold text-stone-900 capitalize">{order.orderStatus?.replace('_', ' ') || 'Confirmed'}</span>
               </div>
               {order.paymentDetails?.razorpay_payment_id && (
@@ -246,16 +248,16 @@ const OrderInvoice = () => {
 
         {/* Itemized Foods Table */}
         <div className="space-y-3">
-          <h4 className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">Itemized Order Details</h4>
+          <h4 className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">{t('orderTracking.itemsOrdered', 'Itemized Order Details')}</h4>
           <div className="border border-stone-200 rounded-2xl overflow-hidden">
             <table className="w-full text-left text-xs">
               <thead className="bg-stone-100/80 text-stone-700 font-bold border-b border-stone-200">
                 <tr>
                   <th className="py-3 px-4">#</th>
-                  <th className="py-3 px-4">Dish Description</th>
-                  <th className="py-3 px-4 text-center">Qty</th>
-                  <th className="py-3 px-4 text-right">Unit Price</th>
-                  <th className="py-3 px-4 text-right">Total (₹)</th>
+                  <th className="py-3 px-4">{t('common.item', 'Dish Description')}</th>
+                  <th className="py-3 px-4 text-center">{t('common.qty', 'Qty')}</th>
+                  <th className="py-3 px-4 text-right">{t('common.price', 'Unit Price')}</th>
+                  <th className="py-3 px-4 text-right">{t('common.total', 'Total')} (₹)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100">
@@ -283,7 +285,7 @@ const OrderInvoice = () => {
         {/* Summary Breakdown & Calculation */}
         <div className="flex flex-col sm:flex-row justify-between items-start gap-6 pt-2">
           <div className="text-xs text-stone-500 max-w-sm space-y-2">
-            <p className="font-bold text-stone-800">Terms & Conditions:</p>
+            <p className="font-bold text-stone-800">{t('footer.termsOfService', 'Terms & Conditions')}:</p>
             <ul className="list-disc pl-4 space-y-1 text-[11px] leading-relaxed">
               <li>Goods once sold and delivered cannot be returned.</li>
               <li>GST included as applicable under restaurant hospitality composition.</li>
@@ -293,13 +295,13 @@ const OrderInvoice = () => {
 
           <div className="w-full sm:w-72 p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-2.5 text-xs text-stone-600">
             <div className="flex justify-between">
-              <span>Item Subtotal:</span>
+              <span>{t('common.subtotal', 'Item Subtotal')}:</span>
               <span className="font-mono font-semibold text-stone-900">₹{subtotal}</span>
             </div>
 
             {discount > 0 && (
               <div className="flex justify-between text-emerald-600 font-semibold">
-                <span>Discount ({order.couponCode || 'Promo'}):</span>
+                <span>{t('common.discount', 'Discount')} ({order.couponCode || 'Promo'}):</span>
                 <span className="font-mono">-₹{discount}</span>
               </div>
             )}
@@ -314,14 +316,14 @@ const OrderInvoice = () => {
             </div>
 
             <div className="flex justify-between">
-              <span>Delivery Fee:</span>
+              <span>{t('common.deliveryFee', 'Delivery Fee')}:</span>
               <span className="font-mono">
                 {deliveryFee === 0 ? <span className="text-emerald-600 font-bold">FREE</span> : `₹${deliveryFee}`}
               </span>
             </div>
 
             <div className="pt-2.5 border-t border-stone-200 flex justify-between items-baseline font-bold">
-              <span className="text-sm text-stone-900">Total Payable:</span>
+              <span className="text-sm text-stone-900">{t('common.grandTotal', 'Total Payable')}:</span>
               <span className="text-xl font-mono text-brand-600">₹{finalAmount}</span>
             </div>
           </div>
@@ -330,7 +332,7 @@ const OrderInvoice = () => {
         {/* Footer Signature */}
         <div className="pt-8 border-t border-dashed border-stone-200 flex flex-col sm:flex-row justify-between items-end gap-4 text-xs text-stone-400">
           <div>
-            <p>Thank you for choosing SwadGhar!</p>
+            <p>{t('orderSuccess.subtitle', 'Thank you for choosing SwadGhar!')}</p>
             <p className="text-[10px]">This is a computer-generated official tax invoice.</p>
           </div>
           <div className="text-right">

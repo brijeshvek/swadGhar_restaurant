@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Users, Search, ShieldAlert, ShieldCheck, Mail, Phone } from 'lucide-react';
 import api from '../../services/api';
 import { useNotification } from '../../context/NotificationContext';
+import { useTranslation } from '../../context/LanguageContext';
 
 const AdminCustomers = () => {
+  const { t } = useTranslation();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -47,10 +49,10 @@ const AdminCustomers = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white">
-            Registered Customers ({customers.length})
+            {t('admin.registeredCustomers', 'Registered Customers')} ({customers.length})
           </h1>
           <p className="text-xs sm:text-sm text-stone-400">
-            View customer order volumes, total spending, and manage access privileges
+            {t('admin.registeredCustomersSub', 'View customer order volumes, total spending, and manage access privileges')}
           </p>
         </div>
       </div>
@@ -61,7 +63,7 @@ const AdminCustomers = () => {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by customer name or email..."
+          placeholder={t('admin.searchCustomerPlaceholder', 'Search by customer name or email...')}
           className="w-full pl-10 pr-4 py-2 rounded-xl bg-stone-950 border border-stone-800 text-xs text-white focus:outline-none focus:border-brand-500"
         />
       </div>
@@ -71,12 +73,12 @@ const AdminCustomers = () => {
           <table className="w-full text-left text-xs text-stone-300">
             <thead className="bg-stone-900 border-b border-stone-800 text-[11px] font-bold uppercase tracking-wider text-stone-400">
               <tr>
-                <th className="py-3.5 px-4">Customer</th>
-                <th className="py-3.5 px-4">Contact Info</th>
-                <th className="py-3.5 px-4">Total Orders</th>
-                <th className="py-3.5 px-4">Lifetime Spend</th>
-                <th className="py-3.5 px-4">Account Status</th>
-                <th className="py-3.5 px-4 text-right">Action</th>
+                <th className="py-3.5 px-4">{t('admin.customer', 'Customer')}</th>
+                <th className="py-3.5 px-4">{t('admin.contactInfo', 'Contact Info')}</th>
+                <th className="py-3.5 px-4">{t('admin.totalOrders', 'Total Orders')}</th>
+                <th className="py-3.5 px-4">{t('admin.lifetimeSpend', 'Lifetime Spend')}</th>
+                <th className="py-3.5 px-4">{t('admin.accountStatus', 'Account Status')}</th>
+                <th className="py-3.5 px-4 text-right">{t('admin.actions', 'Action')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-800/60">
@@ -91,7 +93,7 @@ const AdminCustomers = () => {
                     <div>
                       <span className="font-bold text-white block text-sm">{c.name}</span>
                       <span className="text-[10px] text-stone-500">
-                        Joined {new Date(c.createdAt).toLocaleDateString()}
+                        {t('profile.memberSince', 'Joined')} {new Date(c.createdAt).toLocaleDateString()}
                       </span>
                     </div>
                   </td>
@@ -110,7 +112,7 @@ const AdminCustomers = () => {
                   </td>
 
                   <td className="py-3.5 px-4 font-bold text-white">
-                    {c.ordersCount} Orders
+                    {c.ordersCount} {t('admin.orders', 'Orders')}
                   </td>
 
                   <td className="py-3.5 px-4 font-bold text-amber-400 text-sm font-sans">
@@ -125,20 +127,20 @@ const AdminCustomers = () => {
                           : 'bg-emerald-900/60 text-emerald-300 border border-emerald-700/50'
                       }`}
                     >
-                      {c.isBlocked ? 'Blocked' : 'Active'}
+                      {c.isBlocked ? t('admin.blocked', 'Blocked') : t('admin.active', 'Active')}
                     </span>
                   </td>
 
                   <td className="py-3.5 px-4 text-right">
                     <button
                       onClick={() => handleToggleBlock(c._id)}
-                      className={`px-3 py-1.5 rounded-xl font-bold text-[11px] transition-colors ${
+                      className={`px-3 py-1.5 rounded-xl font-bold text-[11px] transition-colors cursor-pointer ${
                         c.isBlocked
                           ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
                           : 'bg-stone-800 hover:bg-rose-900/40 text-rose-300'
                       }`}
                     >
-                      {c.isBlocked ? 'Unblock Customer' : 'Suspend Account'}
+                      {c.isBlocked ? t('admin.unblockCustomer', 'Unblock Customer') : t('admin.suspendAccount', 'Suspend Account')}
                     </button>
                   </td>
                 </tr>

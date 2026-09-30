@@ -3,8 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, KeyRound, Lock, ArrowRight, CheckCircle2 } from 'lucide-react';
 import api from '../services/api';
 import { useNotification } from '../context/NotificationContext';
+import { useTranslation } from '../context/LanguageContext';
 
 const ForgotPassword = () => {
+  const { t } = useTranslation();
   const [step, setStep] = useState(1); // Step 1: Request code, Step 2: Reset password
   const [email, setEmail] = useState('');
   const [resetCode, setResetCode] = useState('');
@@ -56,12 +58,12 @@ const ForgotPassword = () => {
             <KeyRound className="w-6 h-6" />
           </div>
           <h2 className="text-3xl font-serif font-bold text-stone-900">
-            {step === 1 ? 'Forgot Password' : 'Enter Reset Code'}
+            {step === 1 ? t('auth.forgotPasswordTitle', 'Reset Your Password') : t('auth.changePassword', 'Enter Reset Code')}
           </h2>
           <p className="text-xs sm:text-sm text-stone-500">
             {step === 1
-              ? 'Enter your registered email to receive your password reset token'
-              : 'Enter the 6-digit verification code and your new password'}
+              ? t('auth.forgotPasswordSubtitle', 'Enter your registered email address and we will send password reset instructions.')
+              : t('auth.newPassword', 'Enter the 6-digit verification code and your new password')}
           </p>
         </div>
 
@@ -71,7 +73,7 @@ const ForgotPassword = () => {
             className="p-6 sm:p-8 rounded-3xl bg-white border border-stone-200 shadow-xl space-y-4"
           >
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-stone-700">Registered Email</label>
+              <label className="text-xs font-bold text-stone-700">{t('auth.email', 'Email Address')}</label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
@@ -88,15 +90,15 @@ const ForgotPassword = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
+              className="w-full py-3.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
-              {loading ? 'Sending Code...' : 'Get Verification Code'}
+              {loading ? t('common.processing', 'Sending Code...') : t('auth.sendResetLinkBtn', 'Send Password Reset Link')}
             </button>
 
             <p className="text-center text-xs text-stone-500 pt-2">
-              Remember your password?{' '}
+              {t('auth.alreadyHaveAccount', 'Remember your password?')}{' '}
               <Link to="/login" className="font-bold text-brand-600 hover:underline">
-                Back to Sign In
+                {t('auth.signInNow', 'Back to Sign In')}
               </Link>
             </p>
           </form>
@@ -106,7 +108,7 @@ const ForgotPassword = () => {
             className="p-6 sm:p-8 rounded-3xl bg-white border border-stone-200 shadow-xl space-y-4"
           >
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-stone-700">6-Digit Reset Code</label>
+              <label className="text-xs font-bold text-stone-700">{t('auth.forgotPasswordSubtitle', '6-Digit Reset Code')}</label>
               <input
                 type="text"
                 required
@@ -118,7 +120,7 @@ const ForgotPassword = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-stone-700">New Password</label>
+              <label className="text-xs font-bold text-stone-700">{t('profile.newPassword', 'New Password')}</label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
@@ -136,9 +138,9 @@ const ForgotPassword = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
+              className="w-full py-3.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
-              {loading ? 'Updating Password...' : 'Reset Password & Login'}
+              {loading ? t('common.processing', 'Updating Password...') : t('profile.changePassword', 'Reset Password & Login')}
             </button>
           </form>
         )}

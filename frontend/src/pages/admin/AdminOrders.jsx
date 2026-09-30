@@ -14,8 +14,10 @@ import {
 } from 'lucide-react';
 import api from '../../services/api';
 import { useNotification } from '../../context/NotificationContext';
+import { useTranslation } from '../../context/LanguageContext';
 
 const AdminOrders = () => {
+  const { t } = useTranslation();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -59,7 +61,17 @@ const AdminOrders = () => {
   };
 
   const filteredOrders = orders.filter((ord) => {
-    const matchesStatus = statusFilter === 'all' || ord.orderStatus === statusFilter;
+    let matchesStatus = true;
+    if (statusFilter === 'delivered' || statusFilter === 'completed') {
+      matchesStatus = ord.orderStatus === 'delivered' || ord.orderStatus === 'completed';
+    } else if (statusFilter === 'cancelled') {
+      matchesStatus = ord.orderStatus === 'cancelled' || ord.orderStatus === 'rejected';
+    } else if (statusFilter === 'pending') {
+      matchesStatus = ['pending', 'confirmed'].includes(ord.orderStatus);
+    } else if (statusFilter !== 'all') {
+      matchesStatus = ord.orderStatus === statusFilter;
+    }
+
     const matchesSearch =
       ord.orderNumber?.toLowerCase().includes(search.toLowerCase()) ||
       ord.customer?.name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -72,20 +84,20 @@ const AdminOrders = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white">
-            Order Management Desk ({orders.length})
+            {t('admin.ordersTitle', 'Order Management Desk')} ({orders.length})
           </h1>
           <p className="text-xs sm:text-sm text-stone-400">
-            Real-time kitchen orders, takeaway pickup tickets, and live delivery dispatches
+            {t('admin.ordersSubtitle', 'Real-time kitchen orders, takeaway pickup tickets, and live delivery dispatches')}
           </p>
         </div>
 
         <button
           onClick={() => fetchOrders(true)}
           disabled={refreshing}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-xs font-semibold text-white shadow-sm transition-all"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-xs font-semibold text-white shadow-sm transition-all cursor-pointer"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-          <span>{refreshing ? 'Refreshing...' : 'Live Refresh'}</span>
+          <span>{refreshing ? t('common.updating', 'Refreshing...') : t('admin.refreshMetrics', 'Live Refresh')}</span>
         </button>
       </div>
 
@@ -97,26 +109,30 @@ const AdminOrders = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by Order # or Customer..."
+            placeholder={t('admin.searchOrderPlaceholder', 'Search by Order # or Customer...')}
             className="w-full pl-10 pr-4 py-2 rounded-xl bg-stone-950 border border-stone-800 text-xs text-white focus:outline-none focus:border-brand-500"
           />
         </div>
 
         <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar w-full sm:w-auto pb-1">
           {[
-            { id: 'all', label: 'All Orders' },
-            { id: 'pending', label: 'Pending' },
-            { id: 'confirmed', label: 'Confirmed' },
-            { id: 'preparing', label: 'Cooking' },
-            { id: 'out_for_delivery', label: 'In Transit' },
-            { id: 'delivered', label: 'Delivered' },
+            { id: 'all', label: t('admin.allOrders', 'All Orders') },
+            { id: 'pending', label: t('admin.pendingOrders', 'Pending') },
+            { id: 'preparing', label: t('admin.preparing', 'Cooking') },
+            { id: 'out_for_delivery', label: t('admin.inTransit', 'In Transit') },
+            { id: 'completed', label: t('admin.completedDelivered', 'Completed (Delivered)') },
+            { id: 'cancelled', label: t('admin.cancelled', 'Cancelled') },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setStatusFilter(tab.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                 statusFilter === tab.id
-                  ? 'bg-brand-600 text-white shadow-md'
+                  ? tab.id === 'cancelled'
+                    ? 'bg-rose-600 text-white shadow-md'
+                    : tab.id === 'completed'
+                    ? 'bg-emerald-600 text-white shadow-md'
+                    : 'bg-brand-600 text-white shadow-md'
                   : 'bg-stone-950 text-stone-400 hover:bg-stone-800 border border-stone-800'
               }`}
             >
@@ -132,12 +148,12 @@ const AdminOrders = () => {
           <table className="w-full text-left text-xs text-stone-300">
             <thead className="bg-stone-900 border-b border-stone-800 text-[11px] font-bold uppercase tracking-wider text-stone-400">
               <tr>
-                <th className="py-3.5 px-4">Order Ref</th>
-                <th className="py-3.5 px-4">Customer & Type</th>
-                <th className="py-3.5 px-4">Items</th>
-                <th className="py-3.5 px-4">Total Amount</th>
-                <th className="py-3.5 px-4">Order Status</th>
-                <th className="py-3.5 px-4 text-right">Quick Action</th>
+                <th className="py-3.5 px-4">{t('admin.orderNumber', 'Order Ref')}</th>
+                <th className="py-3.5 px-4">{t('admin.customer', 'Customer & Type')}</th>
+                <th className="py-3.5 px-4">{t('admin.itemsSummary', 'Items')}</th>
+                <th className="py-3.5 px-4">{t('admin.amount', 'Total Amount')}</th>
+                <th className="py-3.5 px-4">{t('admin.status', 'Order Status')}</th>
+                <th className="py-3.5 px-4 text-right">{t('admin.actions', 'Quick Action')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-800/60">
@@ -166,7 +182,7 @@ const AdminOrders = () => {
                   {/* Items */}
                   <td className="py-3.5 px-4">
                     <span className="font-medium text-stone-200 block">
-                      {ord.items?.length || 0} Delicacies
+                      {ord.items?.length || 0} {t('foodDetails.ingredients', 'Delicacies')}
                     </span>
                     <span className="text-[10px] text-stone-500 line-clamp-1">
                       {ord.items?.map((i) => i.name).join(', ')}
@@ -210,8 +226,8 @@ const AdminOrders = () => {
                   <td className="py-3.5 px-4 text-right">
                     <button
                       onClick={() => setSelectedOrder(ord)}
-                      className="p-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-brand-400 transition-colors"
-                      title="View Order Details"
+                      className="p-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-brand-400 transition-colors cursor-pointer"
+                      title={t('admin.viewOrderDetails', 'View Order Details')}
                     >
                       <Eye className="w-4 h-4" />
                     </button>
@@ -249,7 +265,7 @@ const AdminOrders = () => {
               <div className="p-3.5 rounded-2xl bg-stone-950 border border-stone-800 space-y-1.5">
                 <span className="font-bold text-white block flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-brand-500" />
-                  <span>Delivery Address</span>
+                  <span>{t('checkout.deliveryAddressTitle', 'Delivery Address')}</span>
                 </span>
                 <p className="font-semibold text-stone-200">{selectedOrder.deliveryAddress.fullName}</p>
                 <p className="text-stone-400">{selectedOrder.deliveryAddress.address}, {selectedOrder.deliveryAddress.city}</p>
@@ -262,7 +278,7 @@ const AdminOrders = () => {
 
             {/* Dishes */}
             <div className="space-y-2">
-              <span className="font-bold text-white block">Order Items</span>
+              <span className="font-bold text-white block">{t('admin.itemsSummary', 'Order Items')}</span>
               <div className="space-y-1.5 max-h-36 overflow-y-auto custom-scrollbar pr-1">
                 {selectedOrder.items?.map((item, idx) => (
                   <div key={idx} className="flex items-center justify-between p-2 rounded-xl bg-stone-950">
@@ -278,25 +294,25 @@ const AdminOrders = () => {
             {/* Bill Summary */}
             <div className="pt-2 border-t border-stone-800 space-y-1 text-stone-400">
               <div className="flex justify-between">
-                <span>Subtotal</span>
+                <span>{t('admin.subtotal', 'Subtotal')}</span>
                 <span className="text-white font-sans">₹{selectedOrder.pricing?.subtotal}</span>
               </div>
               {selectedOrder.pricing?.discount > 0 && (
                 <div className="flex justify-between text-emerald-400">
-                  <span>Coupon Discount</span>
+                  <span>{t('cart.couponApplied', 'Coupon Discount')}</span>
                   <span>-₹{selectedOrder.pricing.discount}</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span>GST Tax</span>
+                <span>{t('admin.gstTax', 'GST Tax')}</span>
                 <span className="text-white font-sans">₹{selectedOrder.pricing?.tax}</span>
               </div>
               <div className="flex justify-between">
-                <span>Delivery Fee</span>
+                <span>{t('admin.deliveryFee', 'Delivery Fee')}</span>
                 <span className="text-white font-sans">₹{selectedOrder.pricing?.deliveryFee}</span>
               </div>
               <div className="pt-2 border-t border-stone-800 flex justify-between font-bold text-sm text-white">
-                <span>Grand Total</span>
+                <span>{t('foodDetails.totalPrice', 'Grand Total')}</span>
                 <span className="text-brand-400 font-sans">₹{selectedOrder.pricing?.total}</span>
               </div>
             </div>
@@ -308,13 +324,13 @@ const AdminOrders = () => {
                 rel="noreferrer"
                 className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs text-center transition-colors shadow-sm"
               >
-                Print / View GST Invoice
+                {t('orderSuccess.viewInvoiceBtn', 'Print / View GST Invoice')}
               </a>
               <button
                 onClick={() => setSelectedOrder(null)}
-                className="px-5 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-white font-semibold text-xs transition-colors"
+                className="px-5 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-700 text-white font-semibold text-xs transition-colors cursor-pointer"
               >
-                Close
+                {t('common.close', 'Close')}
               </button>
             </div>
           </div>

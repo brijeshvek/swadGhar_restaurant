@@ -15,9 +15,11 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 import CookingLoader from '../components/common/CookingLoader';
+import { useTranslation } from '../context/LanguageContext';
 
 const OrderTracking = () => {
   const { id } = useParams(); // Can be orderNumber or ObjectId
+  const { t } = useTranslation();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -48,8 +50,8 @@ const OrderTracking = () => {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <CookingLoader
-          text="Tracking Kitchen Preparation..."
-          subtext="Connecting to live kitchen status and chef progress..."
+          text={t('orderTracking.title', 'Tracking Kitchen Preparation...')}
+          subtext={t('orderTracking.subtitle', 'Connecting to live kitchen status and chef progress...')}
           size="md"
         />
       </div>
@@ -60,30 +62,30 @@ const OrderTracking = () => {
     return (
       <div className="max-w-md mx-auto px-4 py-20 text-center space-y-4">
         <AlertCircle className="w-12 h-12 text-amber-500 mx-auto" />
-        <h2 className="text-2xl font-serif font-bold text-stone-900">Order Not Found</h2>
-        <p className="text-stone-500 text-sm">Please verify your order number and try again.</p>
+        <h2 className="text-2xl font-serif font-bold text-stone-900">{t('common.error', 'Order Not Found')}</h2>
+        <p className="text-stone-500 text-sm">{t('checkout.subtitle', 'Please verify your order number and try again.')}</p>
         <Link to="/my-orders" className="inline-block px-6 py-2.5 rounded-xl bg-brand-600 text-white font-semibold text-sm">
-          View My Orders
+          {t('nav.myOrders', 'View My Orders')}
         </Link>
       </div>
     );
   }
 
   const steps = [
-    { key: 'pending', label: 'Order Placed', desc: 'Received in system', icon: ShoppingBag },
-    { key: 'confirmed', label: 'Kitchen Confirmed', desc: 'Order accepted', icon: CheckCircle2 },
-    { key: 'preparing', label: 'Cooking & Simmering', desc: 'Handcrafted fresh', icon: ChefHat },
+    { key: 'pending', label: t('orderTracking.statusPlaced', 'Order Placed'), desc: t('orderTracking.statusPlaced', 'Received in system'), icon: ShoppingBag },
+    { key: 'confirmed', label: t('orderTracking.statusConfirmed', 'Kitchen Confirmed'), desc: t('orderTracking.statusConfirmed', 'Order accepted'), icon: CheckCircle2 },
+    { key: 'preparing', label: t('orderTracking.statusPreparing', 'Cooking & Simmering'), desc: t('orderTracking.statusPreparing', 'Handcrafted fresh'), icon: ChefHat },
     {
       key: order.orderType === 'pickup' ? 'ready_for_pickup' : 'ready',
-      label: order.orderType === 'pickup' ? 'Ready for Pickup' : 'Food Packed',
-      desc: 'Boxed with hygiene',
+      label: order.orderType === 'pickup' ? t('orderTracking.statusReady', 'Ready for Pickup') : t('orderTracking.statusReady', 'Food Packed'),
+      desc: t('orderTracking.statusReady', 'Boxed with hygiene'),
       icon: PackageCheck,
     },
-    { key: 'out_for_delivery', label: 'Out for Delivery', desc: 'Rider on the way', icon: Truck },
+    { key: 'out_for_delivery', label: t('orderTracking.statusOutForDelivery', 'Out for Delivery'), desc: t('orderTracking.statusOutForDelivery', 'Valet on the way'), icon: Truck },
     {
       key: order.orderType === 'pickup' ? 'completed' : 'delivered',
-      label: order.orderType === 'pickup' ? 'Order Picked Up' : 'Delivered Fresh',
-      desc: 'Enjoy your meal!',
+      label: order.orderType === 'pickup' ? t('orderTracking.statusDelivered', 'Order Picked Up') : t('orderTracking.statusDelivered', 'Delivered Fresh'),
+      desc: t('orderTracking.statusDelivered', 'Enjoy your meal!'),
       icon: CheckCircle2,
     },
   ];
@@ -120,11 +122,11 @@ const OrderTracking = () => {
             className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-500 hover:text-brand-600 transition-colors mb-1"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>My Orders</span>
+            <span>{t('nav.myOrders', 'My Orders')}</span>
           </Link>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900">
-              Live Order Tracking
+              {t('orderTracking.title', 'Live Order Tracking')}
             </h1>
             <span className="font-mono font-bold text-xs bg-brand-50 text-brand-700 px-2.5 py-1 rounded-lg border border-brand-200">
               #{order.orderNumber}
@@ -137,15 +139,15 @@ const OrderTracking = () => {
             to={`/orders/${order._id || order.orderNumber}/invoice`}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition-all shadow-xs"
           >
-            <span>View Tax Invoice</span>
+            <span>{t('orderSuccess.viewInvoiceBtn', 'View Tax Invoice')}</span>
           </Link>
           <button
             onClick={() => fetchOrder(true)}
             disabled={refreshing}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-stone-200 text-xs font-semibold text-stone-700 hover:bg-stone-50 shadow-sm transition-all"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-stone-200 text-xs font-semibold text-stone-700 hover:bg-stone-50 shadow-sm transition-all cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-            <span>{refreshing ? 'Refreshing...' : 'Live Status Refresh'}</span>
+            <span>{refreshing ? t('common.processing', 'Refreshing...') : t('common.refresh', 'Live Status Refresh')}</span>
           </button>
         </div>
       </div>
@@ -155,7 +157,7 @@ const OrderTracking = () => {
         <div className="flex items-center justify-between border-b border-stone-100 pb-4">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-stone-400 block">
-              Current Progress
+              {t('common.status', 'Current Progress')}
             </span>
             <span className="text-lg font-bold text-brand-600 capitalize">
               {order.orderStatus.replace(/_/g, ' ')}
@@ -163,7 +165,7 @@ const OrderTracking = () => {
           </div>
 
           <div className="text-right">
-            <span className="text-xs text-stone-400 block">Estimated Arrival</span>
+            <span className="text-xs text-stone-400 block">{t('orderSuccess.estimatedDeliveryTime', 'Estimated Arrival')}</span>
             <span className="text-sm font-bold text-stone-900 font-sans">
               ~ {new Date(order.estimatedDeliveryTime || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
@@ -212,7 +214,7 @@ const OrderTracking = () => {
         <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
           <h3 className="text-base font-serif font-bold text-stone-900 flex items-center gap-2">
             <MapPin className="w-4 h-4 text-brand-600" />
-            <span>Delivery Information</span>
+            <span>{t('orderTracking.deliveryAddress', 'Delivery Information')}</span>
           </h3>
 
           {order.deliveryAddress ? (
@@ -223,7 +225,7 @@ const OrderTracking = () => {
               <p>{order.deliveryAddress.address}</p>
               <p>{order.deliveryAddress.city}, {order.deliveryAddress.state} - {order.deliveryAddress.pincode}</p>
               {order.deliveryAddress.landmark && (
-                <p className="text-stone-400">Landmark: {order.deliveryAddress.landmark}</p>
+                <p className="text-stone-400">{t('checkout.landmark', 'Landmark')}: {order.deliveryAddress.landmark}</p>
               )}
               <div className="pt-2 flex items-center gap-2 text-stone-700">
                 <Phone className="w-3.5 h-3.5 text-brand-600" />
@@ -232,13 +234,13 @@ const OrderTracking = () => {
             </div>
           ) : (
             <p className="text-xs text-stone-500">
-              Order Type: <strong className="capitalize">{order.orderType}</strong> (Ready at SwadGhar Front Counter)
+              {t('checkout.deliveryInstructions', 'Order Type')}: <strong className="capitalize">{order.orderType}</strong> (Ready at SwadGhar Front Counter)
             </p>
           )}
 
           {order.specialInstructions && (
             <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900">
-              <strong>Instructions:</strong> {order.specialInstructions}
+              <strong>{t('checkout.deliveryInstructions', 'Instructions')}:</strong> {order.specialInstructions}
             </div>
           )}
         </div>
@@ -247,10 +249,10 @@ const OrderTracking = () => {
         <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-base font-serif font-bold text-stone-900">
-              Order Items ({order.items.length})
+              {t('orderTracking.itemsOrdered', 'Order Items')} ({order.items.length})
             </h3>
             <span className="text-xs font-bold text-stone-900 font-sans">
-              Total: ₹{order.pricing.total}
+              {t('common.total', 'Total')}: ₹{order.pricing.total}
             </span>
           </div>
 
@@ -275,7 +277,7 @@ const OrderTracking = () => {
           </div>
 
           <div className="pt-3 border-t border-stone-100 flex items-center justify-between text-xs">
-            <span className="text-stone-500">Payment Status:</span>
+            <span className="text-stone-500">{t('admin.payment', 'Payment Status')}:</span>
             <span
               className={`px-2.5 py-0.5 rounded-full font-bold uppercase text-[10px] ${
                 order.paymentInfo.status === 'paid'

@@ -27,6 +27,7 @@ import {
 import api from '../../services/api';
 import { useNotification } from '../../context/NotificationContext';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from '../../context/LanguageContext';
 import { AnimatedContent, SpotlightCard } from '../../components/animations';
 import { convertFileToBase64 } from '../../utils/imageUtils';
 
@@ -42,6 +43,7 @@ const FOOD_PRESET_IMAGES = [
 const AdminFoods = () => {
   const { isAdmin } = useAuth();
   const { showSuccess, showError } = useNotification();
+  const { t } = useTranslation();
 
   const [foods, setFoods] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -297,23 +299,23 @@ const AdminFoods = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white flex items-center gap-3">
-            <span>Food Menu Catalog</span>
+            <span>{t('admin.menuCatalog', 'Food Menu Catalog')}</span>
             <span className="px-3 py-0.5 rounded-full bg-brand-500/20 text-brand-400 text-xs font-sans font-bold border border-brand-500/30">
-              {foods.length} Total Dishes
+              {foods.length} {t('menu.allDishes', 'Total Dishes')}
             </span>
           </h1>
           <p className="text-xs sm:text-sm text-stone-400">
-            Manage complete dish profiles, dietary specifications, ingredient tags, prices, and stock
+            {t('admin.menuCatalogSubtitle', 'Manage complete dish profiles, dietary specifications, ingredient tags, prices, and stock')}
           </p>
         </div>
 
         {isAdmin && (
           <button
             onClick={handleOpenAddModal}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 text-white font-bold text-xs shadow-lg shadow-brand-500/20 hover:shadow-glow transition-all active:scale-95"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 text-white font-bold text-xs shadow-lg shadow-brand-500/20 hover:shadow-glow transition-all active:scale-95 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Add New Dish</span>
+            <span>{t('admin.addNewDish', 'Add New Dish')}</span>
           </button>
         )}
       </div>
@@ -326,20 +328,20 @@ const AdminFoods = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search dishes by name, ingredients, or spices..."
+            placeholder={t('menu.searchPlaceholder', 'Search dishes by name, ingredients, or spices...')}
             className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-stone-900 border border-stone-800 text-xs text-white placeholder:text-stone-500 focus:outline-none focus:border-brand-500"
           />
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-stone-400 font-semibold shrink-0">Category:</span>
+            <span className="text-xs text-stone-400 font-semibold shrink-0">{t('admin.category', 'Category')}:</span>
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
               className="py-2 px-3 rounded-xl bg-stone-900 border border-stone-800 text-xs text-white focus:outline-none focus:border-brand-500 max-w-[200px]"
             >
-              <option value="all">All Categories ({categories.length})</option>
+              <option value="all">{t('menu.allCategories', 'All Categories')} ({categories.length})</option>
               {categories.map((c) => (
                 <option key={c._id} value={c._id}>
                   {c.name}
@@ -349,7 +351,7 @@ const AdminFoods = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs text-stone-400 font-semibold shrink-0">Per page:</span>
+            <span className="text-xs text-stone-400 font-semibold shrink-0">{t('admin.perPage', 'Per page')}:</span>
             <select
               value={itemsPerPage}
               onChange={(e) => setItemsPerPage(Number(e.target.value))}
@@ -371,13 +373,13 @@ const AdminFoods = () => {
             <thead className="bg-stone-900 border-b border-stone-800 text-[11px] font-bold uppercase tracking-wider text-stone-400">
               <tr>
                 <th className="py-3.5 px-4 text-center w-12">#</th>
-                <th className="py-3.5 px-4">Dish</th>
-                <th className="py-3.5 px-4">Category</th>
-                <th className="py-3.5 px-4">Price / Disc.</th>
-                <th className="py-3.5 px-4">Diet & Spice</th>
-                <th className="py-3.5 px-4">Prep Time</th>
-                <th className="py-3.5 px-4">Availability</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+                <th className="py-3.5 px-4">{t('menu.dish', 'Dish')}</th>
+                <th className="py-3.5 px-4">{t('foodDetails.category', 'Category')}</th>
+                <th className="py-3.5 px-4">{t('menu.price', 'Price / Disc.')}</th>
+                <th className="py-3.5 px-4">{t('menu.spiceLevel', 'Diet & Spice')}</th>
+                <th className="py-3.5 px-4">{t('foodDetails.prepTime', 'Prep Time')}</th>
+                <th className="py-3.5 px-4">{t('admin.availability', 'Availability')}</th>
+                <th className="py-3.5 px-4 text-right">{t('admin.actions', 'Actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-800/60">
@@ -385,15 +387,15 @@ const AdminFoods = () => {
                 <tr>
                   <td colSpan="8" className="py-12 text-center text-stone-500">
                     <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-brand-500" />
-                    <span>Loading authentic dishes...</span>
+                    <span>{t('common.loading', 'Loading authentic dishes...')}</span>
                   </td>
                 </tr>
               ) : paginatedFoods.length === 0 ? (
                 <tr>
                   <td colSpan="8" className="py-12 text-center text-stone-400 space-y-2">
                     <UtensilsCrossed className="w-8 h-8 text-stone-600 mx-auto" />
-                    <p className="font-semibold text-sm text-stone-300">No dishes found</p>
-                    <p className="text-xs text-stone-500">Try changing your search keywords or category filters</p>
+                    <p className="font-semibold text-sm text-stone-300">{t('menu.noDishesFound', 'No dishes found')}</p>
+                    <p className="text-xs text-stone-500">{t('menu.tryDifferentSearch', 'Try changing your search keywords or category filters')}</p>
                   </td>
                 </tr>
               ) : (

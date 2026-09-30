@@ -13,9 +13,11 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 import { useNotification } from '../context/NotificationContext';
+import { useTranslation } from '../context/LanguageContext';
 import CookingLoader from '../components/common/CookingLoader';
 
 const MyOrders = () => {
+  const { t } = useTranslation();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const { showSuccess, showError } = useNotification();
@@ -46,7 +48,7 @@ const MyOrders = () => {
   }, []);
 
   const handleCancelOrder = async (orderId) => {
-    if (!window.confirm('Are you sure you want to cancel this order?')) return;
+    if (!window.confirm(t('common.confirm', 'Are you sure you want to cancel this order?'))) return;
     try {
       await api.put(`/orders/${orderId}/cancel`, { cancelReason: 'Customer requested cancellation' });
       showSuccess('Order cancelled successfully.');
@@ -89,8 +91,8 @@ const MyOrders = () => {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <CookingLoader
-          text="Retrieving Order History..."
-          subtext="Fetching your culinary journey and past orders..."
+          text={t('myOrders.title', 'Retrieving Order History...')}
+          subtext={t('myOrders.subtitle', 'Fetching your culinary journey and past orders...')}
           size="md"
         />
       </div>
@@ -102,10 +104,10 @@ const MyOrders = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-serif font-bold text-stone-900">
-            My Order History
+            {t('myOrders.title', 'My Order History')}
           </h1>
           <p className="text-stone-500 text-xs sm:text-sm">
-            View all your past culinary experiences and live active deliveries
+            {t('myOrders.subtitle', 'View all your past culinary experiences and live active deliveries')}
           </p>
         </div>
 
@@ -114,7 +116,7 @@ const MyOrders = () => {
           className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-600 hover:text-brand-700"
         >
           <ShoppingBag className="w-4 h-4" />
-          <span>Order Food</span>
+          <span>{t('home.orderOnlineBtn', 'Order Food')}</span>
         </Link>
       </div>
 
@@ -122,16 +124,16 @@ const MyOrders = () => {
         <div className="p-12 text-center bg-white rounded-3xl border border-stone-200 shadow-sm space-y-4 max-w-md mx-auto">
           <Receipt className="w-12 h-12 text-stone-300 mx-auto" />
           <h3 className="text-lg font-serif font-bold text-stone-800">
-            No Orders Placed Yet
+            {t('myOrders.noOrders', 'No Orders Placed Yet')}
           </h3>
           <p className="text-stone-500 text-xs">
-            Indulge in our authentic handcrafted dishes today and enjoy fast doorstep delivery.
+            {t('myOrders.noOrdersDesc', 'Indulge in our authentic handcrafted dishes today and enjoy fast doorstep delivery.')}
           </p>
           <Link
             to="/menu"
-            className="inline-block px-6 py-2.5 rounded-xl bg-brand-600 text-white font-semibold text-xs shadow-md"
+            className="inline-block px-6 py-2.5 rounded-xl bg-brand-600 text-white font-semibold text-xs shadow-md cursor-pointer"
           >
-            Explore Menu
+            {t('menu.title', 'Explore Menu')}
           </Link>
         </div>
       ) : (
@@ -189,7 +191,7 @@ const MyOrders = () => {
                         <span className="font-bold text-stone-900 block line-clamp-1">
                           {item.name}
                         </span>
-                        <span className="text-stone-400">Qty: {item.quantity}</span>
+                        <span className="text-stone-400">{t('common.qty', 'Qty')}: {item.quantity}</span>
                       </div>
                     </div>
 
@@ -197,10 +199,10 @@ const MyOrders = () => {
                     {(order.orderStatus === 'delivered' || order.orderStatus === 'completed') && (
                       <button
                         onClick={() => openReviewModal(item, order)}
-                        className="px-2 py-1 rounded-lg bg-amber-50 text-amber-800 hover:bg-amber-100 text-[10px] font-bold flex items-center gap-1 shrink-0"
+                        className="px-2 py-1 rounded-lg bg-amber-50 text-amber-800 hover:bg-amber-100 text-[10px] font-bold flex items-center gap-1 shrink-0 cursor-pointer"
                       >
                         <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
-                        <span>Rate</span>
+                        <span>{t('foodDetails.writeReview', 'Rate')}</span>
                       </button>
                     )}
                   </div>
@@ -211,7 +213,7 @@ const MyOrders = () => {
               <div className="pt-2 border-t border-stone-100 flex flex-wrap items-center justify-between gap-4">
                 <div className="text-xs text-stone-500">
                   <span>
-                    Total: <strong className="text-stone-900 font-sans text-sm">₹{order.pricing.total}</strong>
+                    {t('common.total', 'Total')}: <strong className="text-stone-900 font-sans text-sm">₹{order.pricing.total}</strong>
                   </span>
                   <span className="ml-3 capitalize">({order.orderType})</span>
                 </div>
@@ -222,24 +224,24 @@ const MyOrders = () => {
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold border border-stone-200 transition-colors"
                   >
                     <Receipt className="w-3.5 h-3.5 text-stone-600" />
-                    <span>View Invoice</span>
+                    <span>{t('myOrders.downloadInvoice', 'View Invoice')}</span>
                   </Link>
 
                   {order.orderStatus === 'pending' && (
                     <button
                       onClick={() => handleCancelOrder(order._id)}
-                      className="px-3 py-1.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold transition-colors"
+                      className="px-3 py-1.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold transition-colors cursor-pointer"
                     >
-                      Cancel
+                      {t('common.cancel', 'Cancel')}
                     </button>
                   )}
 
                   <Link
                     to={`/orders/track/${order.orderNumber}`}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-sm transition-all"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-sm transition-all cursor-pointer"
                   >
                     <Truck className="w-3.5 h-3.5" />
-                    <span>Track Live</span>
+                    <span>{t('myOrders.trackOrder', 'Track Live')}</span>
                   </Link>
                 </div>
               </div>
@@ -254,24 +256,24 @@ const MyOrders = () => {
           <div className="max-w-md w-full rounded-3xl bg-white p-6 sm:p-8 space-y-6 shadow-2xl">
             <div className="space-y-1">
               <span className="text-xs font-bold uppercase tracking-wider text-brand-600">
-                Verified Customer Review
+                {t('foodDetails.customerReviews', 'Verified Customer Review')}
               </span>
               <h3 className="text-xl font-serif font-bold text-stone-900">
-                Review: {selectedFood.name}
+                {t('foodDetails.writeReview', 'Review')}: {selectedFood.name}
               </h3>
             </div>
 
             <form onSubmit={handleSubmitReview} className="space-y-4">
               {/* Star Picker */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-stone-700">Rating (1 to 5 Stars)</label>
+                <label className="text-xs font-bold text-stone-700">{t('common.rating', 'Rating (1 to 5 Stars)')}</label>
                 <div className="flex items-center gap-2">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
                       type="button"
                       onClick={() => setRating(star)}
-                      className="p-1 hover:scale-110 transition-transform"
+                      className="p-1 hover:scale-110 transition-transform cursor-pointer"
                     >
                       <Star
                         className={`w-7 h-7 ${
@@ -287,7 +289,7 @@ const MyOrders = () => {
 
               {/* Comment */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-stone-700">Your Dining Experience</label>
+                <label className="text-xs font-bold text-stone-700">{t('foodDetails.writeReview', 'Your Dining Experience')}</label>
                 <textarea
                   rows={3}
                   required
@@ -302,16 +304,16 @@ const MyOrders = () => {
                 <button
                   type="button"
                   onClick={() => setReviewModalOpen(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs transition-colors"
+                  className="flex-1 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold text-xs transition-colors cursor-pointer"
                 >
-                  Cancel
+                  {t('common.cancel', 'Cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={submittingReview}
-                  className="flex-1 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs shadow-md transition-colors"
+                  className="flex-1 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs shadow-md transition-colors cursor-pointer"
                 >
-                  {submittingReview ? 'Publishing...' : 'Publish Review'}
+                  {submittingReview ? t('common.submitting', 'Publishing...') : t('common.submit', 'Publish Review')}
                 </button>
               </div>
             </form>

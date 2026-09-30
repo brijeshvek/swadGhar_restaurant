@@ -9,12 +9,11 @@ import {
   Facebook,
   Twitter,
   Heart,
-  ShieldCheck,
   Store,
-  Building2,
   ChevronRight,
-  Sparkles,
 } from 'lucide-react';
+import { useTranslation } from '../../context/LanguageContext';
+import LanguageSelector from '../common/LanguageSelector';
 
 const FRANCHISE_CITIES = [
   { city: 'Ahmedabad', name: 'Ahmedabad Flagship', location: 'SG Highway', phone: '+91 98250 11234' },
@@ -25,6 +24,8 @@ const FRANCHISE_CITIES = [
 ];
 
 const Footer = () => {
+  const { t } = useTranslation();
+
   return (
     <footer className="bg-stone-950 text-stone-300 border-t border-stone-800 pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
@@ -42,15 +43,15 @@ const Footer = () => {
               />
               <div>
                 <span className="text-2xl font-serif font-bold text-gradient tracking-tight block leading-none">
-                  SwadGhar
+                  {t('brand.name')}
                 </span>
                 <span className="text-[10px] tracking-widest text-amber-400 font-semibold uppercase block mt-0.5">
-                  Good Food ❤️ Happy People
+                  {t('brand.tagline')}
                 </span>
               </div>
             </Link>
             <p className="text-sm text-stone-400 leading-relaxed">
-              Preserving authentic Indian culinary traditions with hand-ground spices, pure ghee cooking, and royal hospitality across Gujarat & Mumbai.
+              {t('footer.description')}
             </p>
             <div className="flex items-center gap-3 pt-2">
               <a
@@ -86,37 +87,37 @@ const Footer = () => {
           {/* Quick Navigation (2 cols) */}
           <div className="lg:col-span-2 space-y-4">
             <h4 className="text-base font-serif font-semibold text-white tracking-wide border-l-2 border-brand-500 pl-3">
-              Navigation
+              {t('footer.quickLinks')}
             </h4>
             <ul className="space-y-2.5 text-sm">
               <li>
                 <Link to="/menu" className="hover:text-brand-400 transition-colors">
-                  Explore Menu
+                  {t('nav.menu')}
                 </Link>
               </li>
               <li>
                 <Link to="/reservations" className="hover:text-brand-400 transition-colors">
-                  Table Booking
+                  {t('nav.reservations')}
                 </Link>
               </li>
               <li>
                 <Link to="/about" className="hover:text-brand-400 transition-colors">
-                  Our Story
+                  {t('nav.about')}
                 </Link>
               </li>
               <li>
                 <Link to="/gallery" className="hover:text-brand-400 transition-colors">
-                  Photo Gallery
+                  {t('nav.gallery')}
                 </Link>
               </li>
               <li>
                 <Link to="/franchise" className="text-amber-400 font-semibold hover:text-amber-300 transition-colors flex items-center gap-1">
-                  <span>🏪 Franchises</span>
+                  <span>🏪 {t('nav.franchise')}</span>
                 </Link>
               </li>
               <li>
                 <Link to="/contact" className="hover:text-brand-400 transition-colors">
-                  Contact Us
+                  {t('nav.contact')}
                 </Link>
               </li>
             </ul>
@@ -125,7 +126,7 @@ const Footer = () => {
           {/* Franchise Cities Section (3 cols) */}
           <div className="lg:col-span-3 space-y-4">
             <h4 className="text-base font-serif font-semibold text-white tracking-wide border-l-2 border-amber-500 pl-3 flex items-center justify-between">
-              <span>Franchise Cities</span>
+              <span>{t('footer.heritageLocations')}</span>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
                 5 Locations
               </span>
@@ -154,7 +155,7 @@ const Footer = () => {
           {/* Contact & Support (3 cols) */}
           <div className="lg:col-span-3 space-y-4">
             <h4 className="text-base font-serif font-semibold text-white tracking-wide border-l-2 border-brand-500 pl-3">
-              Head Office
+              {t('footer.contactInfo')}
             </h4>
             <div className="space-y-2.5 text-sm text-stone-400">
               <div className="flex items-start gap-2.5">
@@ -178,8 +179,8 @@ const Footer = () => {
               <div className="flex items-start gap-2.5 pt-1 text-xs">
                 <Clock className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-stone-300">Open 7 Days a Week</p>
-                  <p className="text-[11px] text-stone-500">11:00 AM – 11:30 PM</p>
+                  <p className="font-semibold text-stone-300">{t('contact.openingHours')}</p>
+                  <p className="text-[11px] text-stone-500">{t('contact.hoursText')}</p>
                 </div>
               </div>
             </div>
@@ -187,7 +188,7 @@ const Footer = () => {
 
         </div>
 
-        {/* Interactive Franchise Cities Quick Strip */}
+        {/* Interactive Franchise Cities Quick Strip & Language Switcher */}
         <div className="bg-stone-900/80 border border-stone-800 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
@@ -195,30 +196,21 @@ const Footer = () => {
             </div>
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-amber-400 block">
-                Our Franchise Network
+                {t('brand.name')} {t('nav.franchise')} Network
               </span>
               <p className="text-xs text-stone-400">
-                Taste authentic SwadGhar flavors in 5 major cities
+                {t('home.featureFastDeliveryTitle')} • {t('common.pureVeg')}
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {FRANCHISE_CITIES.map((c, idx) => (
-              <Link
-                key={idx}
-                to="/franchise"
-                className="px-3 py-1.5 rounded-xl bg-stone-950/80 hover:bg-amber-500/10 border border-stone-800 hover:border-amber-500/40 text-xs font-medium text-stone-300 hover:text-amber-300 transition-all flex items-center gap-1.5 shadow-sm"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                <span>{c.city}</span>
-              </Link>
-            ))}
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <LanguageSelector variant="pills" />
             <Link
-              to="/contact"
-              className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-bold transition-all shadow-md flex items-center gap-1 ml-1"
+              to="/franchise"
+              className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-bold transition-all shadow-md flex items-center gap-1 cursor-pointer"
             >
-              <span>Apply Franchise</span>
+              <span>{t('franchise.applyForFranchise', 'Apply Franchise')}</span>
               <ChevronRight className="w-3 h-3" />
             </Link>
           </div>
@@ -226,9 +218,9 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500">
-          <p>© {new Date().getFullYear()} SwadGhar Restaurant & Franchises. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {t('brand.fullName')}. {t('common.pureVeg')}.</p>
           <div className="flex items-center gap-1 text-stone-400">
-            <span>Good Food ❤️ Happy People</span>
+            <span>{t('brand.tagline')}</span>
             <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 ml-1" />
           </div>
         </div>
@@ -239,4 +231,3 @@ const Footer = () => {
 };
 
 export default Footer;
-

@@ -3,6 +3,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { CartProvider } from './context/CartContext';
+import { LanguageProvider } from './context/LanguageContext';
 import PageLoader, { TopProgressBar } from './components/common/PageLoader';
 import AppRoutes from './routes/AppRoutes';
 
@@ -20,20 +21,22 @@ function App() {
 
   return (
     <BrowserRouter>
-      {initialLoading && (
-        <PageLoader
-          text="Firing Up SwadGhar Kitchen..."
-          subtext="Setting the royal ambience & simmering authentic flavors..."
-        />
-      )}
-      <NotificationProvider>
-        <AuthProvider>
-          <CartProvider>
-            <TopProgressBar />
-            <AppRoutes />
-          </CartProvider>
-        </AuthProvider>
-      </NotificationProvider>
+      <LanguageProvider>
+        {initialLoading && (
+          <PageLoader
+            text="Firing Up SwadGhar Kitchen..."
+            subtext="Setting the royal ambience & simmering authentic flavors..."
+          />
+        )}
+        <NotificationProvider>
+          <AuthProvider>
+            <CartProvider>
+              <TopProgressBar />
+              <AppRoutes />
+            </CartProvider>
+          </AuthProvider>
+        </NotificationProvider>
+      </LanguageProvider>
     </BrowserRouter>
   );
 }
