@@ -8,13 +8,13 @@ import {
 } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDwdqlDDlaEI8Ej6WHQfPQbkGbNs-ptYZo",
-  authDomain: "swadghar-restuarant.firebaseapp.com",
-  projectId: "swadghar-restuarant",
-  storageBucket: "swadghar-restuarant.firebasestorage.app",
-  messagingSenderId: "217743118110",
-  appId: "1:217743118110:web:e205f3c263226c4310430f",
-  measurementId: "G-1YJLTDCZDC"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || ""
 };
 
 let app;
@@ -22,10 +22,14 @@ let authInstance = null;
 let googleProvider = null;
 
 try {
-  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-  authInstance = getAuth(app);
-  googleProvider = new GoogleAuthProvider();
-  googleProvider.setCustomParameters({ prompt: 'select_account' });
+  if (firebaseConfig.apiKey) {
+    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+    authInstance = getAuth(app);
+    googleProvider = new GoogleAuthProvider();
+    googleProvider.setCustomParameters({ prompt: 'select_account' });
+  } else {
+    console.warn('Firebase API key is missing. Please set VITE_FIREBASE_API_KEY in .env');
+  }
 } catch (error) {
   console.warn('Firebase initialization notice:', error.message);
 }
@@ -35,7 +39,7 @@ export { googleProvider, signInWithPopup, RecaptchaVerifier, signInWithPhoneNumb
 
 export const signInWithGooglePopup = async () => {
   if (!authInstance || !googleProvider) {
-    throw new Error('Firebase Auth is not properly initialized.');
+    throw new Error('Firebase Auth is not configured. Please add your Firebase credentials to .env file.');
   }
   return await signInWithPopup(authInstance, googleProvider);
 };
