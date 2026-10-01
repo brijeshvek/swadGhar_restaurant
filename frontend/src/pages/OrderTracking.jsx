@@ -12,14 +12,26 @@ import {
   ArrowLeft,
   AlertCircle,
   ShoppingBag,
+  Store,
+  Navigation,
+  ExternalLink,
+  Receipt,
+  Bike,
+  ShieldCheck,
+  UserCheck,
+  Radio,
+  Compass,
 } from 'lucide-react';
 import api from '../services/api';
 import CookingLoader from '../components/common/CookingLoader';
 import { useTranslation } from '../context/LanguageContext';
+import { useNotification } from '../context/NotificationContext';
+import LiveTrackingMap from '../components/tracking/LiveTrackingMap';
 
 const OrderTracking = () => {
   const { id } = useParams(); // Can be orderNumber or ObjectId
   const { t } = useTranslation();
+  const { showSuccess, showError, showInfo } = useNotification();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -30,9 +42,15 @@ const OrderTracking = () => {
       const res = await api.get(`/orders/${id}`);
       if (res?.data) {
         setOrder(res.data);
+        if (isManualRefresh) {
+          showSuccess(t('orderTracking.statusRefreshed', 'Live order and kitchen stream refreshed!'));
+        }
       }
     } catch (err) {
       console.error('Error fetching order status:', err);
+      if (isManualRefresh) {
+        showError('Could not refresh order status. Please check your connection.');
+      }
     } finally {
       setLoading(false);
       if (isManualRefresh) setRefreshing(false);
@@ -41,8 +59,8 @@ const OrderTracking = () => {
 
   useEffect(() => {
     fetchOrder();
-    // Auto poll every 20 seconds for live updates
-    const interval = setInterval(() => fetchOrder(), 20000);
+    // Auto poll every 15 seconds for live status updates
+    const interval = setInterval(() => fetchOrder(false), 15000);
     return () => clearInterval(interval);
   }, [id]);
 
@@ -112,68 +130,115 @@ const OrderTracking = () => {
     return order.orderStatus === stepKey;
   };
 
+  // Progress percentage calculation for Map Rider Transit
+  const getProgressPercentage = () => {
+    switch (order.orderStatus) {
+      case 'pending':
+        return 10;
+      case 'confirmed':
+        return 25;
+      case 'preparing':
+        return 50;
+      case 'ready':
+      case 'ready_for_pickup':
+        return 70;
+      case 'out_for_delivery':
+        return 88;
+      case 'delivered':
+      case 'completed':
+        return 100;
+      default:
+        return 20;
+    }
+  };
+
+  const progressPercent = getProgressPercentage();
+
+  // Outlet & Customer address strings for navigation
+  const outletAddress = order.franchiseDetails?.address || 'Grand Imperial Complex, Opp. Iscon Mall, SG Highway, Bodakdev, Ahmedabad - 380054';
+  const customerAddress = order.deliveryAddress
+    ? [order.deliveryAddress.houseNo, order.deliveryAddress.street, order.deliveryAddress.area, order.deliveryAddress.city, order.deliveryAddress.pincode].filter(Boolean).join(', ')
+    : 'Customer Address';
+
+  const googleMapsRouteUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(outletAddress)}&destination=${encodeURIComponent(customerAddress)}`;
+
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8 animate-fade-in">
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <Link
-            to="/my-orders"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-500 hover:text-brand-600 transition-colors mb-1"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>{t('nav.myOrders', 'My Orders')}</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900">
-              {t('orderTracking.title', 'Live Order Tracking')}
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8 animate-fade-in">
+      
+      {/* 1. Header Bar with Title, Order Badge & Action Buttons */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 bg-white p-5 sm:p-6 rounded-3xl border border-stone-200/90 shadow-sm">
+        <div className="space-y-1.5 min-w-0">
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-serif font-bold text-stone-900 tracking-tight">
+              {t('orderTracking.title', 'Live Order Tracker & Kitchen Stream')}
             </h1>
-            <span className="font-mono font-bold text-xs bg-brand-50 text-brand-700 px-2.5 py-1 rounded-lg border border-brand-200">
+            <span className="inline-flex items-center shrink-0 whitespace-nowrap font-mono font-bold text-xs sm:text-sm bg-amber-500/10 text-amber-800 px-3 py-1 rounded-xl border border-amber-400/40 shadow-xs">
               #{order.orderNumber}
             </span>
           </div>
+          <p className="text-xs sm:text-sm text-stone-500 line-clamp-2">
+            Real-time kitchen preparation telemetry and doorstep GPS dispatch tracking.
+          </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* 3 Unified Action Buttons in Clean Even Row */}
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
+          {/* Button 1: Return to My Orders */}
+          <Link
+            to="/my-orders"
+            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 h-10 px-3.5 sm:px-4 rounded-xl bg-stone-100 hover:bg-stone-200/80 active:scale-95 text-stone-700 hover:text-stone-900 text-xs sm:text-sm font-semibold transition-all border border-stone-200/60 shadow-xs whitespace-nowrap cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4 text-stone-600 shrink-0" />
+            <span>{t('nav.myOrders', 'My Orders')}</span>
+          </Link>
+
+          {/* Button 2: View Tax Invoice */}
           <Link
             to={`/orders/${order._id || order.orderNumber}/invoice`}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition-all shadow-xs"
+            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 h-10 px-3.5 sm:px-4 rounded-xl bg-amber-50 hover:bg-amber-100 active:scale-95 text-amber-900 border border-amber-300/80 text-xs sm:text-sm font-semibold transition-all shadow-xs whitespace-nowrap cursor-pointer"
           >
-            <span>{t('orderSuccess.viewInvoiceBtn', 'View Tax Invoice')}</span>
+            <Receipt className="w-4 h-4 text-amber-700 shrink-0" />
+            <span>{t('orderSuccess.viewInvoiceBtn', 'View Invoice')}</span>
           </Link>
+
+          {/* Button 3: Live Status Refresh */}
           <button
+            type="button"
             onClick={() => fetchOrder(true)}
             disabled={refreshing}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-stone-200 text-xs font-semibold text-stone-700 hover:bg-stone-50 shadow-sm transition-all cursor-pointer"
+            className="inline-flex items-center justify-center gap-1.5 sm:gap-2 h-10 px-4 sm:px-5 rounded-xl bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-500 hover:to-amber-500 active:scale-95 text-white text-xs sm:text-sm font-semibold transition-all shadow-sm hover:shadow-glow whitespace-nowrap cursor-pointer disabled:opacity-50 shrink-0"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-            <span>{refreshing ? t('common.processing', 'Refreshing...') : t('common.refresh', 'Live Status Refresh')}</span>
+            <RefreshCw className={`w-4 h-4 shrink-0 ${refreshing ? 'animate-spin' : ''}`} />
+            <span>{refreshing ? t('common.processing', 'Refreshing...') : t('common.refresh', 'Refresh')}</span>
           </button>
         </div>
       </div>
 
-      {/* Live Stepper Tracker */}
+      {/* 2. Live Stepper Progress Tracker */}
       <div className="p-6 sm:p-8 rounded-3xl bg-white border border-stone-200 shadow-md space-y-8">
-        <div className="flex items-center justify-between border-b border-stone-100 pb-4">
-          <div>
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-100 pb-4">
+          <div className="space-y-0.5">
             <span className="text-xs font-bold uppercase tracking-wider text-stone-400 block">
-              {t('common.status', 'Current Progress')}
+              {t('common.status', 'Current Preparation State')}
             </span>
-            <span className="text-lg font-bold text-brand-600 capitalize">
-              {order.orderStatus.replace(/_/g, ' ')}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+              <span className="text-lg font-bold text-brand-600 capitalize">
+                {order.orderStatus.replace(/_/g, ' ')}
+              </span>
+            </div>
           </div>
 
-          <div className="text-right">
+          <div className="text-right space-y-0.5">
             <span className="text-xs text-stone-400 block">{t('orderSuccess.estimatedDeliveryTime', 'Estimated Arrival')}</span>
-            <span className="text-sm font-bold text-stone-900 font-sans">
+            <span className="text-base font-bold text-stone-900 font-sans">
               ~ {new Date(order.estimatedDeliveryTime || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           </div>
         </div>
 
-        {/* Vertical/Horizontal Stepper */}
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 relative">
+        {/* Horizontal Stepper Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 relative">
           {steps.map((step, idx) => {
             const completed = isStepCompleted(step.key);
             const active = isStepActive(step.key);
@@ -182,15 +247,15 @@ const OrderTracking = () => {
             return (
               <div key={step.key} className="flex flex-col items-center text-center space-y-2 relative">
                 <div
-                  className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 ${
                     active
-                      ? 'bg-brand-600 text-white shadow-glow scale-110 ring-4 ring-brand-500/20'
+                      ? 'bg-brand-600 text-white shadow-glow scale-110 ring-4 ring-brand-500/20 animate-pulse'
                       : completed
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-stone-100 text-stone-400'
+                      ? 'bg-emerald-600 text-white shadow-sm'
+                      : 'bg-stone-100 text-stone-400 border border-stone-200/60'
                   }`}
                 >
-                  <StepIcon className="w-6 h-6" />
+                  <StepIcon className="w-5 h-5" />
                 </div>
                 <div>
                   <h4
@@ -200,7 +265,7 @@ const OrderTracking = () => {
                   >
                     {step.label}
                   </h4>
-                  <p className="text-[10px] text-stone-400">{step.desc}</p>
+                  <p className="text-[10px] text-stone-400 mt-0.5">{step.desc}</p>
                 </div>
               </div>
             );
@@ -208,13 +273,35 @@ const OrderTracking = () => {
         </div>
       </div>
 
-      {/* Details & Delivery Card Grid */}
+      {/* 3. Live Swiggy & Zomato Style GPS Order Tracking Map */}
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center">
+              <Navigation className="w-4 h-4 text-brand-600" />
+            </div>
+            <div>
+              <h3 className="text-base font-serif font-bold text-stone-900">
+                Live Kitchen Dispatch & Valet Telemetry Map
+              </h3>
+              <p className="text-xs text-stone-500">
+                Live GPS route navigation from <strong className="text-stone-800">{order.franchiseDetails?.name || 'SwadGhar Outlet'}</strong> to your doorstep.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Live Interactive Map Component */}
+        <LiveTrackingMap order={order} />
+      </div>
+
+      {/* 4. Details Grid: Delivery Information & Order Items */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Delivery / Address Information */}
         <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
           <h3 className="text-base font-serif font-bold text-stone-900 flex items-center gap-2">
             <MapPin className="w-4 h-4 text-brand-600" />
-            <span>{t('orderTracking.deliveryAddress', 'Delivery Information')}</span>
+            <span>{t('orderTracking.deliveryAddress', 'Delivery & Destination Details')}</span>
           </h3>
 
           {order.deliveryAddress ? (
@@ -222,7 +309,7 @@ const OrderTracking = () => {
               <p className="font-bold text-stone-900 text-sm">
                 {order.deliveryAddress.fullName}
               </p>
-              <p>{order.deliveryAddress.address}</p>
+              <p>{order.deliveryAddress.address || `${order.deliveryAddress.houseNo || ''} ${order.deliveryAddress.street || ''} ${order.deliveryAddress.area || ''}`}</p>
               <p>{order.deliveryAddress.city}, {order.deliveryAddress.state} - {order.deliveryAddress.pincode}</p>
               {order.deliveryAddress.landmark && (
                 <p className="text-stone-400">{t('checkout.landmark', 'Landmark')}: {order.deliveryAddress.landmark}</p>
@@ -238,9 +325,26 @@ const OrderTracking = () => {
             </p>
           )}
 
+          {order.franchiseDetails && (
+            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-300 text-xs text-stone-800 space-y-1">
+              <div className="flex items-center justify-between font-bold text-amber-900">
+                <span>🏬 Preparing Kitchen Outlet:</span>
+                <span className="text-[10px] bg-amber-200 text-amber-900 px-2 py-0.5 rounded uppercase">{order.franchiseDetails.city}</span>
+              </div>
+              <p className="font-semibold text-stone-900">{order.franchiseDetails.name}</p>
+              <p className="text-stone-600 text-[11px]">{order.franchiseDetails.address}</p>
+              {order.franchiseDetails.phone && (
+                <p className="text-stone-600 text-[11px] flex items-center gap-1 pt-0.5">
+                  <Phone className="w-3 h-3 text-amber-700" />
+                  <span>Branch Contact: {order.franchiseDetails.phone}</span>
+                </p>
+              )}
+            </div>
+          )}
+
           {order.specialInstructions && (
             <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900">
-              <strong>{t('checkout.deliveryInstructions', 'Instructions')}:</strong> {order.specialInstructions}
+              <strong>{t('checkout.deliveryInstructions', 'Special Requests')}:</strong> {order.specialInstructions}
             </div>
           )}
         </div>

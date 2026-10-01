@@ -43,3 +43,74 @@ export const signInWithGooglePopup = async () => {
   }
   return await signInWithPopup(authInstance, googleProvider);
 };
+
+// Setup Firebase invisible reCAPTCHA for Phone SMS OTP
+export const setupRecaptcha = (containerId = 'recaptcha-container') => {
+  if (!authInstance) return null;
+  
+  if (window.recaptchaVerifier) {
+    try {
+      window.recaptchaVerifier.clear();
+    } catch (e) {
+      console.warn('Recaptcha clear notice:', e);
+    }
+    window.recaptchaVerifier = null;
+  }
+
+  // Ensure element exists in DOM and is empty
+  let container = document.getElementById(containerId);
+  if (!container) {
+    container = document.createElement('div');
+    container.id = containerId;
+    document.body.appendChild(container);
+  } else {
+    container.innerHTML = '';
+  }
+
+  try {
+    window.recaptchaVerifier = new RecaptchaVerifier(authInstance, containerId, {
+      size: 'invisible',
+      callback: () => {
+        // reCAPTCHA solved
+      },
+      'expired-callback': () => {
+        console.warn('reCAPTCHA expired, resetting...');
+        if (window.recaptchaVerifier) {
+          try {
+            window.recaptchaVerifier.clear();
+          } catch (e) {}
+          window.recaptchaVerifier = null;
+        }
+      }
+    });
+  } catch (err) {
+    console.error('Error creating RecaptchaVerifier:', err);
+  }
+
+  return window.recaptchaVerifier;
+};
+
+// Send real SMS OTP to phone in international E.164 format (+91...)
+export const sendFirebasePhoneSMS = async (formattedPhone) => {
+  if (!authInstance) {
+    throw new Error('Firebase Auth is not configured. Check VITE_FIREBASE_API_KEY in .env');
+  }
+  const appVerifier = setupRecaptcha('recaptcha-container');
+  if (!appVerifier) {
+    throw new Error('Could not initialize reCAPTCHA verifier for SMS.');
+  }
+  return await signInWithPhoneNumber(authInstance, formattedPhone, appVerifier);
+};
+
+// Format phone to international E.164 format
+export const formatToInternationalE164 = (phone, countryCode = '+91') => {
+  if (!phone) return '';
+  let cleaned = phone.replace(/[^\d+]/g, '');
+  if (cleaned.startsWith('+')) {
+    return cleaned;
+  }
+  // Remove leading 0 if present
+  cleaned = cleaned.replace(/^0+/, '');
+  const cleanCode = countryCode.startsWith('+') ? countryCode : `+${countryCode}`;
+  return `${cleanCode}${cleaned}`;
+};

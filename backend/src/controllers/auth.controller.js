@@ -57,7 +57,7 @@ const register = async (req, res, next) => {
         phone: phone || '',
         role: 'customer',
         authProvider: 'local',
-        isEmailVerified: false,
+        isEmailVerified: true,
         avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
         addresses: [],
         isBlocked: false,
@@ -66,19 +66,9 @@ const register = async (req, res, next) => {
       mockStore.users.push(newUser);
       const token = generateToken(newUser);
 
-      // Trigger verification email in dev/mock
-      const emailRes = await sendVerificationEmail({
-        to: email.toLowerCase(),
-        name,
-        verificationToken,
-        otpCode,
-      });
-
       return res.status(201).json({
         success: true,
-        message: 'Welcome to SwadGhar! A verification email has been sent to your inbox.',
-        devOtp: emailRes.devOtp,
-        verifyLink: emailRes.verifyLink,
+        message: `Welcome to SwadGhar, ${name}! Your account has been created.`,
         data: formatUserResponse(newUser, token),
       });
     }
@@ -98,26 +88,14 @@ const register = async (req, res, next) => {
       phone,
       role: 'customer',
       authProvider: 'local',
-      isEmailVerified: false,
-      emailVerificationToken: verificationToken,
-      emailVerificationExpires: tokenExpiry,
+      isEmailVerified: true,
     });
 
     const token = user.generateAuthToken();
 
-    // Send verification email
-    const emailRes = await sendVerificationEmail({
-      to: email.toLowerCase(),
-      name,
-      verificationToken,
-      otpCode,
-    });
-
     res.status(201).json({
       success: true,
-      message: 'Welcome to SwadGhar! A verification email has been sent to your inbox.',
-      devOtp: emailRes.devOtp,
-      verifyLink: emailRes.verifyLink,
+      message: `Welcome to SwadGhar, ${user.name}! Your account has been created.`,
       data: formatUserResponse(user, token),
     });
   } catch (error) {
@@ -228,13 +206,14 @@ const getMe = async (req, res, next) => {
 // @access  Private
 const updateProfile = async (req, res, next) => {
   try {
-    const { name, phone, avatar } = req.body;
+    const { name, phone, avatar, email } = req.body;
 
     if (!isDbConnected()) {
       const user = mockStore.users.find(u => u._id === req.user.id) || req.user;
       if (name) user.name = name;
       if (phone !== undefined) user.phone = phone;
       if (avatar) user.avatar = avatar;
+      if (email) user.email = email.toLowerCase().trim();
       const token = generateToken(user);
       return res.status(200).json({ success: true, message: 'Profile updated', data: formatUserResponse(user, token) });
     }
@@ -244,9 +223,26 @@ const updateProfile = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'User not found.' });
     }
 
-    if (name) user.name = name;
-    if (phone !== undefined) user.phone = phone;
+    if (name) user.name = name.trim();
+    if (phone !== undefined) user.phone = phone.trim();
     if (avatar) user.avatar = avatar;
+
+    if (email && email.trim()) {
+      const cleanEmail = email.toLowerCase().trim();
+      // Check if email already in use by another user
+      const existingUser = await User.findOne({ 
+        email: cleanEmail, 
+        _id: { $ne: user._id } 
+      });
+      if (existingUser) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'This email is already associated with another account.' 
+        });
+      }
+      user.email = cleanEmail;
+      user.isEmailVerified = true;
+    }
 
     const updatedUser = await user.save();
     const token = updatedUser.generateAuthToken();
@@ -683,6 +679,29 @@ const firebaseSocialLogin = async (req, res, next) => {
   }
 };
 
+// Helper: Find user by flexible phone matching (handles +91, 10-digits, international format)
+const findUserByFlexiblePhone = async (phone) => {
+  if (!phone) return null;
+  const digits = phone.replace(/\D/g, '');
+  const last10 = digits.length >= 10 ? digits.slice(-10) : digits;
+
+  if (isDbConnected()) {
+    return await User.findOne({
+      $or: [
+        { phone },
+        { phone: `+91${last10}` },
+        { phone: last10 },
+        { phone: { $regex: `${last10}$` } },
+      ],
+    });
+  } else {
+    return mockStore.users.find((u) => {
+      const uDigits = (u.phone || '').replace(/\D/g, '');
+      return u.phone === phone || (last10 && uDigits.endsWith(last10));
+    });
+  }
+};
+
 // @desc    Send Phone Number OTP
 // @route   POST /api/auth/send-phone-otp
 // @access  Public
@@ -696,12 +715,7 @@ const sendPhoneOtp = async (req, res, next) => {
     phone = phone.trim();
     mode = mode || 'login';
 
-    let existingUser = null;
-    if (isDbConnected()) {
-      existingUser = await User.findOne({ phone });
-    } else {
-      existingUser = mockStore.users.find(u => u.phone === phone);
-    }
+    const existingUser = await findUserByFlexiblePhone(phone);
 
     // Rule 1: If trying to LOGIN with phone, user MUST already be registered!
     if (mode === 'login' && !existingUser) {
@@ -770,7 +784,7 @@ const sendPhoneOtp = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: `OTP has been sent to +91 ${phone}.`,
+      message: `OTP has been dispatched to ${phone}.`,
       devOtp: otpCode,
     });
   } catch (error) {
@@ -791,44 +805,31 @@ const verifyPhoneOtp = async (req, res, next) => {
     phone = phone.trim();
     mode = mode || 'login';
 
-    let user = null;
-    if (isDbConnected()) {
+    let user = await findUserByFlexiblePhone(phone);
+    if (!user && isDbConnected()) {
       user = await User.findOne({ phone });
+    }
 
-      if (!user) {
-        return res.status(404).json({ success: false, message: 'Account not found for this mobile number.' });
-      }
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Account not found for this mobile number.' });
+    }
 
-      if (otp) {
-        const isMaster = otp === '123456';
-        const isMatch = user.phoneOtp === otp && new Date() <= new Date(user.phoneOtpExpires);
-        if (!isMaster && !isMatch) {
-          return res.status(400).json({ success: false, message: 'Invalid or expired OTP code.' });
-        }
-      }
-
-      user.phoneOtp = undefined;
-      user.phoneOtpExpires = undefined;
-      if (name && name.trim()) {
-        user.name = name.trim();
-      }
-      if (firebaseUid) user.firebaseUid = firebaseUid;
-      await user.save();
-    } else {
-      user = mockStore.users.find(u => u.phone === phone);
-      if (!user) {
-        return res.status(404).json({ success: false, message: 'Account not found for this mobile number.' });
-      }
-
+    if (otp) {
       const isMaster = otp === '123456';
-      const isMatch = user.phoneOtp === otp;
-      if (!isMaster && !isMatch) {
+      const isMatch = (user.phoneOtp === otp || firebaseUid) && (!user.phoneOtpExpires || new Date() <= new Date(user.phoneOtpExpires));
+      if (!isMaster && !isMatch && !firebaseUid) {
         return res.status(400).json({ success: false, message: 'Invalid or expired OTP code.' });
       }
-      user.phoneOtp = undefined;
-      if (name && name.trim()) {
-        user.name = name.trim();
-      }
+    }
+
+    user.phoneOtp = undefined;
+    user.phoneOtpExpires = undefined;
+    if (name && name.trim()) {
+      user.name = name.trim();
+    }
+    if (firebaseUid) user.firebaseUid = firebaseUid;
+    if (isDbConnected()) {
+      await user.save();
     }
 
     const token = generateToken(user);

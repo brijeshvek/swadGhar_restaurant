@@ -10,6 +10,7 @@ import {
   ChevronRight,
   ShoppingBag,
   RotateCcw,
+  Store,
 } from 'lucide-react';
 import api from '../services/api';
 import { useNotification } from '../context/NotificationContext';
@@ -158,6 +159,12 @@ const MyOrders = () => {
                       minute: '2-digit',
                     })}
                   </span>
+                  {order.franchiseDetails && (
+                    <span className="px-2.5 py-0.5 rounded-lg bg-amber-50 text-amber-900 border border-amber-200/80 text-[11px] font-semibold flex items-center gap-1">
+                      <Store className="w-3 h-3 text-brand-600" />
+                      <span>{order.franchiseDetails.name} ({order.franchiseDetails.city})</span>
+                    </span>
+                  )}
                 </div>
 
                 {/* Status Badge */}

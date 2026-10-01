@@ -28,6 +28,7 @@ const createOrder = async (req, res, next) => {
     const {
       items,
       orderType = 'delivery',
+      franchiseId,
       deliveryAddress,
       couponCode,
       paymentMethod = 'cod',
@@ -100,6 +101,35 @@ const createOrder = async (req, res, next) => {
     const invoiceNumber = generateInvoiceNumber();
     const estimatedDeliveryTime = new Date(Date.now() + 35 * 60 * 1000);
 
+    // Resolve Franchise / Outlet
+    let selectedFranchise = null;
+    let franchiseDetails = null;
+
+    if (isDbConnected()) {
+      if (franchiseId && mongoose.Types.ObjectId.isValid(franchiseId)) {
+        selectedFranchise = await Franchise.findById(franchiseId);
+      }
+      if (!selectedFranchise && deliveryAddress?.city) {
+        selectedFranchise = await Franchise.findOne({
+          city: new RegExp(`^${deliveryAddress.city.trim()}$`, 'i'),
+          isActive: true,
+        });
+      }
+      if (!selectedFranchise) {
+        selectedFranchise = await Franchise.findOne({ isActive: true }).sort({ sortOrder: 1 });
+      }
+    }
+
+    if (selectedFranchise) {
+      franchiseDetails = {
+        name: selectedFranchise.name,
+        city: selectedFranchise.city,
+        address: selectedFranchise.address,
+        phone: selectedFranchise.phone,
+        branchType: selectedFranchise.branchType,
+      };
+    }
+
     // Prepare immutable address snapshot
     const addressSnapshot = deliveryAddress ? {
       fullName: deliveryAddress.fullName || req.user.name,
@@ -109,7 +139,7 @@ const createOrder = async (req, res, next) => {
       street: deliveryAddress.street || '',
       area: deliveryAddress.area || '',
       address: deliveryAddress.address || [deliveryAddress.houseNo, deliveryAddress.street, deliveryAddress.area].filter(Boolean).join(', '),
-      city: deliveryAddress.city || 'Ahmedabad',
+      city: deliveryAddress.city || (selectedFranchise ? selectedFranchise.city : 'Ahmedabad'),
       state: deliveryAddress.state || 'Gujarat',
       pincode: deliveryAddress.pincode || '',
       landmark: deliveryAddress.landmark || '',
@@ -125,6 +155,8 @@ const createOrder = async (req, res, next) => {
       customer: isDbConnected() ? req.user.id : (req.user || mockStore.users[2]),
       items: validatedOrderItems,
       orderType,
+      franchise: selectedFranchise ? selectedFranchise._id : undefined,
+      franchiseDetails,
       deliveryAddress: addressSnapshot,
       pricing: {
         subtotal: verifiedSubtotal,
@@ -384,10 +416,10 @@ const getAllOrders = async (req, res, next) => {
       return res.status(200).json({ success: true, count: mockStore.orders.length, total: mockStore.orders.length, data: mockStore.orders });
     }
 
-    const { status, search, city } = req.query;
+    const { status, search, city, franchiseId } = req.query;
     const query = {};
 
-    // Branch manager data isolation: only show orders for their branch
+    // Branch manager & staff data isolation: ONLY show orders for their specific branch
     if (req.user && req.user.role === 'staff') {
       const userEmail = req.user.email?.toLowerCase();
       let managerBranch = await Franchise.findOne({
@@ -399,7 +431,7 @@ const getAllOrders = async (req, res, next) => {
       }).lean();
 
       if (!managerBranch && req.user.name) {
-        const cityName = ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Mumbai'].find(c =>
+        const cityName = ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Bhavnagar', 'Mumbai'].find(c =>
           req.user.name.toLowerCase().includes(c.toLowerCase())
         );
         if (cityName) {
@@ -407,11 +439,31 @@ const getAllOrders = async (req, res, next) => {
         }
       }
 
-      if (managerBranch?.city) {
-        query['deliveryAddress.city'] = new RegExp(managerBranch.city, 'i');
+      if (managerBranch) {
+        query.$or = [
+          { franchise: managerBranch._id },
+          { 'franchiseDetails.name': managerBranch.name },
+          { 'franchiseDetails.city': new RegExp(`^${managerBranch.city}$`, 'i') },
+          { 'deliveryAddress.city': new RegExp(`^${managerBranch.city}$`, 'i') },
+        ];
       }
-    } else if (city && city !== 'all') {
-      query['deliveryAddress.city'] = new RegExp(city, 'i');
+    } else {
+      // Admin filter by specific franchise or city
+      if (franchiseId && franchiseId !== 'all') {
+        if (mongoose.Types.ObjectId.isValid(franchiseId)) {
+          query.$or = [
+            { franchise: franchiseId },
+            { 'franchiseDetails.name': new RegExp(franchiseId, 'i') },
+          ];
+        } else {
+          query['franchiseDetails.name'] = new RegExp(franchiseId, 'i');
+        }
+      } else if (city && city !== 'all') {
+        query.$or = [
+          { 'franchiseDetails.city': new RegExp(`^${city}$`, 'i') },
+          { 'deliveryAddress.city': new RegExp(`^${city}$`, 'i') },
+        ];
+      }
     }
 
     if (status && status !== 'all') {
@@ -419,15 +471,25 @@ const getAllOrders = async (req, res, next) => {
     }
 
     if (search && search.trim()) {
-      query.$or = [
-        { orderNumber: { $regex: search.trim(), $options: 'i' } },
-        { 'deliveryAddress.fullName': { $regex: search.trim(), $options: 'i' } },
-        { 'deliveryAddress.phone': { $regex: search.trim(), $options: 'i' } },
+      const searchRegex = { $regex: search.trim(), $options: 'i' };
+      const searchConditions = [
+        { orderNumber: searchRegex },
+        { 'deliveryAddress.fullName': searchRegex },
+        { 'deliveryAddress.phone': searchRegex },
+        { 'franchiseDetails.name': searchRegex },
+        { 'franchiseDetails.city': searchRegex },
       ];
+      if (query.$or) {
+        query.$and = [{ $or: query.$or }, { $or: searchConditions }];
+        delete query.$or;
+      } else {
+        query.$or = searchConditions;
+      }
     }
 
     const orders = await Order.find(query)
       .populate('customer', 'name email phone avatar')
+      .populate('franchise', 'name city address phone branchType')
       .sort({ createdAt: -1 });
 
     res.status(200).json({ success: true, count: orders.length, total: orders.length, data: orders });

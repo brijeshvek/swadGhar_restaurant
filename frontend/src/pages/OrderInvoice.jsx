@@ -153,9 +153,15 @@ const OrderInvoice = () => {
             </div>
             <div className="text-xs text-stone-500 space-y-0.5 pt-1">
               <p>{t('brand.fullName', 'SwadGhar Fine Dine & Hospitality Pvt. Ltd.')}</p>
-              <p>{t('contact.hqAddress', '12, Heritage Boulevard, SG Highway, Ahmedabad, Gujarat - 380015')}</p>
+              {order.franchiseDetails ? (
+                <p className="font-semibold text-stone-800">
+                  Outlet: {order.franchiseDetails.name} ({order.franchiseDetails.address})
+                </p>
+              ) : (
+                <p>{t('contact.hqAddress', '12, Heritage Boulevard, SG Highway, Ahmedabad, Gujarat - 380015')}</p>
+              )}
               <p>{t('brand.gstin', 'GSTIN: 24AAACS1234F1Z8')} | {t('brand.fssai', 'FSSAI: 10723001000456')}</p>
-              <p>{t('contact.phoneLabel', 'Phone')}: +91 79 4000 8888 | {t('contact.emailLabel', 'Email')}: billing@swadghar.com</p>
+              <p>{t('contact.phoneLabel', 'Phone')}: {order.franchiseDetails?.phone || '+91 79 4000 8888'} | {t('contact.emailLabel', 'Email')}: billing@swadghar.com</p>
             </div>
           </div>
 

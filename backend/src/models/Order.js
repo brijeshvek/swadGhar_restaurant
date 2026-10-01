@@ -41,7 +41,7 @@ const pricingSchema = new mongoose.Schema({
 const paymentInfoSchema = new mongoose.Schema({
   method: {
     type: String,
-    enum: ['cod', 'razorpay'],
+    enum: ['cod', 'razorpay', 'upi', 'card', 'cash'],
     default: 'cod',
   },
   status: {
@@ -80,6 +80,18 @@ const orderSchema = new mongoose.Schema({
     enum: ['delivery', 'pickup', 'dine-in'],
     default: 'delivery',
     index: true,
+  },
+  franchise: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Franchise',
+    index: true,
+  },
+  franchiseDetails: {
+    name: { type: String },
+    city: { type: String },
+    address: { type: String },
+    phone: { type: String },
+    branchType: { type: String },
   },
   deliveryAddress: orderAddressSchema,
   pricing: pricingSchema,

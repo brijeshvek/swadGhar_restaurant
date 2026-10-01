@@ -31,6 +31,30 @@ const gu = {
     language: 'ભાષા (Language)',
   },
 
+  // Admin Sidebar Navigation
+  adminNav: {
+    sectionMain: 'મુખ્ય ડેસ્ક',
+    sectionOperations: 'કિચન અને ઓપરેશન્સ',
+    sectionMenu: 'વાનગી મેનુ કેટલોગ',
+    sectionManagement: 'વહીવટ અને સેટિંગ્સ',
+    dashboard: 'ડેશબોર્ડ',
+    executiveDashboard: 'એક્ઝિક્યુટિવ ડેશબોર્ડ',
+    branchDashboard: 'બ્રાન્ચ ડેશબોર્ડ',
+    franchises: '૧૫ આઉટલેટ્સ અને ફ્રેન્ચાઈઝી',
+    myBranch: 'મારી બ્રાન્ચ અને સ્ટાફ',
+    reports: 'સેલ્સ અને ઓડિટ રિપોર્ટ્સ',
+    branchReports: 'બ્રાન્ચ સેલ્સ રિપોર્ટ',
+    liveOrders: 'લાઈવ ઓર્ડર્સ અને કિચન',
+    inquiries: 'ગ્રાહક પૂછપરછ (ઇન્ક્વાયરી)',
+    foodMenu: 'વાનગીઓનું મેનુ (ડિશીસ)',
+    categories: 'મેનુ કેટેગરીઝ',
+    reservations: 'ટેબલ બુકિંગ્સ',
+    customers: 'ગ્રાહકોના એકાઉન્ટ્સ',
+    reviews: 'ગ્રાહક સમીક્ષાઓ (રિવ્યુ)',
+    coupons: 'કૂપન્સ અને ઑફર્સ',
+    settings: 'રેસ્ટોરન્ટ સેટિંગ્સ',
+  },
+
   // Common UI Actions & Words
   common: {
     loading: 'લોડ થઈ રહ્યું છે...',

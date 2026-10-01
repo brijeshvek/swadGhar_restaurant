@@ -15,7 +15,14 @@ import {
   Home,
   Briefcase,
   Bookmark,
-  Sparkles
+  Sparkles,
+  Store,
+  Building2,
+  Clock,
+  PhoneCall,
+  Navigation,
+  Check,
+  ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -43,6 +50,12 @@ const Checkout = () => {
   const [orderType, setOrderType] = useState('delivery'); // 'delivery' | 'pickup' | 'dine-in'
   const [paymentMethod, setPaymentMethod] = useState('cod'); // 'cod' | 'razorpay'
 
+  // Franchise / Outlet Selection State
+  const [franchises, setFranchises] = useState([]);
+  const [selectedFranchiseId, setSelectedFranchiseId] = useState('');
+  const [franchisesLoading, setFranchisesLoading] = useState(false);
+  const [showAllOutlets, setShowAllOutlets] = useState(false);
+
   // Saved Addresses State
   const [addresses, setAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState('new'); // 'new' or address ID
@@ -64,16 +77,46 @@ const Checkout = () => {
   const [specialInstructions, setSpecialInstructions] = useState('');
   const [processing, setProcessing] = useState(false);
 
-  // Initialize or fetch user addresses
+  // Initialize user details & fetch franchises
   useEffect(() => {
+    fetchFranchises();
     if (user) {
       setFullName(user.name || '');
-      setEmail(user.email || '');
+      setEmail(user.email && !user.email.endsWith('@swadghar.local') ? user.email : '');
       setPhone(user.phone || '');
-
       fetchAddresses();
     }
   }, [user]);
+
+  const fetchFranchises = async () => {
+    setFranchisesLoading(true);
+    try {
+      const res = await api.get('/franchises');
+      const list = res.data || [];
+      const activeList = list.filter(f => f.isActive !== false);
+      setFranchises(activeList);
+
+      if (activeList.length > 0) {
+        // Auto-match city outlet
+        const matched = activeList.find(f => f.city.toLowerCase() === city.toLowerCase());
+        setSelectedFranchiseId(matched ? matched._id : activeList[0]._id);
+      }
+    } catch (err) {
+      console.warn('Could not fetch franchises for checkout:', err);
+    } finally {
+      setFranchisesLoading(false);
+    }
+  };
+
+  // Auto-match franchise whenever city changes
+  useEffect(() => {
+    if (city && franchises.length > 0) {
+      const matched = franchises.find(f => f.city.toLowerCase() === city.trim().toLowerCase());
+      if (matched) {
+        setSelectedFranchiseId(matched._id);
+      }
+    }
+  }, [city, franchises]);
 
   const fetchAddresses = async () => {
     try {
@@ -107,7 +150,7 @@ const Checkout = () => {
     setHouseNo(addr.houseNo || '');
     setStreet(addr.street || '');
     setArea(addr.area || '');
-    setCity(addr.city || 'Ahmedabad');
+    if (addr.city) setCity(addr.city);
     setState(addr.state || 'Gujarat');
     setPincode(addr.pincode || '380015');
     setLandmark(addr.landmark || '');
@@ -127,6 +170,8 @@ const Checkout = () => {
     setLandmark('');
     setDeliveryInstructions('');
   };
+
+  const selectedFranchise = franchises.find(f => f._id === selectedFranchiseId) || franchises[0];
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
@@ -154,6 +199,7 @@ const Checkout = () => {
       const orderPayload = {
         orderType,
         paymentMethod,
+        franchiseId: selectedFranchiseId,
         items: cartItems.map((item) => ({
           food: item.food._id,
           quantity: item.quantity,
@@ -533,10 +579,120 @@ const Checkout = () => {
             </div>
           )}
 
-          {/* 3. Special Requests */}
+          {/* 3. Kitchen Outlet & Branch Selection */}
+          <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
+            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+              <h3 className="text-base font-serif font-bold text-stone-900 flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-brand-600" />
+                <span>3. Preparing Kitchen & Franchise Outlet</span>
+              </h3>
+              {franchises.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllOutlets(!showAllOutlets)}
+                  className="text-xs font-bold text-brand-600 hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <span>{showAllOutlets ? 'Hide Outlets' : `Change Outlet (${franchises.length} available)`}</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showAllOutlets ? 'rotate-180' : ''}`} />
+                </button>
+              )}
+            </div>
+
+            {/* Selected Outlet Display */}
+            {selectedFranchise ? (
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent border-2 border-brand-500/40 relative space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1.5 rounded-lg bg-brand-500/20 text-brand-700">
+                      <Store className="w-4 h-4" />
+                    </span>
+                    <h4 className="font-bold text-sm text-stone-900">
+                      {selectedFranchise.name}
+                    </h4>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    {selectedFranchise.city.toLowerCase() === city.toLowerCase() && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 flex items-center gap-1">
+                        <Check className="w-3 h-3" />
+                        <span>Matched with {city} Address</span>
+                      </span>
+                    )}
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-stone-200 text-stone-700">
+                      {selectedFranchise.city}
+                    </span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-stone-600 flex items-start gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-stone-400 shrink-0 mt-0.5" />
+                  <span>{selectedFranchise.address}</span>
+                </p>
+
+                <div className="flex flex-wrap items-center gap-4 text-[11px] text-stone-500 pt-1 border-t border-amber-500/20">
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3 h-3 text-amber-600" />
+                    {selectedFranchise.timings || '11:00 AM - 11:30 PM'}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <PhoneCall className="w-3 h-3 text-amber-600" />
+                    {selectedFranchise.phone}
+                  </span>
+                  <span className="text-brand-600 font-semibold">
+                    {orderType === 'delivery' ? '🚀 Dispatches to your address' : orderType === 'pickup' ? '🛍️ Pickup at this outlet' : '🍽️ Dine-in table at this branch'}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 rounded-2xl bg-stone-50 border text-xs text-stone-500">
+                Loading kitchen outlets...
+              </div>
+            )}
+
+            {/* Expandable Outlet Choice Grid */}
+            {showAllOutlets && franchises.length > 0 && (
+              <div className="pt-2 space-y-2 border-t border-stone-100 animate-fade-in">
+                <span className="text-xs font-bold text-stone-500 block uppercase tracking-wider">
+                  Choose Another Outlet / Branch:
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {franchises.map((f) => {
+                    const isSelected = selectedFranchiseId === f._id;
+                    return (
+                      <div
+                        key={f._id}
+                        onClick={() => {
+                          setSelectedFranchiseId(f._id);
+                          setShowAllOutlets(false);
+                        }}
+                        className={`p-3 rounded-2xl border cursor-pointer transition-all ${
+                          isSelected
+                            ? 'border-brand-500 bg-brand-50/50 ring-2 ring-brand-500/20 shadow-sm'
+                            : 'border-stone-200 bg-stone-50/60 hover:bg-stone-100'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <span className="font-bold text-xs text-stone-900 line-clamp-1">{f.name}</span>
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-stone-200 text-stone-700">
+                            {f.city}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-stone-500 mt-1 line-clamp-2">{f.address}</p>
+                        <div className="flex items-center justify-between text-[10px] text-stone-400 mt-2">
+                          <span>{f.phone}</span>
+                          {isSelected && <span className="text-brand-600 font-bold">Selected ✓</span>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 4. Special Requests */}
           <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-3">
             <h3 className="text-base font-serif font-bold text-stone-900">
-              3. Special Cooking Requests
+              4. Special Cooking Requests
             </h3>
             <textarea
               rows={2}
@@ -547,10 +703,10 @@ const Checkout = () => {
             ></textarea>
           </div>
 
-          {/* 4. Payment Method */}
+          {/* 5. Payment Method */}
           <div className="p-6 rounded-3xl bg-white border border-stone-200 shadow-sm space-y-4">
             <h3 className="text-base font-serif font-bold text-stone-900">
-              {t('checkout.paymentTitle', '4. Select Payment Mode')}
+              {t('checkout.paymentTitle', '5. Select Payment Mode')}
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -606,6 +762,17 @@ const Checkout = () => {
                 {cartItems.length} {t('common.items', 'items')}
               </span>
             </h4>
+
+            {/* Selected Outlet Summary Badge */}
+            {selectedFranchise && (
+              <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200/80 flex items-center gap-2 text-xs">
+                <Store className="w-4 h-4 text-brand-600 shrink-0" />
+                <div className="truncate">
+                  <span className="text-[10px] text-stone-500 block uppercase font-bold tracking-wider">Kitchen Outlet:</span>
+                  <span className="font-bold text-stone-900 truncate block">{selectedFranchise.name} ({selectedFranchise.city})</span>
+                </div>
+              </div>
+            )}
 
             {/* Item list brief */}
             <div className="max-h-48 overflow-y-auto custom-scrollbar space-y-2 pr-1">

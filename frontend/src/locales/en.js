@@ -31,6 +31,30 @@ const en = {
     language: 'Language',
   },
 
+  // Admin Sidebar Navigation
+  adminNav: {
+    sectionMain: 'Main',
+    sectionOperations: 'Kitchen & Operations',
+    sectionMenu: 'Menu Catalog',
+    sectionManagement: 'Administration & CRM',
+    dashboard: 'Dashboard',
+    executiveDashboard: 'Executive Dashboard',
+    branchDashboard: 'Branch Dashboard',
+    franchises: '15 Outlets & Franchises',
+    myBranch: 'My Branch & Staff',
+    reports: 'Sales & Audit Reports',
+    branchReports: 'Branch Sales Report',
+    liveOrders: 'Live Orders & Kitchen',
+    inquiries: 'Customer Inquiries',
+    foodMenu: 'Food Menu Catalog',
+    categories: 'Menu Categories',
+    reservations: 'Table Bookings',
+    customers: 'Customer Accounts',
+    reviews: 'Guest Reviews',
+    coupons: 'Coupons & Offers',
+    settings: 'Restaurant Settings',
+  },
+
   // Common UI Actions & Words
   common: {
     loading: 'Loading...',

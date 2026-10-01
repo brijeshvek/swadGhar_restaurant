@@ -11,6 +11,8 @@ import {
   Phone,
   MapPin,
   RefreshCw,
+  Store,
+  Building2,
 } from 'lucide-react';
 import api from '../../services/api';
 import { useNotification } from '../../context/NotificationContext';
@@ -19,6 +21,8 @@ import { useTranslation } from '../../context/LanguageContext';
 const AdminOrders = () => {
   const { t } = useTranslation();
   const [orders, setOrders] = useState([]);
+  const [franchises, setFranchises] = useState([]);
+  const [franchiseFilter, setFranchiseFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
   const [search, setSearch] = useState('');
@@ -26,10 +30,27 @@ const AdminOrders = () => {
   const [refreshing, setRefreshing] = useState(false);
   const { showSuccess, showError } = useNotification();
 
+  useEffect(() => {
+    fetchFranchises();
+  }, []);
+
+  const fetchFranchises = async () => {
+    try {
+      const res = await api.get('/franchises');
+      setFranchises(res.data || []);
+    } catch (err) {
+      console.warn('Could not fetch franchises for admin:', err);
+    }
+  };
+
   const fetchOrders = async (isManual = false) => {
     if (isManual) setRefreshing(true);
     try {
-      const res = await api.get('/orders?limit=100');
+      let url = '/orders?limit=100';
+      if (franchiseFilter && franchiseFilter !== 'all') {
+        url += `&franchiseId=${encodeURIComponent(franchiseFilter)}`;
+      }
+      const res = await api.get(url);
       if (res?.data) {
         setOrders(res.data);
       }
@@ -45,7 +66,7 @@ const AdminOrders = () => {
     fetchOrders();
     const interval = setInterval(() => fetchOrders(), 15000); // 15s live polling
     return () => clearInterval(interval);
-  }, []);
+  }, [franchiseFilter]);
 
   const handleUpdateStatus = async (orderId, newStatus) => {
     try {
@@ -72,11 +93,23 @@ const AdminOrders = () => {
       matchesStatus = ord.orderStatus === statusFilter;
     }
 
+    let matchesFranchise = true;
+    if (franchiseFilter && franchiseFilter !== 'all') {
+      matchesFranchise =
+        ord.franchise === franchiseFilter ||
+        ord.franchise?._id === franchiseFilter ||
+        ord.franchiseDetails?.name?.toLowerCase().includes(franchiseFilter.toLowerCase()) ||
+        ord.franchiseDetails?.city?.toLowerCase() === franchiseFilter.toLowerCase() ||
+        ord.deliveryAddress?.city?.toLowerCase() === franchiseFilter.toLowerCase();
+    }
+
     const matchesSearch =
       ord.orderNumber?.toLowerCase().includes(search.toLowerCase()) ||
       ord.customer?.name?.toLowerCase().includes(search.toLowerCase()) ||
-      ord.deliveryAddress?.fullName?.toLowerCase().includes(search.toLowerCase());
-    return matchesStatus && matchesSearch;
+      ord.deliveryAddress?.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+      ord.franchiseDetails?.name?.toLowerCase().includes(search.toLowerCase());
+
+    return matchesStatus && matchesFranchise && matchesSearch;
   });
 
   return (
@@ -87,7 +120,7 @@ const AdminOrders = () => {
             {t('admin.ordersTitle', 'Order Management Desk')} ({orders.length})
           </h1>
           <p className="text-xs sm:text-sm text-stone-400">
-            {t('admin.ordersSubtitle', 'Real-time kitchen orders, takeaway pickup tickets, and live delivery dispatches')}
+            {t('admin.ordersSubtitle', 'Real-time kitchen orders, takeaway pickup tickets, and live delivery dispatches by branch')}
           </p>
         </div>
 
@@ -101,26 +134,44 @@ const AdminOrders = () => {
         </button>
       </div>
 
-      {/* Filter Bar */}
-      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-        <div className="relative w-full sm:max-w-md">
-          <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t('admin.searchOrderPlaceholder', 'Search by Order # or Customer...')}
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-stone-950 border border-stone-800 text-xs text-white focus:outline-none focus:border-brand-500"
-          />
+      {/* Filter Bar: Search + Branch Selector + Status Tabs */}
+      <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+        <div className="flex flex-col sm:flex-row gap-2.5 flex-1 max-w-2xl">
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t('admin.searchOrderPlaceholder', 'Search by Order #, Customer, or Branch...')}
+              className="w-full pl-10 pr-4 py-2 rounded-xl bg-stone-950 border border-stone-800 text-xs text-white focus:outline-none focus:border-brand-500"
+            />
+          </div>
+
+          {/* Franchise Branch Filter Dropdown */}
+          <div className="relative min-w-[200px]">
+            <select
+              value={franchiseFilter}
+              onChange={(e) => setFranchiseFilter(e.target.value)}
+              className="w-full px-3.5 py-2 rounded-xl bg-stone-900 border border-stone-800 text-xs font-semibold text-amber-300 focus:outline-none focus:border-brand-500 cursor-pointer"
+            >
+              <option value="all">🏬 All Kitchen Branches ({franchises.length})</option>
+              {franchises.map((f) => (
+                <option key={f._id} value={f._id}>
+                  📍 {f.name} ({f.city})
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar w-full sm:w-auto pb-1">
+        <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar w-full lg:w-auto pb-1">
           {[
             { id: 'all', label: t('admin.allOrders', 'All Orders') },
             { id: 'pending', label: t('admin.pendingOrders', 'Pending') },
             { id: 'preparing', label: t('admin.preparing', 'Cooking') },
             { id: 'out_for_delivery', label: t('admin.inTransit', 'In Transit') },
-            { id: 'completed', label: t('admin.completedDelivered', 'Completed (Delivered)') },
+            { id: 'completed', label: t('admin.completedDelivered', 'Completed') },
             { id: 'cancelled', label: t('admin.cancelled', 'Cancelled') },
           ].map((tab) => (
             <button
@@ -149,6 +200,7 @@ const AdminOrders = () => {
             <thead className="bg-stone-900 border-b border-stone-800 text-[11px] font-bold uppercase tracking-wider text-stone-400">
               <tr>
                 <th className="py-3.5 px-4">{t('admin.orderNumber', 'Order Ref')}</th>
+                <th className="py-3.5 px-4">Kitchen Outlet</th>
                 <th className="py-3.5 px-4">{t('admin.customer', 'Customer & Type')}</th>
                 <th className="py-3.5 px-4">{t('admin.itemsSummary', 'Items')}</th>
                 <th className="py-3.5 px-4">{t('admin.amount', 'Total Amount')}</th>
@@ -166,6 +218,19 @@ const AdminOrders = () => {
                     </span>
                     <span className="text-[10px] text-stone-400">
                       {new Date(ord.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </td>
+
+                  {/* Kitchen Outlet */}
+                  <td className="py-3.5 px-4">
+                    <div className="flex items-center gap-1.5">
+                      <Store className="w-3.5 h-3.5 text-brand-400 shrink-0" />
+                      <span className="font-semibold text-white truncate max-w-[140px] block">
+                        {ord.franchiseDetails?.name || ord.franchise?.name || 'Ahmedabad Flagship'}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-amber-300/80 font-mono">
+                      📍 {ord.franchiseDetails?.city || ord.deliveryAddress?.city || 'Gujarat'}
                     </span>
                   </td>
 
@@ -260,10 +325,28 @@ const AdminOrders = () => {
               </button>
             </div>
 
+            {/* Preparing Kitchen Outlet Details */}
+            {selectedOrder.franchiseDetails && (
+              <div className="p-3.5 rounded-2xl bg-stone-950 border border-stone-800 space-y-1">
+                <span className="font-bold text-amber-400 flex items-center gap-1.5">
+                  <Store className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Preparing Kitchen Outlet</span>
+                </span>
+                <p className="font-semibold text-white">{selectedOrder.franchiseDetails.name}</p>
+                <p className="text-stone-400">{selectedOrder.franchiseDetails.address}</p>
+                {selectedOrder.franchiseDetails.phone && (
+                  <p className="text-stone-400 flex items-center gap-1">
+                    <Phone className="w-3 h-3 text-amber-500" />
+                    <span>Helpline: {selectedOrder.franchiseDetails.phone}</span>
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Customer Details */}
             {selectedOrder.deliveryAddress && (
               <div className="p-3.5 rounded-2xl bg-stone-950 border border-stone-800 space-y-1.5">
-                <span className="font-bold text-white block flex items-center gap-1.5">
+                <span className="font-bold text-white flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-brand-500" />
                   <span>{t('checkout.deliveryAddressTitle', 'Delivery Address')}</span>
                 </span>

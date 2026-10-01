@@ -31,6 +31,30 @@ const hi = {
     language: 'भाषा (Language)',
   },
 
+  // Admin Sidebar Navigation
+  adminNav: {
+    sectionMain: 'मुख्य डेस्क',
+    sectionOperations: 'किचन और ऑपरेशन्स',
+    sectionMenu: 'मेन्यू कैटलॉग',
+    sectionManagement: 'प्रशासन और सेटिंग्स',
+    dashboard: 'डैशबोर्ड',
+    executiveDashboard: 'एग्जीक्यूटिव डैशबोर्ड',
+    branchDashboard: 'ब्रांच डैशबोर्ड',
+    franchises: '15 आउटलेट्स और फ्रेंचाइजी',
+    myBranch: 'मेरी ब्रांच और स्टाफ',
+    reports: 'सेल्स और ऑडिट रिपोर्ट्स',
+    branchReports: 'ब्रांच सेल्स रिपोर्ट',
+    liveOrders: 'लाइव ऑर्डर्स और किचन',
+    inquiries: 'ग्राहक पूछताछ (इन्क्वायरी)',
+    foodMenu: 'व्यंजन मेन्यू (डिशेस)',
+    categories: 'मेन्यू कैटेगरीज',
+    reservations: 'टेबल बुकिंग्स',
+    customers: 'ग्राहक अकाउंट्स',
+    reviews: 'ग्राहक समीक्षाएं (रिव्यूज)',
+    coupons: 'कूपन्स और ऑफर्स',
+    settings: 'रेस्टोरेंट सेटिंग्स',
+  },
+
   // Common UI Actions & Words
   common: {
     loading: 'लोड हो रहा है...',
