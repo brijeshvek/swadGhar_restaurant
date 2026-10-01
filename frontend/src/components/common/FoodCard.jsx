@@ -7,7 +7,7 @@ import { SpotlightCard } from '../animations';
 
 const FoodCard = ({ food }) => {
   const { cartItems, addToCart, updateQuantity } = useCart();
-  const { t } = useTranslation();
+  const { t, translateFoodName, translateCategoryName, translateReview } = useTranslation();
 
   const cartItem = cartItems.find((item) => item.food._id === food._id);
   const quantityInCart = cartItem ? cartItem.quantity : 0;
@@ -17,6 +17,10 @@ const FoodCard = ({ food }) => {
   const discountPercent = hasDiscount
     ? Math.round(((food.price - food.discountPrice) / food.price) * 100)
     : 0;
+
+  const displayName = translateFoodName(food.name);
+  const displayCategory = food.category?.name ? translateCategoryName(food.category.name) : t('brand.name');
+  const displayDescription = translateReview(food.description);
 
   return (
     <SpotlightCard
@@ -28,7 +32,7 @@ const FoodCard = ({ food }) => {
         <Link to={`/food/${food._id || food.slug}`} className="block w-full h-full">
           <img
             src={food.image}
-            alt={food.name}
+            alt={displayName}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             loading="lazy"
             onError={(e) => {
@@ -87,7 +91,7 @@ const FoodCard = ({ food }) => {
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs text-stone-500">
             <span className="font-semibold text-brand-600 truncate max-w-[150px]">
-              {food.category?.name || t('brand.name')}
+              {displayCategory}
             </span>
             {food.preparationTime && (
               <span className="flex items-center gap-1 text-[11px] shrink-0 font-medium text-stone-400">
@@ -102,12 +106,12 @@ const FoodCard = ({ food }) => {
             className="block group-hover:text-brand-600 transition-colors"
           >
             <h3 className="font-serif font-bold text-base sm:text-lg text-stone-900 leading-snug line-clamp-1">
-              {food.name}
+              {displayName}
             </h3>
           </Link>
 
           <p className="text-xs sm:text-sm text-stone-500 line-clamp-2 leading-relaxed min-h-[36px]">
-            {food.description}
+            {displayDescription}
           </p>
         </div>
 

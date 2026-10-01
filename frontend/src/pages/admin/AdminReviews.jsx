@@ -5,7 +5,7 @@ import { useNotification } from '../../context/NotificationContext';
 import { useTranslation } from '../../context/LanguageContext';
 
 const AdminReviews = () => {
-  const { t } = useTranslation();
+  const { t, translateFoodName, translateReview } = useTranslation();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const { showSuccess, showError } = useNotification();
@@ -83,12 +83,12 @@ const AdminReviews = () => {
                     alt={rev.food.name}
                     className="w-8 h-8 rounded-lg object-cover"
                   />
-                  <span className="text-brand-400 font-bold">{rev.food.name}</span>
+                  <span className="text-brand-400 font-bold">{translateFoodName(rev.food.name)}</span>
                 </div>
               )}
 
               <p className="text-xs text-stone-300 italic leading-relaxed">
-                "{rev.comment}"
+                "{translateReview(rev.comment)}"
               </p>
             </div>
 

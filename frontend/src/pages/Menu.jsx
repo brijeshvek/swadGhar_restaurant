@@ -22,7 +22,7 @@ import { BlurText, AnimatedContent, ShinyText } from '../components/animations';
 import { useTranslation } from '../context/LanguageContext';
 
 const Menu = () => {
-  const { t } = useTranslation();
+  const { t, translateCategoryName } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialCategory = searchParams.get('category') || 'all';
 
@@ -331,7 +331,7 @@ const Menu = () => {
                   : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
               }`}
             >
-              {cat.name}
+              {translateCategoryName(cat.name)}
             </button>
           ))}
         </div>
@@ -402,7 +402,7 @@ const Menu = () => {
           <span className="font-bold text-brand-600">{foods.length}</span> {t('common.items', 'dishes')}
           {selectedCategory !== 'all' && (
             <span className="ml-1 font-medium text-stone-700">
-              in &quot;{categories.find((c) => c.slug === selectedCategory || c._id === selectedCategory)?.name || selectedCategory}&quot;
+              in &quot;{translateCategoryName(categories.find((c) => c.slug === selectedCategory || c._id === selectedCategory)?.name || selectedCategory)}&quot;
             </span>
           )}
         </div>

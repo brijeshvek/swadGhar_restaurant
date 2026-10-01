@@ -47,7 +47,7 @@ const PRESET_IMAGES = [
 ];
 
 const AdminCategories = () => {
-  const { t } = useTranslation();
+  const { t, translateCategoryName, translateReview } = useTranslation();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -279,10 +279,10 @@ const AdminCategories = () => {
                 <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                   <div className="space-y-1.5">
                     <h3 className="font-serif font-bold text-base text-white line-clamp-1 group-hover:text-amber-300 transition-colors">
-                      {cat.name}
+                      {translateCategoryName(cat.name)}
                     </h3>
                     <p className="text-xs text-stone-400 line-clamp-2 leading-relaxed min-h-[32px]">
-                      {cat.description || 'Authentic regional culinary dishes handcrafted with fresh ingredients.'}
+                      {translateReview(cat.description || 'Authentic regional culinary dishes handcrafted with fresh ingredients.')}
                     </p>
                   </div>
 

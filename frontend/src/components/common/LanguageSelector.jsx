@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Globe, ChevronDown, Check } from 'lucide-react';
 import { useTranslation } from '../../context/LanguageContext';
+import { changeGoogleLanguage } from './GoogleTranslate';
 
 const LanguageSelector = ({ variant = 'dropdown', className = '' }) => {
   const { language, setLanguage, availableLanguages, currentLanguageMeta } = useTranslation();
@@ -17,6 +18,12 @@ const LanguageSelector = ({ variant = 'dropdown', className = '' }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleSelectLanguage = (code) => {
+    setLanguage(code);
+    changeGoogleLanguage(code);
+    setIsOpen(false);
+  };
+
   if (variant === 'pills') {
     return (
       <div className={`flex items-center bg-stone-950/80 p-1 rounded-2xl border border-stone-800 shadow-inner ${className}`}>
@@ -25,7 +32,7 @@ const LanguageSelector = ({ variant = 'dropdown', className = '' }) => {
           <button
             key={lang.code}
             type="button"
-            onClick={() => setLanguage(lang.code)}
+            onClick={() => handleSelectLanguage(lang.code)}
             className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               language === lang.code
                 ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-md font-extrabold'
@@ -65,10 +72,7 @@ const LanguageSelector = ({ variant = 'dropdown', className = '' }) => {
                 <button
                   key={lang.code}
                   type="button"
-                  onClick={() => {
-                    setLanguage(lang.code);
-                    setIsOpen(false);
-                  }}
+                  onClick={() => handleSelectLanguage(lang.code)}
                   className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-left transition-colors cursor-pointer ${
                     isSelected
                       ? 'bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30'

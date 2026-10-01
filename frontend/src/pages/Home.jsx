@@ -28,7 +28,7 @@ import {
 } from '../components/animations';
 
 const Home = () => {
-  const { t } = useTranslation();
+  const { t, translateCategoryName } = useTranslation();
   const [featuredFoods, setFeaturedFoods] = useState([]);
   const [popularFoods, setPopularFoods] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -232,7 +232,7 @@ const Home = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/40 to-transparent"></div>
                   <div className="absolute bottom-2.5 left-2.5 right-2.5 text-white">
                     <h3 className="font-serif font-bold text-xs sm:text-sm leading-tight group-hover:text-amber-300 transition-colors line-clamp-2">
-                      {cat.name}
+                      {translateCategoryName(cat.name)}
                     </h3>
                   </div>
                 </Link>

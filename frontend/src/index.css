@@ -289,3 +289,40 @@
   background: white;
 }
 
+/* ==========================================================================
+   Google Translate Styling & Overrides
+   ========================================================================== */
+body {
+  top: 0px !important;
+  position: static !important;
+}
+
+.goog-te-banner-frame,
+.goog-te-banner-frame.skiptranslate,
+iframe.goog-te-banner-frame {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+}
+
+.skiptranslate iframe {
+  display: none !important;
+}
+
+#goog-gt-tt,
+.goog-te-balloon-frame {
+  display: none !important;
+}
+
+.goog-text-highlight {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Maintain font styles on translated elements */
+font {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+

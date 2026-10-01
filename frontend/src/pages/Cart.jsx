@@ -35,7 +35,7 @@ const Cart = () => {
     removeCoupon,
   } = useCart();
 
-  const { t } = useTranslation();
+  const { t, translateFoodName } = useTranslation();
   const { showSuccess, showError } = useNotification();
   const [couponCodeInput, setCouponCodeInput] = useState('');
   const [validatingCoupon, setValidatingCoupon] = useState(false);
@@ -198,7 +198,7 @@ const Cart = () => {
                       ></span>
                     </span>
                     <h3 className="font-serif font-bold text-sm sm:text-base text-stone-900 leading-snug">
-                      {item.food.name}
+                      {translateFoodName(item.food.name)}
                     </h3>
                   </div>
                   <p className="text-xs text-stone-500 font-medium">

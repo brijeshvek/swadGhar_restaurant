@@ -1,19 +1,29 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import dictionaries, { availableLanguages } from '../locales';
+import { changeGoogleLanguage } from '../components/common/GoogleTranslate';
+
+export const availableLanguages = [
+  { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
+  { code: 'gu', name: 'Gujarati', nativeName: 'ગુજરાતી', flag: '🇮🇳' },
+  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳' },
+];
 
 const LanguageContext = createContext(null);
-
 const STORAGE_KEY = 'swadghar_language';
 
 export const LanguageProvider = ({ children }) => {
   const [language, setLanguageState] = useState(() => {
     try {
+      // Check google translate cookie first if present
+      const cookieMatch = document.cookie.match(/googtrans=\/en\/([a-z]{2})/i);
+      if (cookieMatch && ['en', 'gu', 'hi'].includes(cookieMatch[1])) {
+        return cookieMatch[1];
+      }
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved && (saved === 'en' || saved === 'gu' || saved === 'hi')) {
+      if (saved && ['en', 'gu', 'hi'].includes(saved)) {
         return saved;
       }
     } catch (e) {
-      // localStorage unavailable or blocked
+      // ignore storage access errors
     }
     return 'en';
   });
@@ -26,60 +36,52 @@ export const LanguageProvider = ({ children }) => {
       } catch (e) {
         console.error('Error saving language preference:', e);
       }
+      changeGoogleLanguage(newLang);
     }
   }, []);
 
-  // Lookup translation by dot-path with fallback and variable interpolation
-  const t = useCallback(
-    (keyPath, fallbackOrParams, params) => {
-      let fallbackText = '';
-      let variables = {};
+  // Simple string / fallback helper with variable interpolation
+  const t = useCallback((keyPath, fallbackOrParams, params) => {
+    let fallbackText = '';
+    let variables = {};
 
-      if (typeof fallbackOrParams === 'object' && fallbackOrParams !== null) {
-        variables = fallbackOrParams;
-      } else if (typeof fallbackOrParams === 'string') {
-        fallbackText = fallbackOrParams;
-        if (typeof params === 'object' && params !== null) {
-          variables = params;
-        }
+    if (typeof fallbackOrParams === 'object' && fallbackOrParams !== null) {
+      variables = fallbackOrParams;
+    } else if (typeof fallbackOrParams === 'string') {
+      fallbackText = fallbackOrParams;
+      if (typeof params === 'object' && params !== null) {
+        variables = params;
       }
+    }
 
-      const activeDict = dictionaries[language] || dictionaries.en;
-      const fallbackDict = dictionaries.en;
+    let result = fallbackText || keyPath;
 
-      const resolvePath = (obj, path) => {
-        if (!obj || typeof obj !== 'object') return undefined;
-        const parts = path.split('.');
-        let current = obj;
-        for (const part of parts) {
-          if (current === undefined || current === null) return undefined;
-          current = current[part];
-        }
-        return current;
-      };
+    // Handle string key paths like "header.home" -> humanize fallback if no text
+    if (!fallbackText && typeof keyPath === 'string' && keyPath.includes('.')) {
+      const parts = keyPath.split('.');
+      const last = parts[parts.length - 1];
+      result = last.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase());
+    }
 
-      let result = resolvePath(activeDict, keyPath);
+    // Interpolate variables if provided
+    if (typeof result === 'string' && Object.keys(variables).length > 0) {
+      Object.entries(variables).forEach(([vKey, vVal]) => {
+        result = result.replace(new RegExp(`{{\\s*${vKey}\\s*}}`, 'g'), String(vVal));
+        result = result.replace(new RegExp(`\\$\\{\\s*${vKey}\\s*\\}`, 'g'), String(vVal));
+      });
+    }
 
-      if (result === undefined || result === null) {
-        result = resolvePath(fallbackDict, keyPath);
-      }
+    return result;
+  }, []);
 
-      if (result === undefined || result === null) {
-        result = fallbackText || keyPath;
-      }
-
-      // If result is string and variables provided, interpolate {{var}} and ${var}
-      if (typeof result === 'string' && Object.keys(variables).length > 0) {
-        Object.entries(variables).forEach(([vKey, vVal]) => {
-          result = result.replace(new RegExp(`{{\\s*${vKey}\\s*}}`, 'g'), String(vVal));
-          result = result.replace(new RegExp(`\\$\\{\\s*${vKey}\\s*\\}`, 'g'), String(vVal));
-        });
-      }
-
-      return result;
-    },
-    [language]
-  );
+  // Lightweight pass-throughs (Google Translate translates DOM in real-time)
+  const translateFoodName = useCallback((name) => name || '', []);
+  const translateCategoryName = useCallback((catName) => catName || '', []);
+  const translateReview = useCallback((text) => text || '', []);
+  const translate = useCallback((text) => text || '', []);
+  const localizeFood = useCallback((food) => food, []);
+  const localizeCategory = useCallback((cat) => cat, []);
+  const localizeReview = useCallback((rev) => rev, []);
 
   const value = useMemo(
     () => ({
@@ -87,12 +89,19 @@ export const LanguageProvider = ({ children }) => {
       setLanguage,
       availableLanguages,
       t,
+      translateFoodName,
+      translateCategoryName,
+      translateReview,
+      translate,
+      localizeFood,
+      localizeCategory,
+      localizeReview,
       isEnglish: language === 'en',
       isGujarati: language === 'gu',
       isHindi: language === 'hi',
       currentLanguageMeta: availableLanguages.find((l) => l.code === language) || availableLanguages[0],
     }),
-    [language, setLanguage, t]
+    [language, setLanguage, t, translateFoodName, translateCategoryName, translateReview, translate, localizeFood, localizeCategory, localizeReview]
   );
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;

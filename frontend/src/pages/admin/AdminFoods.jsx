@@ -43,7 +43,7 @@ const FOOD_PRESET_IMAGES = [
 const AdminFoods = () => {
   const { isAdmin } = useAuth();
   const { showSuccess, showError } = useNotification();
-  const { t } = useTranslation();
+  const { t, translateFoodName, translateCategoryName } = useTranslation();
 
   const [foods, setFoods] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -368,18 +368,18 @@ const AdminFoods = () => {
 
       {/* Foods Table */}
       <div className="rounded-3xl bg-stone-950 border border-stone-800 overflow-hidden shadow-xl">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-stone-300">
-            <thead className="bg-stone-900 border-b border-stone-800 text-[11px] font-bold uppercase tracking-wider text-stone-400">
+        <div className="overflow-x-auto custom-scrollbar">
+          <table className="w-full text-left text-xs text-stone-300 border-collapse">
+            <thead className="bg-stone-900/90 border-b border-stone-800 text-[11px] font-bold uppercase tracking-wider text-stone-400">
               <tr>
-                <th className="py-3.5 px-4 text-center w-12">#</th>
-                <th className="py-3.5 px-4">{t('menu.dish', 'Dish')}</th>
-                <th className="py-3.5 px-4">{t('foodDetails.category', 'Category')}</th>
-                <th className="py-3.5 px-4">{t('menu.price', 'Price / Disc.')}</th>
-                <th className="py-3.5 px-4">{t('menu.spiceLevel', 'Diet & Spice')}</th>
-                <th className="py-3.5 px-4">{t('foodDetails.prepTime', 'Prep Time')}</th>
-                <th className="py-3.5 px-4">{t('admin.availability', 'Availability')}</th>
-                <th className="py-3.5 px-4 text-right">{t('admin.actions', 'Actions')}</th>
+                <th className="py-3.5 px-4 text-center w-14">#</th>
+                <th className="py-3.5 px-4 min-w-[260px]">{t('menu.dish', 'Dish')}</th>
+                <th className="py-3.5 px-4 w-44 whitespace-nowrap">{t('foodDetails.category', 'Category')}</th>
+                <th className="py-3.5 px-4 w-28 whitespace-nowrap">{t('menu.price', 'Price / Disc.')}</th>
+                <th className="py-3.5 px-4 w-32 whitespace-nowrap">{t('menu.spiceLevel', 'Diet & Spice')}</th>
+                <th className="py-3.5 px-4 w-24 whitespace-nowrap">{t('foodDetails.prepTime', 'Prep Time')}</th>
+                <th className="py-3.5 px-4 w-32 whitespace-nowrap">{t('admin.availability', 'Availability')}</th>
+                <th className="py-3.5 px-4 w-32 text-right whitespace-nowrap">{t('admin.actions', 'Actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-800/60">
@@ -404,101 +404,105 @@ const AdminFoods = () => {
                   return (
                     <tr key={food._id} className="hover:bg-stone-900/50 transition-colors">
                       {/* Sequential Dish Number Count */}
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-3 px-4 text-center align-middle">
                         <span className="inline-flex items-center justify-center min-w-[32px] h-8 px-1.5 rounded-xl bg-stone-900 border border-stone-800 text-amber-400 font-mono font-bold text-xs shadow-xs">
                           #{dishNumber}
                         </span>
                       </td>
 
                       {/* Dish */}
-                      <td className="py-3 px-4 flex items-center gap-3">
-                        <img
-                          src={food.image}
-                          alt={food.name}
-                          className="w-12 h-12 rounded-xl object-cover bg-stone-900 shrink-0"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = FOOD_PRESET_IMAGES[0].url;
-                          }}
-                        />
-                        <div className="space-y-0.5">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <h4 className="font-bold text-white text-sm">{food.name}</h4>
-                            {food.isPopular && (
-                              <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[9px] font-bold border border-amber-500/30">
-                                ★ Bestseller
-                              </span>
-                            )}
+                      <td className="py-3 px-4 align-middle">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={food.image}
+                            alt={food.name}
+                            className="w-12 h-12 rounded-xl object-cover bg-stone-900 shrink-0 border border-stone-800"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = FOOD_PRESET_IMAGES[0].url;
+                            }}
+                          />
+                          <div className="space-y-0.5 min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <h4 className="font-bold text-white text-sm truncate">{translateFoodName(food.name)}</h4>
+                              {food.isPopular && (
+                                <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[9px] font-bold border border-amber-500/30 whitespace-nowrap">
+                                  ★ Bestseller
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-stone-400 flex items-center gap-1">
+                              <Star className="w-3 h-3 fill-amber-400 text-amber-400 shrink-0" />
+                              {food.rating ? food.rating.toFixed(1) : '4.8'} ({food.numReviews || 0} reviews)
+                            </span>
                           </div>
-                          <span className="text-[10px] text-stone-400 flex items-center gap-1">
-                            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                            {food.rating ? food.rating.toFixed(1) : '4.8'} ({food.numReviews || 0} reviews)
-                          </span>
                         </div>
                       </td>
 
                       {/* Category */}
-                      <td className="py-3 px-4 font-semibold text-brand-400">
-                        {food.category?.name || 'Unassigned'}
+                      <td className="py-3 px-4 font-semibold text-amber-400 whitespace-nowrap align-middle">
+                        {food.category?.name ? translateCategoryName(food.category.name) : 'Unassigned'}
                       </td>
 
                       {/* Price */}
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 whitespace-nowrap align-middle">
                         <span className="font-bold text-white text-sm font-sans block">₹{food.price}</span>
                         {food.discountPrice > 0 && (
-                          <span className="text-[10px] text-emerald-400 font-semibold">
+                          <span className="text-[10px] text-emerald-400 font-semibold block">
                             Sale: ₹{food.discountPrice}
                           </span>
                         )}
                       </td>
 
                       {/* Dietary & Spice */}
-                      <td className="py-3 px-4 space-y-1">
-                        <span
-                          className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                            food.foodType === 'veg'
-                              ? 'bg-emerald-900/60 text-emerald-300 border border-emerald-700/40'
-                              : food.foodType === 'vegan'
-                              ? 'bg-teal-900/60 text-teal-300 border border-teal-700/40'
-                              : 'bg-rose-900/60 text-rose-300 border border-rose-700/40'
-                          }`}
-                        >
-                          {food.foodType}
-                        </span>
-                        <span className="text-[10px] text-amber-400 block capitalize font-medium flex items-center gap-1">
-                          <Flame className="w-3 h-3 text-amber-500" />
+                      <td className="py-3 px-4 whitespace-nowrap align-middle space-y-1">
+                        <div>
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                              food.foodType === 'veg'
+                                ? 'bg-emerald-900/60 text-emerald-300 border border-emerald-700/40'
+                                : food.foodType === 'vegan'
+                                ? 'bg-teal-900/60 text-teal-300 border border-teal-700/40'
+                                : 'bg-rose-900/60 text-rose-300 border border-rose-700/40'
+                            }`}
+                          >
+                            {food.foodType}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-amber-400 capitalize font-medium flex items-center gap-1">
+                          <Flame className="w-3 h-3 text-amber-500 shrink-0" />
                           {food.spiceLevel}
                         </span>
                       </td>
 
                       {/* Preparation Time */}
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 whitespace-nowrap align-middle">
                         <span className="inline-flex items-center gap-1 text-stone-300">
-                          <Clock className="w-3.5 h-3.5 text-stone-500" />
+                          <Clock className="w-3.5 h-3.5 text-stone-500 shrink-0" />
                           <span>{food.preparationTime || 20}m</span>
                         </span>
                       </td>
 
                       {/* Availability Toggle */}
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 whitespace-nowrap align-middle">
                         <button
                           onClick={() => handleToggleAvailability(food._id)}
-                          className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase transition-colors flex items-center gap-1 ${
+                          className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase transition-colors inline-flex items-center gap-1 cursor-pointer ${
                             food.isAvailable
-                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                              : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30'
+                              : 'bg-rose-500/20 text-rose-400 border border-rose-500/30 hover:bg-rose-500/30'
                           }`}
                         >
-                          {food.isAvailable ? <CheckCircle2 className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                          {food.isAvailable ? <CheckCircle2 className="w-3 h-3 shrink-0" /> : <XCircle className="w-3 h-3 shrink-0" />}
                           <span>{food.isAvailable ? 'In Stock' : 'Sold Out'}</span>
                         </button>
                       </td>
 
                       {/* Actions */}
-                      <td className="py-3 px-4 text-right space-x-1.5">
+                      <td className="py-3 px-4 text-right whitespace-nowrap align-middle space-x-1.5">
                         <button
                           onClick={() => setViewingFood(food)}
-                          className="p-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-white transition-colors"
+                          className="p-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-white transition-colors cursor-pointer"
                           title="View Complete Details"
                         >
                           <Eye className="w-3.5 h-3.5" />
@@ -508,14 +512,14 @@ const AdminFoods = () => {
                           <>
                             <button
                               onClick={() => handleOpenEditModal(food)}
-                              className="p-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-brand-400 transition-colors"
+                              className="p-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-brand-400 transition-colors cursor-pointer"
                               title="Edit Dish"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => handleDeleteFood(food._id, food.name)}
-                              className="p-1.5 rounded-lg bg-stone-900 hover:bg-rose-900/40 text-stone-300 hover:text-rose-400 transition-colors"
+                              className="p-1.5 rounded-lg bg-stone-900 hover:bg-rose-900/40 text-stone-300 hover:text-rose-400 transition-colors cursor-pointer"
                               title="Delete Dish"
                             >
                               <Trash2 className="w-3.5 h-3.5" />

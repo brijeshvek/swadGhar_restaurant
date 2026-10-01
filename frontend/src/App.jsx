@@ -5,6 +5,7 @@ import { NotificationProvider } from './context/NotificationContext';
 import { CartProvider } from './context/CartContext';
 import { LanguageProvider } from './context/LanguageContext';
 import PageLoader, { TopProgressBar } from './components/common/PageLoader';
+import GoogleTranslate from './components/common/GoogleTranslate';
 import AppRoutes from './routes/AppRoutes';
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
         <NotificationProvider>
           <AuthProvider>
             <CartProvider>
+              <GoogleTranslate />
               <TopProgressBar />
               <AppRoutes />
             </CartProvider>

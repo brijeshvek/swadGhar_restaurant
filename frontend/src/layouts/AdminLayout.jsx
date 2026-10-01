@@ -33,90 +33,90 @@ const AdminLayout = () => {
     navigate('/login');
   };
 
-  const navSections = [
+  const navItems = [
     {
-      items: [
-        {
-          name: isAdmin
-            ? t('adminNav.executiveDashboard', 'Executive Dashboard')
-            : t('adminNav.branchDashboard', 'Branch Dashboard'),
-          path: '/admin/dashboard',
-          icon: LayoutDashboard,
-          adminOnly: false,
-        },
-        {
-          name: isAdmin
-            ? t('adminNav.franchises', 'Outlets & Franchises')
-            : t('adminNav.myBranch', 'My Branch & Staff'),
-          path: '/admin/franchises',
-          icon: Store,
-          adminOnly: false,
-        },
-        {
-          name: isAdmin
-            ? t('adminNav.reports', 'Sales & Audit Reports')
-            : t('adminNav.branchReports', 'Branch Sales Report'),
-          path: '/admin/reports',
-          icon: FileSpreadsheet,
-          adminOnly: false,
-        },
-        {
-          name: t('adminNav.liveOrders', 'Live Orders & Kitchen'),
-          path: '/admin/orders',
-          icon: ShoppingBag,
-          adminOnly: false,
-        },
-        {
-          name: t('adminNav.reservations', 'Table Bookings'),
-          path: '/admin/reservations',
-          icon: Calendar,
-          adminOnly: false,
-        },
-        {
-          name: t('adminNav.inquiries', 'Customer Inquiries'),
-          path: '/admin/inquiries',
-          icon: MessageSquare,
-          adminOnly: false,
-        },
-        {
-          name: t('adminNav.foodMenu', 'Food Menu Catalog'),
-          path: '/admin/foods',
-          icon: UtensilsCrossed,
-          adminOnly: false,
-        },
-        {
-          name: t('adminNav.categories', 'Menu Categories'),
-          path: '/admin/categories',
-          icon: FolderTree,
-          adminOnly: true,
-        },
-        {
-          name: t('adminNav.customers', 'Customer Accounts'),
-          path: '/admin/customers',
-          icon: Users,
-          adminOnly: true,
-        },
-        {
-          name: t('adminNav.reviews', 'Guest Reviews'),
-          path: '/admin/reviews',
-          icon: Star,
-          adminOnly: true,
-        },
-        {
-          name: t('adminNav.coupons', 'Coupons & Offers'),
-          path: '/admin/coupons',
-          icon: Tag,
-          adminOnly: true,
-        },
-        {
-          name: t('adminNav.settings', 'Restaurant Settings'),
-          path: '/admin/settings',
-          icon: Settings,
-          adminOnly: true,
-        },
-      ],
+      name: isAdmin
+        ? t('adminNav.executiveDashboard', 'Executive Dashboard')
+        : t('adminNav.branchDashboard', 'Branch Dashboard'),
+      path: '/admin/dashboard',
+      icon: LayoutDashboard,
+      adminOnly: false,
+    },
+    {
+      name: isAdmin
+        ? t('adminNav.franchises', 'Outlets & Franchises')
+        : t('adminNav.myBranch', 'My Branch & Staff'),
+      path: '/admin/franchises',
+      icon: Store,
+      adminOnly: false,
+    },
+    {
+      name: isAdmin
+        ? t('adminNav.reports', 'Sales & Audit Reports')
+        : t('adminNav.branchReports', 'Branch Sales Report'),
+      path: '/admin/reports',
+      icon: FileSpreadsheet,
+      adminOnly: false,
+    },
+    {
+      name: t('adminNav.liveOrders', 'Live Orders & Kitchen'),
+      path: '/admin/orders',
+      icon: ShoppingBag,
+      adminOnly: false,
+    },
+    {
+      name: t('adminNav.reservations', 'Table Bookings'),
+      path: '/admin/reservations',
+      icon: Calendar,
+      adminOnly: false,
+    },
+    {
+      name: t('adminNav.inquiries', 'Customer Inquiries'),
+      path: '/admin/inquiries',
+      icon: MessageSquare,
+      adminOnly: false,
+    },
+    {
+      name: t('adminNav.foodMenu', 'Food Menu Catalog'),
+      path: '/admin/foods',
+      icon: UtensilsCrossed,
+      adminOnly: false,
+    },
+    {
+      name: t('adminNav.categories', 'Menu Categories'),
+      path: '/admin/categories',
+      icon: FolderTree,
+      adminOnly: true,
+    },
+    {
+      name: t('adminNav.customers', 'Customer Accounts'),
+      path: '/admin/customers',
+      icon: Users,
+      adminOnly: true,
+    },
+    {
+      name: t('adminNav.reviews', 'Guest Reviews'),
+      path: '/admin/reviews',
+      icon: Star,
+      adminOnly: true,
+    },
+    {
+      name: t('adminNav.coupons', 'Coupons & Offers'),
+      path: '/admin/coupons',
+      icon: Tag,
+      adminOnly: true,
+    },
+    {
+      name: t('adminNav.settings', 'Restaurant Settings'),
+      path: '/admin/settings',
+      icon: Settings,
+      adminOnly: true,
     },
   ];
+
+  const filteredNavItems = navItems.filter(
+    (item) => !item.adminOnly || (item.adminOnly && isAdmin)
+  );
 
   return (
     <div className="min-h-screen bg-stone-900 text-stone-100 flex flex-col md:flex-row">
@@ -184,42 +184,29 @@ const AdminLayout = () => {
           <LanguageSelector variant="pills" />
         </div>
 
-        {/* Navigation Links (Scrolls internally if screen is very short, never scrolls entire page) */}
-        <div className="flex-1 overflow-y-auto px-3 py-2 space-y-3 custom-scrollbar">
-          {navSections.map((section, idx) => {
-            const visibleItems = section.items.filter(
-              (item) => !item.adminOnly || (item.adminOnly && isAdmin)
-            );
-
-            if (visibleItems.length === 0) return null;
-
-            return (
-              <div key={idx} className="space-y-1">
-
-                <nav className="space-y-1">
-                  {visibleItems.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <NavLink
-                        key={item.path}
-                        to={item.path}
-                        onClick={() => setSidebarOpen(false)}
-                        className={({ isActive }) =>
-                          `flex items-center gap-3 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${isActive
-                            ? 'bg-brand-600 text-white shadow-md shadow-brand-500/20 font-bold'
-                            : 'text-stone-400 hover:text-white hover:bg-stone-900'
-                          }`
-                        }
-                      >
-                        <Icon className="w-4 h-4 shrink-0 text-amber-400/90" />
-                        <span className="truncate">{item.name}</span>
-                      </NavLink>
-                    );
-                  })}
-                </nav>
-              </div>
-            );
-          })}
+        {/* Navigation Links */}
+        <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1 custom-scrollbar">
+          <nav className="space-y-1">
+            {filteredNavItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setSidebarOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${isActive
+                      ? 'bg-brand-600 text-white shadow-md shadow-brand-500/20 font-bold'
+                      : 'text-stone-400 hover:text-white hover:bg-stone-900'
+                    }`
+                  }
+                >
+                  <Icon className="w-4 h-4 shrink-0 text-amber-400/90" />
+                  <span className="truncate">{item.name}</span>
+                </NavLink>
+              );
+            })}
+          </nav>
         </div>
 
         {/* User Info & Bottom Controls (Strictly Pinned at Viewport Bottom) */}

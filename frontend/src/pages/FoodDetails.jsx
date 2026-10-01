@@ -42,7 +42,7 @@ const FoodDetails = () => {
   const { isAuthenticated, user } = useAuth();
   const { showSuccess, showError } = useNotification();
   const { addToCart } = useCart();
-  const { t } = useTranslation();
+  const { t, translateFoodName, translateCategoryName, translateReview, translate } = useTranslation();
 
   const [food, setFood] = useState(null);
   const [relatedFoods, setRelatedFoods] = useState([]);
@@ -88,7 +88,7 @@ const FoodDetails = () => {
     if (!food) return;
     addToCart(food, quantity, specialInstructions);
     setAddedAnimation(true);
-    showSuccess(`Added ${quantity}x ${food.name} to your basket!`);
+    showSuccess(`Added ${quantity}x ${translateFoodName(food.name)} to your basket!`);
     setTimeout(() => setAddedAnimation(false), 2000);
   };
 
@@ -260,7 +260,7 @@ const FoodDetails = () => {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold uppercase tracking-widest text-brand-600 bg-brand-50 px-2.5 py-1 rounded-lg border border-brand-200/60">
-                  {food.category?.name || t('menu.chefSpecial', 'Signature Special')}
+                  {food.category?.name ? translateCategoryName(food.category.name) : t('menu.chefSpecial', 'Signature Special')}
                 </span>
                 {food.tags?.map((tTag, idx) => (
                   <span key={idx} className="text-[11px] text-stone-500 font-semibold bg-stone-100 px-2 py-0.5 rounded-md">
@@ -270,11 +270,11 @@ const FoodDetails = () => {
               </div>
 
               <h1 className="text-3xl sm:text-4xl font-serif font-bold text-stone-900 leading-tight">
-                {food.name}
+                {translateFoodName(food.name)}
               </h1>
 
               <p className="text-stone-600 text-sm sm:text-base leading-relaxed pt-1">
-                {food.description}
+                {translateReview(food.description)}
               </p>
             </div>
           </AnimatedContent>
@@ -324,7 +324,7 @@ const FoodDetails = () => {
                       key={idx}
                       className="px-3 py-1 rounded-xl bg-stone-100 text-stone-800 text-xs font-semibold border border-stone-200"
                     >
-                      {ing}
+                      {translate(ing, 'food')}
                     </span>
                   ))}
                 </div>
@@ -488,7 +488,7 @@ const FoodDetails = () => {
                     </div>
 
                     <p className="text-xs sm:text-sm text-stone-600 leading-relaxed italic">
-                      "{rev.comment}"
+                      "{translateReview(rev.comment)}"
                     </p>
                   </div>
                 </div>
